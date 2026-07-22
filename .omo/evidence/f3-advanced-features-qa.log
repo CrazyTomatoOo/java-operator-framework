@@ -1,0 +1,1350 @@
+==============================================
+F3 Real Manual QA - operator-sdk-advanced-features
+Started: 2026-06-21T01:42:42+08:00
+Helm: /opt/homebrew/bin/helm
+==============================================
+
+=== T1: WebhookServer HTTPS test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=WebhookServerTest
+Timestamp: 2026-06-21T01:42:42+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.809 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.019 s
+[INFO] Finished at: 2026-06-21T01:42:44+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T2: Admission handler test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=AdmissionHandlerTest
+Timestamp: 2026-06-21T01:42:44+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.336 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.121 s
+[INFO] Finished at: 2026-06-21T01:42:46+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T3: Webhook self-registration test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=WebhookSelfRegistrationTest
+Timestamp: 2026-06-21T01:42:46+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.620 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.431 s
+[INFO] Finished at: 2026-06-21T01:42:48+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T4: TLS cert reload test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=TlsCertReloadTest
+Timestamp: 2026-06-21T01:42:48+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+6月 21, 2026 1:42:50 上午 com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher reloadWhenFingerprintChanged
+警告: Ignoring invalid TLS certificate files and keeping previous SSL context
+java.io.IOException: Failed to load TLS certificate files
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:81)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.reload(ReloadableSslContext.java:63)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.reloadWhenFingerprintChanged(CertWatcher.java:160)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.watchLoop(CertWatcher.java:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.security.cert.CertificateException: No certificate data found
+	at java.base/sun.security.provider.X509Factory.parseX509orPKCS7Cert(X509Factory.java:460)
+	at java.base/sun.security.provider.X509Factory.engineGenerateCertificates(X509Factory.java:360)
+	at java.base/java.security.cert.CertificateFactory.generateCertificates(CertificateFactory.java:480)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.readCertificates(ReloadableSslContext.java:129)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.loadKeyManager(ReloadableSslContext.java:86)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:72)
+	... 4 more
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.777 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.548 s
+[INFO] Finished at: 2026-06-21T01:42:51+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T5: Full SDK test suite ===
+Command: mvn -f operator/framework/pom.xml test
+Timestamp: 2026-06-21T01:42:51+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.593 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.139 s -- in com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 s -- in com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.841 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.313 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+6月 21, 2026 1:42:55 上午 com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher reloadWhenFingerprintChanged
+警告: Ignoring invalid TLS certificate files and keeping previous SSL context
+java.io.IOException: Failed to load TLS certificate files
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:81)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.reload(ReloadableSslContext.java:63)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.reloadWhenFingerprintChanged(CertWatcher.java:160)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.watchLoop(CertWatcher.java:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.security.cert.CertificateException: No certificate data found
+	at java.base/sun.security.provider.X509Factory.parseX509orPKCS7Cert(X509Factory.java:460)
+	at java.base/sun.security.provider.X509Factory.engineGenerateCertificates(X509Factory.java:360)
+	at java.base/java.security.cert.CertificateFactory.generateCertificates(CertificateFactory.java:480)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.readCertificates(ReloadableSslContext.java:129)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.loadKeyManager(ReloadableSslContext.java:86)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:72)
+	... 4 more
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.678 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.063 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.097 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.124 s
+[INFO] Finished at: 2026-06-21T01:42:56+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T6: Echo validating webhook test ===
+Command: mvn -f example/echo-operator/pom.xml test -Dtest=EchoValidatingWebhookTest
+Timestamp: 2026-06-21T01:42:56+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceStatus.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceStatus.java already exists, overwriting
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.echooperator.webhook.EchoValidatingWebhookTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.example.echooperator.webhook.EchoValidatingWebhookTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.957 s
+[INFO] Finished at: 2026-06-21T01:42:59+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T7: Echo converter test ===
+Command: mvn -f example/echo-operator/pom.xml test -Dtest=EchoConverterTest
+Timestamp: 2026-06-21T01:42:59+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceStatus.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceStatus.java already exists, overwriting
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.echooperator.converter.EchoConverterTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.example.echooperator.converter.EchoConverterTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.951 s
+[INFO] Finished at: 2026-06-21T01:43:01+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T8: Echo operator clean compile ===
+Command: mvn -f example/echo-operator/pom.xml clean compile
+Timestamp: 2026-06-21T01:43:01+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.846 s
+[INFO] Finished at: 2026-06-21T01:43:03+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T8: Helm template for CRD conversion ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=true > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:04+08:00
+RESULT: PASS
+
+=== T8: CRD conversion block present ===
+Pattern: ^  conversion:
+RESULT: PASS
+
+=== T9: Conversion webhook handler test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=ConversionHandlerTest
+Timestamp: 2026-06-21T01:43:04+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.399 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.605 s
+[INFO] Finished at: 2026-06-21T01:43:06+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T10: Echo conversion endpoint test ===
+Command: mvn -f example/echo-operator/pom.xml test -Dtest=EchoConversionEndpointTest
+Timestamp: 2026-06-21T01:43:06+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceStatus.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceStatus.java already exists, overwriting
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.echooperator.EchoConversionEndpointTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+6月 21, 2026 1:43:09 上午 com.example.echooperator.EchoOperatorMain stop
+信息: Shutting down Echo Operator
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.332 s -- in com.example.echooperator.EchoConversionEndpointTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.920 s
+[INFO] Finished at: 2026-06-21T01:43:10+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T11: Conversion error handling test ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=ConversionHandlerTest
+Timestamp: 2026-06-21T01:43:10+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.406 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.634 s
+[INFO] Finished at: 2026-06-21T01:43:12+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== T12: Helm lint ===
+Command: /opt/homebrew/bin/helm lint example/echo-operator/helm/echo-operator
+Timestamp: 2026-06-21T01:43:12+08:00
+==> Linting example/echo-operator/helm/echo-operator
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+RESULT: PASS
+
+=== T12: Helm template with webhooks ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=true > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:12+08:00
+RESULT: PASS
+
+=== T12: ValidatingWebhookConfiguration present ===
+Pattern: ^kind: ValidatingWebhookConfiguration$
+RESULT: PASS
+
+=== T12: MutatingWebhookConfiguration present ===
+Pattern: ^kind: MutatingWebhookConfiguration$
+RESULT: PASS
+
+=== T12: Webhook Service targetPort present ===
+Pattern: targetPort: webhook
+RESULT: PASS
+
+=== T12: TLS Secret mount present ===
+Pattern: secretName: echo-operator-webhook-tls
+RESULT: PASS
+
+=== T13: SDK README + dev-guide webhook sections ===
+Command: grep -n Webhook operator/framework/README.md docs/dev-guide.md
+operator/framework/README.md:119:`WebhookServer` is a TLS server built on JDK `HttpsServer`. It defaults to `0.0.0.0:8443`, loads a certificate chain and private key from PEM files, and optionally watches `tls.crt`, `tls.key`, and `ca.crt` for changes.
+operator/framework/README.md:122:import com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer;
+operator/framework/README.md:125:WebhookServer webhookServer = WebhookServer.withCertWatcher(
+operator/framework/README.md:126:    WebhookServer.DEFAULT_HOST, 8443,
+operator/framework/README.md:159:`AdmissionHandler.register(WebhookServer)` exposes `/validate/{name}` and `/mutate/{name}` for every registered validator/mutator. Mutators return a raw JSON Patch string from `AdmissionResult.jsonPatch(...)`; the handler base64-encodes it and sets `patchType` to `JSONPatch`.
+operator/framework/README.md:161:To register webhook configurations in Kubernetes at startup, use `WebhookSelfRegistration` with `WebhookRegistrationConfig`:
+operator/framework/README.md:164:import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookRegistrationConfig;
+operator/framework/README.md:165:import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistration;
+operator/framework/README.md:167:WebhookRegistrationConfig config = WebhookRegistrationConfig.builder(
+operator/framework/README.md:175:WebhookSelfRegistration registration = new WebhookSelfRegistration(client, config);
+operator/framework/README.md:179:`register(handler)` reads the CA bundle from disk, base64-encodes it, and creates or replaces one `ValidatingWebhookConfiguration` and one `MutatingWebhookConfiguration` per registered webhook name.
+operator/framework/README.md:183:For multi-version CRDs, the SDK provides a conversion webhook handler that mounts on the same `WebhookServer`.
+operator/framework/README.md:188:import com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionWebhookHandler;
+operator/framework/README.md:199:`ConversionWebhookHandler.convert(desiredVersion, HasMetadata)` returns a `ConversionResult` from `ConversionResult.converted(...)` or `ConversionResult.failed(...)`. The handler unmarshals `apiextensions.k8s.io/v1 ConversionReview`, dispatches by `(source apiVersion, desired apiVersion)`, and returns a review response. Same-version requests pass through unchanged; unregistered pairs return a failure status in the conversion response.
+docs/dev-guide.md:225:import com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer;
+docs/dev-guide.md:229:WebhookServer webhookServer = WebhookServer.withCertWatcher(
+docs/dev-guide.md:230:    WebhookServer.DEFAULT_HOST, 8443,
+docs/dev-guide.md:285:import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookRegistrationConfig;
+docs/dev-guide.md:286:import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistration;
+docs/dev-guide.md:288:WebhookRegistrationConfig registrationConfig = WebhookRegistrationConfig.builder(
+docs/dev-guide.md:296:WebhookSelfRegistration registration = new WebhookSelfRegistration(client, registrationConfig);
+docs/dev-guide.md:300:`WebhookSelfRegistration` reads the CA bundle, base64-encodes it, and creates or replaces one `ValidatingWebhookConfiguration` and one `MutatingWebhookConfiguration` per registered webhook name. The operator needs RBAC permissions for `admissionregistration.k8s.io`.
+docs/dev-guide.md:304:For CRDs with multiple versions, implement a `ConversionWebhookHandler` and mount it on the same TLS server.
+RESULT: PASS
+
+=== T14: Echo README webhook and v1alpha2 sections ===
+Command: grep -n webhook / v1alpha2 example/echo-operator/README.md
+120:Echo Operator registers a validating webhook, a mutating webhook, and a conversion webhook on a shared TLS server. The webhook server listens on port 8443 by default and is exposed through the Helm Service on port 443.
+122:### Validating webhook
+131:### Mutating webhook
+138:### Conversion webhook
+163:- `WEBHOOK_PORT` - port for the TLS webhook server, default `8443`
+173:## Helm webhook values
+175:The chart supports these webhook-related values in `values.yaml`:
+178:webhook:
+182:  createWebhookConfigurations: false   # set true to pre-create webhook configs via Helm
+187:    secretName: echo-operator-webhook-tls
+194:The TLS Secret must be created outside the chart by a cluster admin or external tooling. When `createWebhookConfigurations` is `false` (the default), the operator self-registers its admission webhook configurations on startup.
+143:- `example.com/v1alpha2` is the storage version and adds `spec.logLevel`.
+145:`EchoConverter` converts between versions. When converting from `v1alpha1` to `v1alpha2`, `logLevel` defaults to `INFO`. When converting from `v1alpha2` to `v1alpha1`, `logLevel` is dropped.
+154:@Version(value = "v1alpha2", storage = true, served = true)
+196:## Example CR for v1alpha2
+198:You can also create a `v1alpha2` CR:
+201:apiVersion: example.com/v1alpha2
+206:  message: "Hello from v1alpha2"
+217:Because `v1alpha2` is the storage version, reading the resource back will show `apiVersion: example.com/v1alpha2` and `spec.logLevel`.
+RESULT: PASS
+
+=== T15: Helm lint ===
+Command: /opt/homebrew/bin/helm lint example/echo-operator/helm/echo-operator
+Timestamp: 2026-06-21T01:43:12+08:00
+==> Linting example/echo-operator/helm/echo-operator
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+RESULT: PASS
+
+=== T15: Helm template default values ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:12+08:00
+RESULT: PASS
+
+=== T16: Smoke-test script syntax ===
+Command: bash -n example/echo-operator/scripts/smoke-test.sh
+Timestamp: 2026-06-21T01:43:12+08:00
+RESULT: PASS
+
+==============================================
+Integration Checks
+==============================================
+=== Integration 1: SDK clean install ===
+Command: mvn -f operator/framework/pom.xml clean install
+Timestamp: 2026-06-21T01:43:12+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ operator-framework ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/operator/framework/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 26 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java: /Volumes/work/Project/java-operator-framework/operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 16 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.605 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.139 s -- in com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.676 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.318 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+6月 21, 2026 1:43:18 上午 com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher reloadWhenFingerprintChanged
+警告: Ignoring invalid TLS certificate files and keeping previous SSL context
+java.io.IOException: Failed to load TLS certificate files
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:81)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.reload(ReloadableSslContext.java:63)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.reloadWhenFingerprintChanged(CertWatcher.java:160)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.watchLoop(CertWatcher.java:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.security.cert.CertificateException: No certificate data found
+	at java.base/sun.security.provider.X509Factory.parseX509orPKCS7Cert(X509Factory.java:460)
+	at java.base/sun.security.provider.X509Factory.engineGenerateCertificates(X509Factory.java:360)
+	at java.base/java.security.cert.CertificateFactory.generateCertificates(CertificateFactory.java:480)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.readCertificates(ReloadableSslContext.java:129)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.loadKeyManager(ReloadableSslContext.java:86)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:72)
+	... 4 more
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.631 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.062 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.098 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- source:3.3.1:jar-no-fork (attach-sources) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ operator-framework ---
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/pom.xml to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.pom
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.267 s
+[INFO] Finished at: 2026-06-21T01:43:20+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== Integration 2: Example clean package ===
+Command: mvn -f example/echo-operator/pom.xml clean package
+Timestamp: 2026-06-21T01:43:20+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.echooperator.EchoConversionEndpointTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+6月 21, 2026 1:43:24 上午 com.example.echooperator.EchoOperatorMain stop
+信息: Shutting down Echo Operator
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.305 s -- in com.example.echooperator.EchoConversionEndpointTest
+[INFO] Running com.example.echooperator.EchoOperatorMainTest
+6月 21, 2026 1:43:25 上午 com.example.echooperator.EchoOperatorMain stop
+信息: Shutting down Echo Operator
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.338 s -- in com.example.echooperator.EchoOperatorMainTest
+[INFO] Running com.example.echooperator.api.v1.CrdGenerationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.example.echooperator.api.v1.CrdGenerationTest
+[INFO] Running com.example.echooperator.controller.EchoReconcilerTest
+6月 21, 2026 1:43:25 上午 com.example.echooperator.controller.EchoReconciler reconcile
+信息: Cleaning up Echo resource echo-sample
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in com.example.echooperator.controller.EchoReconcilerTest
+[INFO] Running com.example.echooperator.controller.EdgeCaseTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.example.echooperator.controller.EdgeCaseTest
+[INFO] Running com.example.echooperator.converter.EchoConverterTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.example.echooperator.converter.EchoConverterTest
+[INFO] Running com.example.echooperator.webhook.EchoMutatingWebhookTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.example.echooperator.webhook.EchoMutatingWebhookTest
+[INFO] Running com.example.echooperator.webhook.EchoValidatingWebhookTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.example.echooperator.webhook.EchoValidatingWebhookTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ echo-operator ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ echo-operator ---
+[INFO] Including com.huawei.dcs.modelengine:operator-framework:jar:0.1.0-SNAPSHOT in the shaded jar.
+[INFO] Including io.micrometer:micrometer-registry-prometheus:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-core:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-commons:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-observation:jar:1.14.10 in the shaded jar.
+[INFO] Including org.hdrhistogram:HdrHistogram:jar:2.2.2 in the shaded jar.
+[INFO] Including org.latencyutils:LatencyUtils:jar:2.0.3 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-core:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-model:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-config:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-tracer-common:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-formats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-textformats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client-api:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-core:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-common:jar:7.7.0 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.21 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-gatewayapi:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-resource:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-rbac:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-admissionregistration:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apps:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-autoscaling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apiextensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-batch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-certificates:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-coordination:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-discovery:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-events:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-extensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-flowcontrol:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-networking:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-metrics:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-policy:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-scheduling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-storageclass:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-node:jar:7.7.0 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.snakeyaml:snakeyaml-engine:jar:3.0.1 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.21.3 in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.5 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-databind:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-core:jar:2.21.3 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-httpclient-vertx:jar:7.7.0 in the shaded jar.
+[INFO] Including io.vertx:vertx-core:jar:4.5.27 in the shaded jar.
+[INFO] Including io.netty:netty-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-buffer:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport-native-unix-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler-proxy:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-socks:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http2:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.vertx:vertx-web-client:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-web-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.fabric8:zjsonpatch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:generator-annotations:jar:7.7.0 in the shaded jar.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] generator-annotations-7.7.0.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/jandex.idx
+[WARNING] HdrHistogram-2.2.2.jar, slf4j-api-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/io.netty.versions.properties
+[WARNING] jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] HdrHistogram-2.2.2.jar, LatencyUtils-2.0.3.jar, echo-operator-0.1.0-SNAPSHOT.jar, generator-annotations-7.7.0.jar, jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar, netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar, operator-framework-0.1.0-SNAPSHOT.jar, prometheus-metrics-config-1.3.10.jar, prometheus-metrics-core-1.3.10.jar, prometheus-metrics-exposition-formats-1.3.10.jar, prometheus-metrics-exposition-textformats-1.3.10.jar, prometheus-metrics-model-1.3.10.jar, prometheus-metrics-tracer-common-1.3.10.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar, snakeyaml-engine-3.0.1.jar, vertx-auth-common-4.5.27.jar, vertx-core-4.5.27.jar, vertx-web-client-4.5.27.jar, vertx-web-common-4.5.27.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar with /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.427 s
+[INFO] Finished at: 2026-06-21T01:43:27+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== Integration 3: Helm template with webhook configs ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=true > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:27+08:00
+RESULT: PASS
+
+=== Integration 3: ValidatingWebhookConfiguration ===
+Pattern: ^kind: ValidatingWebhookConfiguration$
+RESULT: PASS
+
+=== Integration 3: MutatingWebhookConfiguration ===
+Pattern: ^kind: MutatingWebhookConfiguration$
+RESULT: PASS
+
+=== Integration 3: Webhook Service ===
+Pattern: targetPort: webhook
+RESULT: PASS
+
+=== Integration 3: TLS Secret mount ===
+Pattern: secretName: echo-operator-webhook-tls
+RESULT: PASS
+
+=== Integration 3: Conversion webhook block ===
+Pattern: ^  conversion:
+RESULT: PASS
+
+=== Integration 4: Smoke-test script syntax ===
+Command: bash -n example/echo-operator/scripts/smoke-test.sh
+Timestamp: 2026-06-21T01:43:27+08:00
+RESULT: PASS
+
+==============================================
+Edge Case Checks
+==============================================
+=== Edge 1: Missing CA bundle fails fast ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=WebhookSelfRegistrationTest#registerFailsFastWhenCaBundleIsMissing
+Timestamp: 2026-06-21T01:43:27+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.584 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.370 s
+[INFO] Finished at: 2026-06-21T01:43:29+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== Edge 2: Unregistered conversion version returns failure ===
+Command: mvn -f operator/framework/pom.xml test -Dtest=ConversionHandlerTest#unregisteredVersionPairReturnsFailureStatus
+Timestamp: 2026-06-21T01:43:29+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.330 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.537 s
+[INFO] Finished at: 2026-06-21T01:43:31+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== Edge 3: Mutating webhook defaults blank message ===
+Command: mvn -f example/echo-operator/pom.xml test -Dtest=EchoMutatingWebhookTest#defaultsBlankMessageBeforeValidationSeesTheResource
+Timestamp: 2026-06-21T01:43:31+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResource.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceSpec.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResourceStatus.java already exists, overwriting
+[WARNING] File /Volumes/work/Project/java-operator-framework/example/echo-operator/target/generated-sources/java/com/example/v1alpha2/EchoResourceStatus.java already exists, overwriting
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha2' with com.example.echooperator.api.v2.EchoResource (spec: com.example.echooperator.api.v2.EchoSpec / status com.example.echooperator.api.v2.EchoStatus)...
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/converter/EchoConverterTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.example.echooperator.webhook.EchoMutatingWebhookTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.example.echooperator.webhook.EchoMutatingWebhookTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.958 s
+[INFO] Finished at: 2026-06-21T01:43:33+08:00
+[INFO] ------------------------------------------------------------------------
+RESULT: PASS
+
+=== Edge 4: Helm template with createWebhookConfigurations=false ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=false > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:33+08:00
+RESULT: PASS
+
+=== Edge 4: No ValidatingWebhookConfiguration ===
+Pattern (must be absent): ^kind: ValidatingWebhookConfiguration$
+RESULT: PASS
+
+=== Edge 4: No MutatingWebhookConfiguration ===
+Pattern (must be absent): ^kind: MutatingWebhookConfiguration$
+RESULT: PASS
+
+=== Edge 5: Helm template default values ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:33+08:00
+RESULT: PASS
+
+=== Edge 5: Webhook Service targetPort ===
+Pattern: targetPort: webhook
+RESULT: PASS
+
+=== Edge 5: Webhook containerPort 8443 ===
+Pattern: containerPort: 8443
+RESULT: PASS
+
+=== Edge 5: TLS Secret volume ===
+Pattern: secretName: echo-operator-webhook-tls
+RESULT: PASS
+
+=== Edge 6: Helm template with createWebhookConfigurations=true ===
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=true > /tmp/echo-rendered-f3.yaml
+Timestamp: 2026-06-21T01:43:33+08:00
+RESULT: PASS
+
+=== Edge 6: ValidatingWebhookConfiguration rendered ===
+Pattern: ^kind: ValidatingWebhookConfiguration$
+RESULT: PASS
+
+=== Edge 6: MutatingWebhookConfiguration rendered ===
+Pattern: ^kind: MutatingWebhookConfiguration$
+RESULT: PASS
+
+=== Edge 6: Conversion webhook block ===
+Pattern: ^  conversion:
+RESULT: PASS
+
+==============================================
+Summary
+==============================================
+Scenarios [16/16 pass]
+Integration [4/4]
+Edge Cases [6/6 tested]
+VERDICT: APPROVE
+Finished: 2026-06-21T01:43:33+08:00

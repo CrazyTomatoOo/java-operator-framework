@@ -1,0 +1,27 @@
+{{- if and .Values.webhook.enabled .Values.webhook.createWebhookConfigurations -}}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "echo-operator.fullname" . }}-validating
+  labels:
+    {{- include "echo-operator.labels" . | nindent 4 }}
+webhooks:
+  - name: {{ printf "validating.%s" .Values.webhook.admissionName | quote }}
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    failurePolicy: {{ .Values.webhook.failurePolicy }}
+    timeoutSeconds: {{ .Values.webhook.timeoutSeconds }}
+    clientConfig:
+      service:
+        namespace: {{ default .Release.Namespace .Values.webhook.service.namespace | quote }}
+        name: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
+        path: {{ printf "/validate/%s" .Values.webhook.admissionName | quote }}
+        port: {{ .Values.webhook.service.port }}
+      caBundle: {{ .Values.webhook.caBundle | b64enc | quote }}
+    rules:
+      - apiGroups: ["example.com"]
+        apiVersions: ["v1alpha1", "v1alpha2"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["echoresources"]
+        scope: Namespaced
+{{- end }}

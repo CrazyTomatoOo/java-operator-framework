@@ -1,0 +1,19 @@
+=== task-12-docs-check ===
+--- ControllerBuilder mentions ---
+docs/dev-guide.md:Register a controller with a secondary `ConfigMap` watch using `ControllerBuilder`:
+docs/dev-guide.md:import com.huawei.dcs.modelengine.operator.framework.ControllerBuilder;
+docs/dev-guide.md:ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+docs/dev-guide.md:ControllerBuilder.forResource(MyResource.class)
+docs/dev-guide.md:This creates a registration with no secondary watches. You only need to switch to `ControllerBuilder` when you want to add secondary resource watches.
+operator/framework/README.md:### ControllerBuilder
+operator/framework/README.md:Use `ControllerBuilder` to register a controller with secondary resource watches. This example watches `ConfigMap` resources that are linked to a `MyResource` by the `my-resource-name` label:
+operator/framework/README.md:import com.huawei.dcs.modelengine.operator.framework.ControllerBuilder;
+operator/framework/README.md:ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+--- Trigger mentions ---
+docs/dev-guide.md:Each `Request` carries one or more `Trigger` objects describing what caused the reconciliation. The reconciler can inspect them to decide what changed.
+docs/dev-guide.md:import com.huawei.dcs.modelengine.operator.framework.reconciler.Trigger;
+docs/dev-guide.md:import com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerRole;
+docs/dev-guide.md:    } else if (request.trigger().map(Trigger::role).orElse(null) == TriggerRole.SECONDARY) {
+docs/dev-guide.md:        for (Trigger trigger : request.triggers()) {
+docs/dev-guide.md:A `Trigger` exposes the event type, resource kind, namespace, name, UID, and role (`TriggerRole.PRIMARY` or `TriggerRole.SECONDARY`).
+EXIT_CODE: 0

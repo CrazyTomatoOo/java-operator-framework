@@ -1,0 +1,36 @@
+=== final-task-18-scripts-executable.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && ls -l example/echo-operator/scripts/*.sh
+Started: 2026-06-18T17:48:00+08:00
+-rwx------  1 crazytomatooo  staff   318  6月 18 16:45 example/echo-operator/scripts/build-image.sh
+-rwx------  1 crazytomatooo  staff   311  6月 18 17:01 example/echo-operator/scripts/build.sh
+-rwx------  1 crazytomatooo  staff  1167  6月 18 17:01 example/echo-operator/scripts/deploy.sh
+-rwx------  1 crazytomatooo  staff   753  6月 18 16:31 example/echo-operator/scripts/local-run.sh
+-rwx------  1 crazytomatooo  staff   742  6月 18 16:47 example/echo-operator/scripts/package-helm.sh
+-rwx------  1 crazytomatooo  staff  5940  6月 18 17:33 example/echo-operator/scripts/smoke-test.sh
+-rwx------  1 crazytomatooo  staff   460  6月 18 17:01 example/echo-operator/scripts/undeploy.sh
+Finished: 2026-06-18T17:48:00+08:00
+EXIT_CODE: 0
+=== final-task-18-scripts-executable.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && ls -l example/echo-operator/scripts/*.sh
+Started: 2026-06-20T12:57:23+08:00
+-rwx------  1 crazytomatooo  staff   318  6月 18 16:45 example/echo-operator/scripts/build-image.sh
+-rwx------  1 crazytomatooo  staff   311  6月 18 17:01 example/echo-operator/scripts/build.sh
+-rwx------  1 crazytomatooo  staff  1167  6月 18 17:01 example/echo-operator/scripts/deploy.sh
+-rwx------  1 crazytomatooo  staff   728  6月 18 18:07 example/echo-operator/scripts/local-run.sh
+-rwx------  1 crazytomatooo  staff   742  6月 18 16:47 example/echo-operator/scripts/package-helm.sh
+-rwx------  1 crazytomatooo  staff  5940  6月 18 17:33 example/echo-operator/scripts/smoke-test.sh
+-rwx------  1 crazytomatooo  staff   460  6月 18 17:01 example/echo-operator/scripts/undeploy.sh
+Finished: 2026-06-20T12:57:23+08:00
+EXIT_CODE: 0
+=== final-task-18-scripts-executable.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && ls -l example/echo-operator/scripts/*.sh
+Started: 2026-06-20T13:03:26+08:00
+-rwx------  1 crazytomatooo  staff   318  6月 18 16:45 example/echo-operator/scripts/build-image.sh
+-rwx------  1 crazytomatooo  staff   311  6月 18 17:01 example/echo-operator/scripts/build.sh
+-rwx------  1 crazytomatooo  staff  1167  6月 18 17:01 example/echo-operator/scripts/deploy.sh
+-rwx------  1 crazytomatooo  staff   728  6月 18 18:07 example/echo-operator/scripts/local-run.sh
+-rwx------  1 crazytomatooo  staff   742  6月 18 16:47 example/echo-operator/scripts/package-helm.sh
+-rwx------  1 crazytomatooo  staff  5940  6月 18 17:33 example/echo-operator/scripts/smoke-test.sh
+-rwx------  1 crazytomatooo  staff   460  6月 18 17:01 example/echo-operator/scripts/undeploy.sh
+Finished: 2026-06-20T13:03:26+08:00
+EXIT_CODE: 0

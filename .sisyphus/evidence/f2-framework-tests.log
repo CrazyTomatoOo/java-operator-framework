@@ -1,0 +1,125 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.170 s -- in com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/crazytomatooo/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.4/byte-buddy-agent-1.15.4.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.575 s -- in com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTriggerTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTriggerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.049 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTypeTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTypeTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceMapperTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceMapperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.MappersTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.huawei.dcs.modelengine.operator.framework.source.MappersTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.ReconciliationQueueTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.source.ReconciliationQueueTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.source.SecondaryEventIntegrationTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.huawei.dcs.modelengine.operator.framework.source.SecondaryEventIntegrationTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.364 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+7月 11, 2026 3:13:46 下午 com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher reloadWhenFingerprintChanged
+警告: Ignoring invalid TLS certificate files and keeping previous SSL context
+java.io.IOException: Failed to load TLS certificate files
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:81)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.reload(ReloadableSslContext.java:63)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.reloadWhenFingerprintChanged(CertWatcher.java:160)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher.watchLoop(CertWatcher.java:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.security.cert.CertificateException: No certificate data found
+	at java.base/sun.security.provider.X509Factory.parseX509orPKCS7Cert(X509Factory.java:460)
+	at java.base/sun.security.provider.X509Factory.engineGenerateCertificates(X509Factory.java:360)
+	at java.base/java.security.cert.CertificateFactory.generateCertificates(CertificateFactory.java:480)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.readCertificates(ReloadableSslContext.java:129)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.loadKeyManager(ReloadableSslContext.java:86)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.ReloadableSslContext.buildSslContext(ReloadableSslContext.java:72)
+	... 4 more
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.870 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateGeneratorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.374 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateGeneratorTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.123 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.691 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.082 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.ControllerBuilderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.ControllerBuilderTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.OperatorSecondaryWatchTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorSecondaryWatchTest
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.OperatorBackwardCompatibilityTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorBackwardCompatibilityTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 101, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.875 s
+[INFO] Finished at: 2026-07-11T15:13:49+08:00
+[INFO] ------------------------------------------------------------------------

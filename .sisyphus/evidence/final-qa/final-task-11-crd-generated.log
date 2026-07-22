@@ -1,0 +1,18 @@
+=== final-task-11-crd-generated.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f example/echo-operator/pom.xml clean compile -q && ls example/echo-operator/target/classes/META-INF/fabric8/
+Started: 2026-06-18T17:47:26+08:00
+echoresources.example.com-v1.yml
+Finished: 2026-06-18T17:47:28+08:00
+EXIT_CODE: 0
+=== final-task-11-crd-generated.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f example/echo-operator/pom.xml clean compile -q && ls example/echo-operator/target/classes/META-INF/fabric8/
+Started: 2026-06-20T12:56:52+08:00
+echoresources.example.com-v1.yml
+Finished: 2026-06-20T12:56:54+08:00
+EXIT_CODE: 0
+=== final-task-11-crd-generated.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f example/echo-operator/pom.xml clean compile -q && ls example/echo-operator/target/classes/META-INF/fabric8/
+Started: 2026-06-20T13:02:53+08:00
+echoresources.example.com-v1.yml
+Finished: 2026-06-20T13:02:55+08:00
+EXIT_CODE: 0

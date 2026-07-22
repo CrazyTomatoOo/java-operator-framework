@@ -1,0 +1,62 @@
+Evidence generation summary - operator-sdk-advanced-features
+2026年 6月20日 星期六 21时10分36秒 CST
+
+total 27648
+drwx------  1 crazytomatooo  staff  262144  6月 20 21:08 .
+drwx------  1 crazytomatooo  staff  262144  6月 18 17:46 ..
+-rwx------  1 crazytomatooo  staff    8992  6月 20 13:05 f1-compliance-audit.log
+-rwx------  1 crazytomatooo  staff    3745  6月 20 12:57 f2-code-quality.log
+-rwx------  1 crazytomatooo  staff    3128  6月 20 12:59 f4-scope-fidelity.log
+drwx------  1 crazytomatooo  staff  262144  6月 18 17:48 final-qa
+-rwx------  1 crazytomatooo  staff     110  6月 20 21:10 summary.log
+-rwx------  1 crazytomatooo  staff   39659  6月 18 14:56 task-1-mvn-install.log
+-rwx------  1 crazytomatooo  staff    2211  6月 20 21:06 task-1-reloadable-config.log
+-rwx------  1 crazytomatooo  staff    5038  6月 20 21:08 task-10-converter.log
+-rwx------  1 crazytomatooo  staff    5549  6月 18 17:58 task-10-sdk-tests.log
+-rwx------  1 crazytomatooo  staff    4846  6月 20 21:08 task-11-crd-conversion.log
+-rwx------  1 crazytomatooo  staff     967  6月 18 16:07 task-11-crd-generated.yml
+-rwx------  1 crazytomatooo  staff     421  6月 18 16:07 task-11-java-generated.log
+-rwx------  1 crazytomatooo  staff    2425  6月 20 21:08 task-12-conversion-handler.log
+-rwx------  1 crazytomatooo  staff    4831  6月 18 16:13 task-12-invalid-replicas.log
+-rwx------  1 crazytomatooo  staff    4831  6月 18 16:13 task-12-reconciler-create.log
+-rwx------  1 crazytomatooo  staff    6053  6月 20 21:08 task-13-echo-conversion.log
+-rwx------  1 crazytomatooo  staff    4967  6月 18 16:22 task-13-finalizer.log
+-rwx------  1 crazytomatooo  staff    4967  6月 18 16:22 task-13-status-update.log
+-rwx------  1 crazytomatooo  staff    2697  6月 20 21:08 task-14-conversion-tests.log
+-rwx------  1 crazytomatooo  staff    4870  6月 18 16:38 task-14-main-test.log
+-rwx------  1 crazytomatooo  staff    4113  6月 18 16:50 task-15-docker-build.log
+-rwx------  1 crazytomatooo  staff    1282  6月 20 21:08 task-15-helm-webhook.log
+-rwx------  1 crazytomatooo  staff    5330  6月 20 21:08 task-16-docs.log
+-rwx------  1 crazytomatooo  staff     175  6月 18 16:54 task-16-helm-lint.log
+-rwx------  1 crazytomatooo  staff    5937  6月 18 16:53 task-16-helm-render.yaml
+-rwx------  1 crazytomatooo  staff    1646  6月 20 21:08 task-17-echo-readme.log
+-rwx------  1 crazytomatooo  staff    4078  6月 18 17:01 task-17-example-tests.log
+-rwx------  1 crazytomatooo  staff    4108  6月 18 17:05 task-18-build-image.log
+-rwx------  1 crazytomatooo  staff    6834  6月 18 17:05 task-18-build-script.log
+-rwx------  1 crazytomatooo  staff    1282  6月 20 21:08 task-18-helm-verify.log
+-rwx------  1 crazytomatooo  staff     321  6月 18 17:04 task-18-scripts-executable.log
+-rwx------  1 crazytomatooo  staff     788  6月 18 17:07 task-19-docs-exist.log
+-rwx------  1 crazytomatooo  staff       0  6月 20 21:08 task-19-smoke-test.log
+-rwx------  1 crazytomatooo  staff    3192  6月 20 21:06 task-2-config-watcher.log
+-rwx------  1 crazytomatooo  staff    1027  6月 18 15:10 task-2-example-compile.log
+-rwx------  1 crazytomatooo  staff     217  6月 20 13:03 task-20-endpoints.log
+-rwx------  1 crazytomatooo  staff   19650  6月 20 13:03 task-20-smoke-test.log
+-rwx------  1 crazytomatooo  staff    6153  6月 20 21:06 task-3-hot-reload.log
+-rwx------  1 crazytomatooo  staff    2898  6月 18 15:19 task-3-reconciler-interface-test.log
+-rwx------  1 crazytomatooo  staff    2217  6月 18 15:29 task-3-resource-event-source-test.log
+-rwx------  1 crazytomatooo  staff    2197  6月 18 15:28 task-4-launcher-test.log
+-rwx------  1 crazytomatooo  staff    2207  6月 20 21:06 task-4-webhook-server.log
+-rwx------  1 crazytomatooo  staff    2419  6月 20 21:07 task-5-admission-handler.log
+-rwx------  1 crazytomatooo  staff    2457  6月 18 15:10 task-5-helper-tests.log
+-rwx------  1 crazytomatooo  staff    4092  6月 18 15:45 task-6-leader-test.log
+-rwx------  1 crazytomatooo  staff    3158  6月 20 21:07 task-6-self-registration.log
+-rwx------  1 crazytomatooo  staff    3768  6月 20 21:07 task-7-cert-reload.log
+-rwx------  1 crazytomatooo  staff    2199  6月 18 15:47 task-7-rate-limiter-test.log
+-rwx------  1 crazytomatooo  staff    3015  6月 18 15:46 task-7-retry-test.log
+-rwx------  1 crazytomatooo  staff    2207  6月 18 15:52 task-8-metrics-test.log
+-rwx------  1 crazytomatooo  staff   10179  6月 20 21:08 task-8-sdk-webhook-tests.log
+-rwx------  1 crazytomatooo  staff    5264  6月 20 21:08 task-9-echo-validating.log
+-rwx------  1 crazytomatooo  staff    2203  6月 18 15:52 task-9-health-test.log
+
+Total task evidence files:
+      46

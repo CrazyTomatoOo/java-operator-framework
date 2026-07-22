@@ -1,0 +1,7 @@
+=== T19 Smoke Test ===
+Step 1: Syntax check
+SYNTAX_EXIT:0
+
+Step 2: Cluster-based optional smoke test
+SKIPPED: Cluster is available but TLS secret 'echo-operator-webhook-tls' is not present. Manual TLS secret is required by design (no cert-manager). Cluster-based reconciliation/webhook checks skipped.
+CLUSTER_EXIT:SKIPPED

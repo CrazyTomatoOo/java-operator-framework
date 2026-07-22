@@ -1,0 +1,83 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ echo-operator ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.257 s
+[INFO] Finished at: 2026-06-18T17:05:45+08:00
+[INFO] ------------------------------------------------------------------------
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 314B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
+#2 DONE 2.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 128B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/eclipse-temurin:21-jre-alpine@sha256:704db3c40204a44f471191446ddd9cda5d60dab40f0e15c6507b815ed897238b
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 19.24kB done
+#5 DONE 0.0s
+
+#6 [2/5] WORKDIR /app
+#6 CACHED
+
+#7 [3/5] RUN addgroup -S echo && adduser -S echo -G echo
+#7 CACHED
+
+#8 [4/5] COPY target/echo-operator-0.1.0-SNAPSHOT.jar /app/echo-operator.jar
+#8 DONE 0.0s
+
+#9 [5/5] RUN chown -R echo:echo /app
+#9 DONE 0.1s
+
+#10 exporting to image
+#10 exporting layers done
+#10 writing image sha256:4f2d7e33710a18377da105623a937224f44a487ed4a3b5b11d531e45d9ccea2d done
+#10 naming to docker.io/example/echo-operator:latest done
+#10 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/n5pco4w4j870stlz85e13uplj

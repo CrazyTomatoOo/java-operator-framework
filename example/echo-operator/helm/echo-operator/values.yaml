@@ -1,0 +1,79 @@
+# Default values for echo-operator.
+# This is a YAML-formatted file.
+
+image:
+  repository: example/echo-operator
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+rbac:
+  # Specifies whether RBAC resources (Role, RoleBinding) should be created.
+  create: true
+
+metrics:
+  # Port exposed by the operator for metrics and health endpoints.
+  port: 8080
+
+webhook:
+  # Enable admission/conversion webhook exposure and cluster-scoped webhook RBAC.
+  enabled: true
+  # Port the operator listens on for HTTPS admission and conversion webhooks.
+  port: 8443
+  # CA bundle for conversion/admission webhook client configs. Helm base64-encodes this value.
+  caBundle: ""
+  # Conversion webhook path used by the CRD template.
+  path: /convert
+  # Operator self-registers webhook configurations by default. Set true to pre-create via Helm.
+  createWebhookConfigurations: false
+  failurePolicy: Fail
+  timeoutSeconds: 10
+  admissionName: echo.example.com
+  tls:
+    # TLS Secret is expected to be created externally by a cluster admin or external tooling.
+    secretName: echo-operator-webhook-tls
+  service:
+    # Defaults to the release namespace when empty.
+    namespace: ""
+    # Defaults to the operator fullname when empty.
+    name: ""
+    # Service port used by CRD conversion and admission webhook client configs.
+    port: 443
+
+operator:
+  # Namespace the operator watches. Empty string means use the pod namespace
+  # via the Kubernetes downward API.
+  namespace: ""
+
+leaderElection:
+  # Enable leader election for operator HA.
+  enabled: false
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podLabels: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

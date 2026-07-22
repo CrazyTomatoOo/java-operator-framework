@@ -1,0 +1,25 @@
+11 matches in 1 files:
+
+example/echo-operator/README.md:120:...or registers a validating webhook, a mutating webhook, and a conversion webhook ...
+example/echo-operator/README.md:122:### Validating webhook
+example/echo-operator/README.md:131:### Mutating webhook
+example/echo-operator/README.md:138:### Conversion webhook
+example/echo-operator/README.md:183:- `WEBHOOK_PORT` - port for the TLS webhook server, default `8443`
+example/echo-operator/README.md:195:## Helm webhook values
+example/echo-operator/README.md:197:The chart supports these webhook-related values in `values.yaml`:
+example/echo-operator/README.md:200:webhook:
+example/echo-operator/README.md:204:createWebhookConfigurations: false   # set true to pre-create webhook configs vi...
+example/echo-operator/README.md:209:secretName: echo-operator-webhook-tls
+example/echo-operator/README.md:222:...cert-manager. When `createWebhookConfigurations` is `false` (the default), the o...
+---
+8 matches in 1 files:
+
+example/echo-operator/README.md:143:- `example.com/v1alpha2` is the storage version and adds `spec.logLevel`.
+example/echo-operator/README.md:145:...rting from `v1alpha1` to `v1alpha2`, `logLevel` defaults to `INFO`. When convert...
+example/echo-operator/README.md:154:@Version(value = "v1alpha2", storage = true, served = true)
+example/echo-operator/README.md:224:## Example CR for v1alpha2
+example/echo-operator/README.md:226:You can also create a `v1alpha2` CR:
+example/echo-operator/README.md:229:apiVersion: example.com/v1alpha2
+example/echo-operator/README.md:234:message: "Hello from v1alpha2"
+example/echo-operator/README.md:245:Because `v1alpha2` is the storage version, reading the resource back will show `...
+EXIT:0

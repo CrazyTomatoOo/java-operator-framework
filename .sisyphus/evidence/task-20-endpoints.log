@@ -1,0 +1,13 @@
+--- /healthz ---
+OK
+HTTP 200
+
+--- /readyz ---
+OK
+HTTP 200
+
+--- /metrics (first 30 lines) ---
+# HELP echo_reconcile_total  
+# TYPE echo_reconcile_total counter
+echo_reconcile_total{namespace="echo-operator-test"} 2.0
+

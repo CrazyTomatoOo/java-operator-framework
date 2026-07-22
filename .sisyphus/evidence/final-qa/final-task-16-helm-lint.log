@@ -1,0 +1,27 @@
+=== final-task-16-helm-lint.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && helm lint example/echo-operator/helm/echo-operator
+Started: 2026-06-18T17:47:50+08:00
+==> Linting example/echo-operator/helm/echo-operator
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Finished: 2026-06-18T17:47:50+08:00
+EXIT_CODE: 0
+=== final-task-16-helm-lint.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && helm lint example/echo-operator/helm/echo-operator
+Started: 2026-06-20T12:57:13+08:00
+==> Linting example/echo-operator/helm/echo-operator
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Finished: 2026-06-20T12:57:13+08:00
+EXIT_CODE: 0
+=== final-task-16-helm-lint.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && helm lint example/echo-operator/helm/echo-operator
+Started: 2026-06-20T13:03:15+08:00
+==> Linting example/echo-operator/helm/echo-operator
+[INFO] Chart.yaml: icon is recommended
+
+1 chart(s) linted, 0 chart(s) failed
+Finished: 2026-06-20T13:03:15+08:00
+EXIT_CODE: 0

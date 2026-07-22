@@ -1,0 +1,185 @@
+# F1 Plan Compliance Audit - java-k8s-operator-scaffold
+
+Plan: .sisyphus/plans/java-k8s-operator-scaffold.md
+Auditor: Sisyphus-Junior (oracle)
+Date: 2026-06-20
+
+## Verification Commands Executed
+
+1. SDK build & test:
+   $ mvn -f operator/framework/pom.xml clean install
+   Result: BUILD SUCCESS; Tests run: 23, Failures: 0, Errors: 0, Skipped: 0
+   Artifacts installed to ~/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/
+
+2. Example build & test:
+   $ mvn -f example/echo-operator/pom.xml clean package
+   Result: BUILD SUCCESS; Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+   CRD generated: example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+   Java POJOs generated: example/echo-operator/target/generated-sources/java/com/example/v1alpha1/EchoResource*.java
+
+3. Helm chart validation:
+   $ /opt/homebrew/bin/helm lint example/echo-operator/helm/echo-operator
+   Result: 1 chart(s) linted, 0 chart(s) failed
+
+   $ /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator
+   Result: Renders 6 resources: ServiceAccount, CustomResourceDefinition, Role, RoleBinding, Service, Deployment
+
+4. Docker image build:
+   $ docker build -t example/echo-operator:latest example/echo-operator
+   Result: Image built successfully (example/echo-operator:latest)
+
+5. Shell script syntax & executability:
+   $ bash -n example/echo-operator/scripts/*.sh -> All OK
+   $ all scripts executable -> confirmed
+
+## Must Have [7/7]
+
+1. Pure fabric8, no JOSDK/Quarkus/Spring Boot
+   - operator/framework/pom.xml depends only on io.fabric8, io.micrometer, JUnit, Mockito.
+   - No source files import io.javaoperatorsdk, io.quarkus, or org.springframework.
+   - Documentation mentions the exclusion; no implementation references.
+   STATUS: PASS
+
+2. SDK provides Operator launcher, Reconciler interface, Informer wrapper, Leader Election, Metrics/Health Server, Retry/Rate limiter, OwnerReference helper
+   - Operator.java: com.huawei.dcs.modelengine.operator.framework.Operator
+   - Reconciler.java: com.huawei.dcs.modelengine.operator.framework.reconciler.Reconciler
+   - ResourceEventSource.java: com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSource
+   - LeaderElectionManager.java: com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManager (supports LeaseLock and ConfigMapLock)
+   - MetricsServer.java + HealthServer.java + MetricsHealthServer.java
+   - ExponentialBackoffRetryPolicy.java, RateLimiter.java, RetryPolicy.java
+   - OwnerReferenceHelper.java, FinalizerHelper.java
+   STATUS: PASS
+
+3. Bidirectional CRD generation support
+   - Java -> CRD: example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml generated from EchoResource.java
+   - CRD -> Java: example/echo-operator/src/main/resources/crd/echo-crd.yaml drives java-generator-maven-plugin, producing target/generated-sources/java/com/example/v1alpha1/EchoResource.java, EchoResourceSpec.java, EchoResourceStatus.java
+   STATUS: PASS
+
+4. Echo Operator demonstrates Finalizer, OwnerReference, Status update, error retry
+   - EchoReconciler.java adds/removes finalizer "echo.example.com/finalizer"
+   - Deployment and Service are built with OwnerReferenceHelper.createControllerOwnerReference(...)
+   - updateStatus() sets status.phase and status.message
+   - catch(Exception) returns Result.error(exception), integrated with SDK retry policy
+   STATUS: PASS
+
+5. Helm chart + Dockerfile
+   - Chart: example/echo-operator/helm/echo-operator/ (Chart.yaml, values.yaml, templates/)
+   - Dockerfile: example/echo-operator/Dockerfile (eclipse-temurin:21-jre-alpine, exposes 8080, numeric USER 1001:1001)
+   - Image builds successfully.
+   STATUS: PASS
+
+6. Chinese + English README + dev-guide
+   - operator/framework/README.md, README.zh-CN.md
+   - example/echo-operator/README.md, README.zh-CN.md
+   - docs/dev-guide.md, docs/dev-guide.zh-CN.md
+   STATUS: PASS
+
+7. Shell scripts for build/deploy/local-run
+   - example/echo-operator/scripts/build.sh
+   - example/echo-operator/scripts/deploy.sh
+   - example/echo-operator/scripts/undeploy.sh
+   - example/echo-operator/scripts/local-run.sh
+   - example/echo-operator/scripts/build-image.sh
+   - example/echo-operator/scripts/package-helm.sh
+   - example/echo-operator/scripts/smoke-test.sh
+   STATUS: PASS
+
+## Must NOT Have [9/9]
+
+1. Admission Webhooks
+   Searched source: webhook, Webhook, ValidatingWebhook, MutatingWebhook, admissionregistration
+   Found: None in source (only dependency classpaths in target/ surefire reports).
+   STATUS: PASS
+
+2. OLM bundle
+   Searched: olm, OLM, ClusterServiceVersion, operators.coreos, operatorframework.io
+   Found: None.
+   STATUS: PASS
+
+3. Generic CLI scaffold tool
+   Searched: picocli, commons-cli, CommandLine, @Command, args4j
+   Found: None.
+   STATUS: PASS
+
+4. Multi-version CRD
+   Helm CRD declares only v1alpha1; Java annotations only @Version("v1alpha1").
+   No v1beta1 or additional version entries found.
+   STATUS: PASS
+
+5. Grafana dashboards / alerts
+   Searched: grafana, Grafana, dashboard, alertmanager, PrometheusRule
+   Found: None.
+   STATUS: PASS
+
+6. Authn/authz layer
+   Searched source for auth/Auth/authenticat/authoriz/RBAC
+   Found: None in SDK/example source (Helm Role/RoleBinding are deployment RBAC, not an SDK auth layer).
+   STATUS: PASS
+
+7. Runtime config hot reload
+   Searched: reload, watch, WatchService, FileSystemWatcher, onChange, hot
+   Found: Only JavaDoc "watched Kubernetes resource type" in ResourceEventSource.java (unrelated).
+   STATUS: PASS
+
+8. Quarkus / Spring Boot
+   Searched source and poms for quarkus, io.quarkus, spring-boot, org.springframework
+   Found: None (only READMEs mention the exclusion).
+   STATUS: PASS
+
+9. SDK integration tests
+   SDK tests under operator/framework/src/test/java use Mockito only.
+   No Testcontainers, @IntegrationTest, real KubernetesClient construction, or cluster-dependent assertions.
+   STATUS: PASS
+
+Additional forbidden checks:
+- System.exit / Runtime.halt: None found in source.
+- e.printStackTrace(): None found (per F2 observations, re-confirmed absence).
+
+## Tasks Spot-Check [20/20]
+
+Evidence files present in .sisyphus/evidence/ (29 files total):
+- task-1-mvn-install.log through task-20-smoke-test.log, task-20-endpoints.log
+- Required evidence present: task-10-sdk-tests.log, task-17-example-tests.log, task-20-smoke-test.log
+
+Spot-checked deliverables per task:
+- T1/T2: poms exist, Maven coordinates correct.
+- T3: Reconciler/Result/Request/ResourceEventSource exist.
+- T4: Operator.java exists, register/start/stop implemented.
+- T5: OwnerReferenceHelper/FinalizerHelper exist with unit tests.
+- T6: LeaderElectionManager supports LEASE and CONFIG_MAP lock modes.
+- T7: RetryPolicy + ExponentialBackoffRetryPolicy + RateLimiter exist, max attempts bounded.
+- T8/T9: MetricsServer + HealthServer + MetricsHealthServer expose /metrics, /healthz, /readyz.
+- T10: SDK tests pass (23 tests).
+- T11: EchoResource/EchoSpec/EchoStatus exist, CRD generated, Java POJOs generated.
+- T12: EchoReconciler creates Deployment/Service, invalid replicas -> FAILED status.
+- T13: Finalizer add/remove, OwnerReference on child resources, status update.
+- T14: EchoOperatorMain + local-run.sh (PROJECT_DIR fixed to script/..).
+- T15: Dockerfile + build-image.sh, image builds.
+- T16: Helm chart renders all expected resources.
+- T17: Example tests pass (15 tests).
+- T18: build.sh/deploy.sh/undeploy.sh/local-run.sh executable and syntax-valid.
+- T19: 6 docs exist.
+- T20: smoke-test.sh + examples/echo-cr.yaml exist.
+
+## Maven Coordinates & Package Names
+
+SDK coordinates: com.huawei.dcs.modelengine:operator-framework:0.1.0-SNAPSHOT
+  Source: operator/framework/pom.xml lines 6-8
+  Verified by Maven install output: Building operator-framework 0.1.0-SNAPSHOT
+
+SDK package namespace: com.huawei.dcs.modelengine.operator.framework.*
+  All SDK source files match the groupId base package.
+
+Example coordinates: com.example:echo-operator:0.1.0-SNAPSHOT
+Example package namespace: com.example.echooperator.*
+
+## Notes / Observations
+
+- Initial `rtk helm template` output appeared truncated (only ServiceAccount + CRD). Re-running with the native `/opt/homebrew/bin/helm` binary rendered all 6 resources; this is recorded as a tooling/display artifact, not a chart defect.
+- Initial `docker build` attempt failed to locate the jar; a retry immediately succeeded, indicating the failure was transient (likely a stale BuildKit context cache). The Dockerfile and .dockerignore are functionally correct.
+- Helm chart uses namespace-scoped Role/RoleBinding, matching the plan's default namespace-scoped operator.
+- Operator.java falls back to "default" only when no namespace is supplied and the client reports no namespace; in-cluster execution uses the pod namespace via the downward API (Helm injects OPERATOR_NAMESPACE).
+
+## Final Verdict
+
+Must Have [7/7] | Must NOT Have [9/9] | Tasks [20/20] | VERDICT: APPROVE

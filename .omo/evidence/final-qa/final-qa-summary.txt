@@ -1,0 +1,39 @@
+=== Final Verification Wave F3 Summary ===
+Total scenarios: 31
+Passed: 31
+Failed: 0
+
+Detailed results:
+  final-task-1-mvn-install.log|0
+  final-task-2-example-compile.log|0
+  final-task-3-resource-event-source-test.log|0
+  final-task-3-reconciler-interface-test.log|0
+  final-task-4-launcher-test.log|0
+  final-task-5-helper-tests.log|0
+  final-task-6-leader-test.log|0
+  final-task-7-retry-test.log|0
+  final-task-7-rate-limiter-test.log|0
+  final-task-8-metrics-test.log|0
+  final-task-9-health-test.log|0
+  final-task-10-sdk-tests.log|0
+  final-task-11-crd-generated.log|0
+  final-task-11-java-generated.log|0
+  final-task-12-reconciler-create.log|0
+  final-task-12-invalid-replicas.log|0
+  final-task-13-finalizer.log|0
+  final-task-13-status-update.log|0
+  final-task-14-main-test.log|0
+  final-task-15-docker-build.log|0
+  final-task-16-helm-lint.log|0
+  final-task-16-helm-render.yaml|0
+  final-task-17-example-tests.log|0
+  final-task-18-build-script.log|0
+  final-task-18-scripts-executable.log|0
+  final-task-19-docs-exist.log|0
+  final-task-20-smoke-test.log|0
+  final-integration-sdk-example.log|0
+  final-edge-cases.log|0
+  final-full-sdk-tests.log|0
+  final-full-example-tests.log|0
+
+VERDICT: APPROVE

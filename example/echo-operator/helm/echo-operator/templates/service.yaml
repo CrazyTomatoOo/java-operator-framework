@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "echo-operator.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "echo-operator.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{ if .Values.webhook.enabled }}
+    - port: {{ .Values.webhook.service.port }}
+      targetPort: webhook
+      protocol: TCP
+      name: webhook
+    {{ end }}
+  selector:
+    {{- include "echo-operator.selectorLabels" . | nindent 4 }}

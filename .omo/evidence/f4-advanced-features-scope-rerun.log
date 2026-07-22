@@ -1,0 +1,56 @@
+F4 Scope Fidelity Check rerun after package rename
+Date: 2026-06-21
+
+Plan checked:
+- .sisyphus/plans/operator-sdk-advanced-features.md
+
+T7 path drift verification:
+- REQUIRED path checked with glob: example/echo-operator/src/main/java/com/example/echooperator/api/v1alpha2/
+- Found:
+  - EchoResource.java
+  - EchoSpec.java
+  - EchoStatus.java
+- EchoResource.java package declaration: com.example.echooperator.api.v1alpha2
+- EchoResource.java annotation: @Version(value = "v1alpha2", storage = true, served = true)
+- grep for remaining api.v2 path/package references: no matches
+- Result: T7 path drift RESOLVED
+
+T1-T16 scope fidelity:
+- T1: WebhookServer present with TLS/reload support; SDK tests present. COMPLIANT
+- T2: AdmissionValidator, AdmissionMutator, AdmissionHandler present. COMPLIANT
+- T3: WebhookSelfRegistration and registration config present. COMPLIANT
+- T4: ReloadableSslContext and CertWatcher present; TlsCertReloadTest present. COMPLIANT
+- T5: SDK webhook test suite present under operator/framework/src/test/java/.../webhook. COMPLIANT
+- T6: EchoValidatingWebhook and EchoMutatingWebhook present. COMPLIANT
+- T7: v1alpha2 EchoResource/EchoSpec/EchoStatus now live under api/v1alpha2; EchoConverter present. COMPLIANT
+- T8: CRD generator emitted v1alpha2 and v1alpha1 during example build; Helm CRD template present. COMPLIANT
+- T9: ConversionWebhookHandler, ConversionHandler, ConversionResult present. COMPLIANT
+- T10: Echo conversion endpoint test passed in example build. COMPLIANT
+- T11: ConversionHandlerTest and ConversionResultTest passed in SDK build. COMPLIANT
+- T12: Helm templates include service, clusterrole, clusterrolebinding, validatingwebhookconfiguration, mutatingwebhookconfiguration, deployment, crd. COMPLIANT
+- T13: SDK README and CN/EN dev guide files exist. COMPLIANT
+- T14: Echo README and README.zh-CN files exist. COMPLIANT
+- T15: Helm render/lint verification was already covered by prior final evidence; scope files remain present. COMPLIANT
+- T16: smoke-test.sh exists for optional webhook/conversion smoke testing. COMPLIANT
+
+Must NOT Have guardrails:
+- Searched for cert-manager, self-signed/self signed, storage migration, hot reload/hot-reload, webhook metrics/tracing, leader/metrics/namespace hot reload patterns.
+- Result: no matches in searched Java/Markdown/YAML/XML/properties/shell files.
+- Webhook server remains separate from metrics/health by plan/file evidence (webhook default 8443; metrics/health not reused for webhook scope).
+- Contamination: CLEAN
+- Unaccounted scope: CLEAN
+
+Maven verification:
+- mvn -f operator/framework/pom.xml clean install
+  - BUILD SUCCESS
+  - Tests run: 47, Failures: 0, Errors: 0, Skipped: 0
+- mvn -f example/echo-operator/pom.xml clean package
+  - BUILD SUCCESS
+  - Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
+  - CRD generator logged v1alpha2 using com.example.echooperator.api.v1alpha2.EchoResource and v1alpha1 using com.example.echooperator.api.v1.EchoResource
+
+Diagnostics:
+- lsp_diagnostics on /Volumes/work/Project/java-operator-framework, severity=error: 0 errors across scanned Java files.
+
+Final verdict:
+Tasks [16/16 compliant] | Contamination [CLEAN] | Unaccounted [CLEAN] | VERDICT: APPROVE

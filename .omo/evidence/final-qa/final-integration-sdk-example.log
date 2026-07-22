@@ -1,0 +1,650 @@
+=== final-integration-sdk-example.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f operator/framework/pom.xml clean install -DskipTests && mvn -f example/echo-operator/pom.xml clean package -DskipTests && docker build -t example/echo-operator:latest example/echo-operator && helm template echo-operator example/echo-operator/helm/echo-operator > /dev/null
+Started: 2026-06-18T17:48:33+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ operator-framework ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/operator/framework/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 14 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 10 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- source:3.3.1:jar-no-fork (attach-sources) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ operator-framework ---
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/pom.xml to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.pom
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.391 s
+[INFO] Finished at: 2026-06-18T17:48:36+08:00
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ echo-operator ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ echo-operator ---
+[INFO] Including com.huawei.dcs.modelengine:operator-framework:jar:0.1.0-SNAPSHOT in the shaded jar.
+[INFO] Including io.micrometer:micrometer-registry-prometheus:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-core:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-commons:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-observation:jar:1.14.10 in the shaded jar.
+[INFO] Including org.hdrhistogram:HdrHistogram:jar:2.2.2 in the shaded jar.
+[INFO] Including org.latencyutils:LatencyUtils:jar:2.0.3 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-core:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-model:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-config:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-tracer-common:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-formats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-textformats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client-api:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-core:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-common:jar:7.7.0 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.21 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-gatewayapi:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-resource:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-rbac:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-admissionregistration:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apps:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-autoscaling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apiextensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-batch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-certificates:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-coordination:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-discovery:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-events:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-extensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-flowcontrol:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-networking:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-metrics:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-policy:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-scheduling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-storageclass:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-node:jar:7.7.0 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.snakeyaml:snakeyaml-engine:jar:3.0.1 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.21.3 in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.5 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-databind:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-core:jar:2.21.3 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-httpclient-vertx:jar:7.7.0 in the shaded jar.
+[INFO] Including io.vertx:vertx-core:jar:4.5.27 in the shaded jar.
+[INFO] Including io.netty:netty-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-buffer:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport-native-unix-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler-proxy:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-socks:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http2:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.vertx:vertx-web-client:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-web-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.fabric8:zjsonpatch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:generator-annotations:jar:7.7.0 in the shaded jar.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] generator-annotations-7.7.0.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/jandex.idx
+[WARNING] HdrHistogram-2.2.2.jar, slf4j-api-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/io.netty.versions.properties
+[WARNING] jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] HdrHistogram-2.2.2.jar, LatencyUtils-2.0.3.jar, echo-operator-0.1.0-SNAPSHOT.jar, generator-annotations-7.7.0.jar, jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar, netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar, operator-framework-0.1.0-SNAPSHOT.jar, prometheus-metrics-config-1.3.10.jar, prometheus-metrics-core-1.3.10.jar, prometheus-metrics-exposition-formats-1.3.10.jar, prometheus-metrics-exposition-textformats-1.3.10.jar, prometheus-metrics-model-1.3.10.jar, prometheus-metrics-tracer-common-1.3.10.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar, snakeyaml-engine-3.0.1.jar, vertx-auth-common-4.5.27.jar, vertx-core-4.5.27.jar, vertx-web-client-4.5.27.jar, vertx-web-common-4.5.27.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar with /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.605 s
+[INFO] Finished at: 2026-06-18T17:48:40+08:00
+[INFO] ------------------------------------------------------------------------
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 335B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
+#2 DONE 1.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 128B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/eclipse-temurin:21-jre-alpine@sha256:704db3c40204a44f471191446ddd9cda5d60dab40f0e15c6507b815ed897238b
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 26.27MB 0.2s done
+#5 DONE 0.2s
+
+#6 [2/5] WORKDIR /app
+#6 CACHED
+
+#7 [3/5] RUN addgroup -S -g 1001 echo && adduser -S -u 1001 -G echo echo
+#7 CACHED
+
+#8 [4/5] COPY target/echo-operator-0.1.0-SNAPSHOT.jar /app/echo-operator.jar
+#8 DONE 0.0s
+
+#9 [5/5] RUN chown -R 1001:1001 /app
+#9 DONE 0.1s
+
+#10 exporting to image
+#10 exporting layers 0.0s done
+#10 writing image sha256:18e0ee3eb4b19f01ed0f8888a39fa6de379fec65b9f3138f6f323daaf4b0a3ad done
+#10 naming to docker.io/example/echo-operator:latest done
+#10 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/10fnqgj7c5b2xlwqttswu1ldb
+Finished: 2026-06-18T17:48:42+08:00
+EXIT_CODE: 0
+=== final-integration-sdk-example.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f operator/framework/pom.xml clean install -DskipTests && mvn -f example/echo-operator/pom.xml clean package -DskipTests && docker build -t example/echo-operator:latest example/echo-operator && helm template echo-operator example/echo-operator/helm/echo-operator > /dev/null
+Started: 2026-06-20T12:57:27+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ operator-framework ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/operator/framework/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 14 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 10 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- source:3.3.1:jar-no-fork (attach-sources) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ operator-framework ---
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/pom.xml to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.pom
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.338 s
+[INFO] Finished at: 2026-06-20T12:57:30+08:00
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ echo-operator ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ echo-operator ---
+[INFO] Including com.huawei.dcs.modelengine:operator-framework:jar:0.1.0-SNAPSHOT in the shaded jar.
+[INFO] Including io.micrometer:micrometer-registry-prometheus:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-core:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-commons:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-observation:jar:1.14.10 in the shaded jar.
+[INFO] Including org.hdrhistogram:HdrHistogram:jar:2.2.2 in the shaded jar.
+[INFO] Including org.latencyutils:LatencyUtils:jar:2.0.3 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-core:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-model:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-config:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-tracer-common:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-formats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-textformats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client-api:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-core:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-common:jar:7.7.0 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.21 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-gatewayapi:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-resource:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-rbac:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-admissionregistration:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apps:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-autoscaling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apiextensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-batch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-certificates:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-coordination:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-discovery:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-events:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-extensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-flowcontrol:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-networking:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-metrics:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-policy:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-scheduling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-storageclass:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-node:jar:7.7.0 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.snakeyaml:snakeyaml-engine:jar:3.0.1 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.21.3 in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.5 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-databind:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-core:jar:2.21.3 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-httpclient-vertx:jar:7.7.0 in the shaded jar.
+[INFO] Including io.vertx:vertx-core:jar:4.5.27 in the shaded jar.
+[INFO] Including io.netty:netty-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-buffer:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport-native-unix-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler-proxy:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-socks:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http2:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.vertx:vertx-web-client:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-web-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.fabric8:zjsonpatch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:generator-annotations:jar:7.7.0 in the shaded jar.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] generator-annotations-7.7.0.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/jandex.idx
+[WARNING] HdrHistogram-2.2.2.jar, slf4j-api-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/io.netty.versions.properties
+[WARNING] jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] HdrHistogram-2.2.2.jar, LatencyUtils-2.0.3.jar, echo-operator-0.1.0-SNAPSHOT.jar, generator-annotations-7.7.0.jar, jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar, netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar, operator-framework-0.1.0-SNAPSHOT.jar, prometheus-metrics-config-1.3.10.jar, prometheus-metrics-core-1.3.10.jar, prometheus-metrics-exposition-formats-1.3.10.jar, prometheus-metrics-exposition-textformats-1.3.10.jar, prometheus-metrics-model-1.3.10.jar, prometheus-metrics-tracer-common-1.3.10.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar, snakeyaml-engine-3.0.1.jar, vertx-auth-common-4.5.27.jar, vertx-core-4.5.27.jar, vertx-web-client-4.5.27.jar, vertx-web-common-4.5.27.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar with /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.542 s
+[INFO] Finished at: 2026-06-20T12:57:34+08:00
+[INFO] ------------------------------------------------------------------------
+ERROR: failed to connect to the docker API at unix:///Users/crazytomatooo/.docker/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /Users/crazytomatooo/.docker/run/docker.sock: connect: no such file or directory
+Finished: 2026-06-20T12:57:34+08:00
+EXIT_CODE: 1
+=== final-integration-sdk-example.log ===
+Command: bash -c cd '/Volumes/work/Project/java-operator-framework' && mvn -f operator/framework/pom.xml clean install -DskipTests && mvn -f example/echo-operator/pom.xml clean package -DskipTests && docker build -t example/echo-operator:latest example/echo-operator && helm template echo-operator example/echo-operator/helm/echo-operator > /dev/null
+Started: 2026-06-20T13:03:55+08:00
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ operator-framework ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/operator/framework/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ operator-framework ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ operator-framework ---
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ operator-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 14 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ operator-framework ---
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ operator-framework ---
+[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ operator-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 10 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/OperatorLauncherTest.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ operator-framework ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- source:3.3.1:jar-no-fork (attach-sources) @ operator-framework ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- install:3.1.2:install (default-install) @ operator-framework ---
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/pom.xml to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.pom
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.374 s
+[INFO] Finished at: 2026-06-20T13:03:58+08:00
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ echo-operator ---
+[INFO] Deleting /Volumes/work/Project/java-operator-framework/example/echo-operator/target
+[INFO] 
+[INFO] --- java-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ echo-operator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ echo-operator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug parameters release 21] to target/classes
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java使用或覆盖了已过时的 API。
+[INFO] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/main/java/com/example/echooperator/controller/EchoReconciler.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] 
+[INFO] --- crd-generator:7.7.0:generate (default) @ echo-operator ---
+[INFO] Generating 'echoresources.example.com' version 'v1alpha1' with com.example.echooperator.api.v1.EchoResource (spec: com.example.echooperator.api.v1.EchoSpec / status com.example.echooperator.api.v1.EchoStatus)...
+[INFO] Generated CRD echoresources.example.com:
+[INFO]  v1 -> /Volumes/work/Project/java-operator-framework/example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ echo-operator ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ echo-operator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ echo-operator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ echo-operator ---
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ echo-operator ---
+[INFO] Including com.huawei.dcs.modelengine:operator-framework:jar:0.1.0-SNAPSHOT in the shaded jar.
+[INFO] Including io.micrometer:micrometer-registry-prometheus:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-core:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-commons:jar:1.14.10 in the shaded jar.
+[INFO] Including io.micrometer:micrometer-observation:jar:1.14.10 in the shaded jar.
+[INFO] Including org.hdrhistogram:HdrHistogram:jar:2.2.2 in the shaded jar.
+[INFO] Including org.latencyutils:LatencyUtils:jar:2.0.3 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-core:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-model:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-config:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-tracer-common:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-formats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.prometheus:prometheus-metrics-exposition-textformats:jar:1.3.10 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-client-api:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-core:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-common:jar:7.7.0 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-annotations:jar:2.21 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-gatewayapi:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-resource:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-rbac:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-admissionregistration:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apps:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-autoscaling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-apiextensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-batch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-certificates:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-coordination:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-discovery:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-events:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-extensions:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-flowcontrol:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-networking:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-metrics:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-policy:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-scheduling:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-storageclass:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-model-node:jar:7.7.0 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.snakeyaml:snakeyaml-engine:jar:3.0.1 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.21.3 in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.5 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-databind:jar:2.21.3 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-core:jar:2.21.3 in the shaded jar.
+[INFO] Including io.fabric8:kubernetes-httpclient-vertx:jar:7.7.0 in the shaded jar.
+[INFO] Including io.vertx:vertx-core:jar:4.5.27 in the shaded jar.
+[INFO] Including io.netty:netty-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-buffer:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-transport-native-unix-common:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-handler-proxy:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-socks:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-http2:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-resolver-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.netty:netty-codec-dns:jar:4.1.133.Final in the shaded jar.
+[INFO] Including io.vertx:vertx-web-client:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-web-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.vertx:vertx-auth-common:jar:4.5.27 in the shaded jar.
+[INFO] Including io.fabric8:zjsonpatch:jar:7.7.0 in the shaded jar.
+[INFO] Including io.fabric8:generator-annotations:jar:7.7.0 in the shaded jar.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] Discovered module-info.class. Shading will break its strong encapsulation.
+[WARNING] generator-annotations-7.7.0.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/jandex.idx
+[WARNING] HdrHistogram-2.2.2.jar, slf4j-api-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/io.netty.versions.properties
+[WARNING] jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] HdrHistogram-2.2.2.jar, LatencyUtils-2.0.3.jar, echo-operator-0.1.0-SNAPSHOT.jar, generator-annotations-7.7.0.jar, jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, kubernetes-client-7.7.0.jar, kubernetes-client-api-7.7.0.jar, kubernetes-httpclient-vertx-7.7.0.jar, kubernetes-model-admissionregistration-7.7.0.jar, kubernetes-model-apiextensions-7.7.0.jar, kubernetes-model-apps-7.7.0.jar, kubernetes-model-autoscaling-7.7.0.jar, kubernetes-model-batch-7.7.0.jar, kubernetes-model-certificates-7.7.0.jar, kubernetes-model-common-7.7.0.jar, kubernetes-model-coordination-7.7.0.jar, kubernetes-model-core-7.7.0.jar, kubernetes-model-discovery-7.7.0.jar, kubernetes-model-events-7.7.0.jar, kubernetes-model-extensions-7.7.0.jar, kubernetes-model-flowcontrol-7.7.0.jar, kubernetes-model-gatewayapi-7.7.0.jar, kubernetes-model-metrics-7.7.0.jar, kubernetes-model-networking-7.7.0.jar, kubernetes-model-node-7.7.0.jar, kubernetes-model-policy-7.7.0.jar, kubernetes-model-rbac-7.7.0.jar, kubernetes-model-resource-7.7.0.jar, kubernetes-model-scheduling-7.7.0.jar, kubernetes-model-storageclass-7.7.0.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar, netty-buffer-4.1.133.Final.jar, netty-codec-4.1.133.Final.jar, netty-codec-dns-4.1.133.Final.jar, netty-codec-http-4.1.133.Final.jar, netty-codec-http2-4.1.133.Final.jar, netty-codec-socks-4.1.133.Final.jar, netty-common-4.1.133.Final.jar, netty-handler-4.1.133.Final.jar, netty-handler-proxy-4.1.133.Final.jar, netty-resolver-4.1.133.Final.jar, netty-resolver-dns-4.1.133.Final.jar, netty-transport-4.1.133.Final.jar, netty-transport-native-unix-common-4.1.133.Final.jar, operator-framework-0.1.0-SNAPSHOT.jar, prometheus-metrics-config-1.3.10.jar, prometheus-metrics-core-1.3.10.jar, prometheus-metrics-exposition-formats-1.3.10.jar, prometheus-metrics-exposition-textformats-1.3.10.jar, prometheus-metrics-model-1.3.10.jar, prometheus-metrics-tracer-common-1.3.10.jar, slf4j-api-2.0.17.jar, snakeyaml-2.5.jar, snakeyaml-engine-3.0.1.jar, vertx-auth-common-4.5.27.jar, vertx-core-4.5.27.jar, vertx-web-client-4.5.27.jar, vertx-web-common-4.5.27.jar, zjsonpatch-7.7.0.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] jackson-annotations-2.21.jar, jackson-core-2.21.3.jar, jackson-databind-2.21.3.jar, jackson-dataformat-yaml-2.21.3.jar, jackson-datatype-jsr310-2.21.3.jar, micrometer-commons-1.14.10.jar, micrometer-core-1.14.10.jar, micrometer-observation-1.14.10.jar, micrometer-registry-prometheus-1.14.10.jar define 2 overlapping resources: 
+[WARNING]   - META-INF/LICENSE
+[WARNING]   - META-INF/NOTICE
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT.jar with /Volumes/work/Project/java-operator-framework/example/echo-operator/target/echo-operator-0.1.0-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.645 s
+[INFO] Finished at: 2026-06-20T13:04:02+08:00
+[INFO] ------------------------------------------------------------------------
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 335B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-alpine
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 128B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/eclipse-temurin:21-jre-alpine
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 26.28MB 0.2s done
+#5 DONE 0.2s
+
+#6 [2/5] WORKDIR /app
+#6 CACHED
+
+#7 [3/5] RUN addgroup -S -g 1001 echo && adduser -S -u 1001 -G echo echo
+#7 CACHED
+
+#8 [4/5] COPY target/echo-operator-0.1.0-SNAPSHOT.jar /app/echo-operator.jar
+#8 DONE 0.0s
+
+#9 [5/5] RUN chown -R 1001:1001 /app
+#9 DONE 0.1s
+
+#10 exporting to image
+#10 exporting layers 0.0s done
+#10 writing image sha256:d00e69742c8c0676d751f732b9c06ca504a42100b5dd2b9007e3acbbd5a2efa8
+#10 writing image sha256:d00e69742c8c0676d751f732b9c06ca504a42100b5dd2b9007e3acbbd5a2efa8 done
+#10 naming to docker.io/example/echo-operator:latest done
+#10 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/rkb4gfvfpidxxdl9e20o4vwmv
+Finished: 2026-06-20T13:04:03+08:00
+EXIT_CODE: 0

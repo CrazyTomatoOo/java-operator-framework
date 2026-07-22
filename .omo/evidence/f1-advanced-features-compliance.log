@@ -1,0 +1,190 @@
+================================================================================
+F1 Plan Compliance Audit: operator-sdk-advanced-features.md
+Executed: 2026-06-21
+Auditor: oracle
+================================================================================
+
+VERDICT LINE (required format):
+Must Have [7/7] | Must NOT Have [7/7] | Tasks [16/16] | Evidence [16/16] | VERDICT: APPROVE
+
+================================================================================
+MUST HAVE VERIFICATION
+================================================================================
+
+[1/7] Pure fabric8, no Quarkus/Spring Boot/JOSDK
+  Status: PASS
+  Evidence: operator/framework/pom.xml dependencies are fabric8 + JDK + Micrometer/Prometheus only.
+  README.md line 3 explicitly states "without pulling in Quarkus, Spring Boot, or the Java Operator SDK."
+  No Quarkus/Spring Boot/JOSDK dependencies found in operator/framework/pom.xml or example/echo-operator/pom.xml.
+
+[2/7] Admission webhooks: validating + mutating, SDK generic interfaces
+  Status: PASS
+  Files:
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/WebhookServer.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionValidator.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionMutator.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandler.java
+    - example/echo-operator/src/main/java/com/example/echooperator/webhook/EchoValidatingWebhook.java
+    - example/echo-operator/src/main/java/com/example/echooperator/webhook/EchoMutatingWebhook.java
+  Notes: AdmissionValidator<T> and AdmissionMutator<T> are generic SDK interfaces. Echo example implements both.
+
+[3/7] Manual TLS: Secret mount, runtime auto-reload
+  Status: PASS
+  Files:
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/ReloadableSslContext.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/cert/CertWatcher.java
+    - operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/cert/TlsCertReloadTest.java
+  Notes: WebhookServer constructs ReloadableSslContext from cert/key/ca file paths and starts a CertWatcher. Test TlsCertReloadTest verifies reload rebuilds SSLContext from disk. Deployment mounts Secret echo-operator-webhook-tls at /etc/echo-operator/certs.
+
+[4/7] Operator self-registration of webhook configs, fail-fast on failure
+  Status: PASS
+  Files:
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookRegistrationConfig.java
+    - operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistrationTest.java
+  Notes: WebhookSelfRegistration.createOrReplace* methods throw on missing CA bundle (IllegalStateException) and on Kubernetes API errors (fail-fast). EchoOperatorMain invokes registration.register(admissionHandler).
+
+[5/7] Multi-version CRD: v1alpha1/v1alpha2, conversion webhook
+  Status: PASS
+  Files:
+    - example/echo-operator/src/main/java/com/example/echooperator/api/v1/EchoResource.java (@Version v1alpha1, deprecated, storage=false)
+    - example/echo-operator/src/main/java/com/example/echooperator/api/v2/EchoResource.java (@Version v1alpha2, storage=true)
+    - example/echo-operator/src/main/java/com/example/echooperator/converter/EchoConverter.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionWebhookHandler.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionResult.java
+    - operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandler.java
+    - example/echo-operator/helm/echo-operator/templates/crd.yaml
+  Notes: API version v1alpha2 exists; Java package is api.v2 rather than api.v1alpha2. CRD generator emits both v1alpha1 and v1alpha2 versions. Helm CRD patches conversion.strategy=Webhook and conversionReviewVersions=["v1"]. EchoConverterTest verifies round-trip conversion.
+
+[6/7] Helm chart contains all new resources
+  Status: PASS
+  Files:
+    - example/echo-operator/helm/echo-operator/templates/service.yaml (metrics + webhook port 443 targetPort webhook)
+    - example/echo-operator/helm/echo-operator/templates/deployment.yaml (containerPort 8443, TLS Secret volume mount)
+    - example/echo-operator/helm/echo-operator/templates/clusterrole.yaml (admissionregistration + apiextensions permissions)
+    - example/echo-operator/helm/echo-operator/templates/clusterrolebinding.yaml
+    - example/echo-operator/helm/echo-operator/templates/validatingwebhookconfiguration.yaml
+    - example/echo-operator/helm/echo-operator/templates/mutatingwebhookconfiguration.yaml
+    - example/echo-operator/helm/echo-operator/templates/crd.yaml (conversion webhook block)
+    - example/echo-operator/helm/echo-operator/values.yaml (webhook.* values)
+  Notes: Plan specified a separate templates/webhook-service.yaml; implementation instead added webhook port to the existing Service. Functionally equivalent and renders correctly.
+
+[7/7] Chinese and English README/dev-guide updated
+  Status: PASS
+  Files:
+    - operator/framework/README.md (sections "Admission webhooks", "Conversion webhooks")
+    - operator/framework/README.zh-CN.md (matching Chinese sections)
+    - docs/dev-guide.md (section 11 Add admission webhooks, conversion documentation)
+    - docs/dev-guide.zh-CN.md (matching Chinese sections)
+    - example/echo-operator/README.md (webhook/conversion/v1alpha2 sections)
+    - example/echo-operator/README.zh-CN.md (matching Chinese sections)
+
+================================================================================
+MUST NOT HAVE VERIFICATION (GUARDRAILS)
+================================================================================
+
+[1/7] No cert-manager
+  Status: PASS
+  Evidence: grep for "cert-manager|certmanager" returned no matches across the codebase.
+
+[2/7] No automatic self-signed certificate generation
+  Status: PASS
+  Evidence: No runtime self-signed certificate generation. Test code (WebhookServerTest, TlsCertReloadTest, etc.) uses keytool to generate temporary certificates for unit tests only. Production path loads PEM files from disk/Secret.
+
+[3/7] No storage version automatic migration
+  Status: PASS
+  Evidence: grep for "storageVersion|storage.*migration|migrateStorage|StorageVersionMigration" returned no matches.
+
+[4/7] No runtime YAML config hot-reload
+  Status: PASS
+  Evidence: Classes ConfigWatcher, ReloadableConfig, ConfigChangeListener, OperatorConfigSnapshot were removed during hot-reload removal. grep for these names returned no matches. jackson-dataformat-yaml dependency removed from operator/framework/pom.xml (still present transitively via fabric8). Plan was updated to reflect removal.
+
+[5/7] No leader election / metrics port / watched namespace hot-reload
+  Status: PASS
+  Evidence: grep for reload patterns targeting leaderElection, metricsPort, watchedNamespace returned no matches. Leader election, metrics port, and watched namespace are configured at startup via env/values and remain fixed.
+
+[6/7] No webhook metrics/tracing/generic test framework
+  Status: PASS
+  Evidence: Source code under operator/framework/src/main/java contains no webhook-specific metrics, tracing, OpenTelemetry, Micrometer, Prometheus, or Jaeger integrations. MetricsServer is for the operator's own /metrics endpoint, not webhooks. Documentation mentions metrics only in the context of the existing MetricsHealthServer.
+
+[7/7] Webhook server not shared with metrics/health port
+  Status: PASS
+  Evidence: WebhookServer defaults to port 8443. MetricsHealthServer uses port 8080. Deployment exposes both ports separately; Service exposes metrics on 8080 and webhook on 443/8443. README states "Admission webhooks run on a separate TLS server."
+
+================================================================================
+TASK EVIDENCE FILE VERIFICATION (T1-T16)
+================================================================================
+
+Evidence files are numbered by global task sequence rather than the plan's T1-T16 labels; the mapping below is used for this audit.
+
+T1  TLS WebhookServer              -> .sisyphus/evidence/task-4-webhook-server.log        EXIST
+T2  AdmissionValidator/Mutator     -> .sisyphus/evidence/task-5-admission-handler.log     EXIST
+T3  WebhookSelfRegistration        -> .sisyphus/evidence/task-6-self-registration.log     EXIST
+T4  TLS cert reload                -> .sisyphus/evidence/task-7-cert-reload.log           EXIST
+T5  SDK webhook unit tests         -> .sisyphus/evidence/task-8-sdk-webhook-tests.log     EXIST
+T6  Echo validating webhook        -> .sisyphus/evidence/task-9-echo-validating.log       EXIST
+T7  Echo v1alpha2 + converter      -> .sisyphus/evidence/task-10-converter.log            EXIST
+T8  CRD multi-version + Helm patch -> .sisyphus/evidence/task-11-crd-conversion.log       EXIST
+T9  ConversionWebhookHandler       -> .sisyphus/evidence/task-12-conversion-handler.log   EXIST
+T10 Wire conversion into server    -> .sisyphus/evidence/task-13-echo-conversion.log      EXIST
+T11 SDK conversion unit tests      -> .sisyphus/evidence/task-14-conversion-tests.log     EXIST
+T12 Helm chart Service/RBAC        -> .sisyphus/evidence/task-15-helm-webhook.log         EXIST
+T13 SDK README + dev-guide (CN/EN) -> .sisyphus/evidence/task-16-docs.log                 EXIST
+T14 Echo README (CN/EN)            -> .sisyphus/evidence/task-17-echo-readme.log          EXIST
+T15 Helm lint/template/render      -> .sisyphus/evidence/task-18-helm-verify.log          EXIST
+T16 Smoke test                     -> .sisyphus/evidence/task-19-smoke-test.log           EXIST
+
+Task evidence count: 16/16 EXIST
+
+================================================================================
+BUILD VERIFICATION
+================================================================================
+
+Command: mvn -f operator/framework/pom.xml clean install
+Result: BUILD SUCCESS
+Tests:  47 run, 0 failures, 0 errors, 0 skipped
+Timestamp: 2026-06-21T01:35:44+08:00
+
+Command: mvn -f example/echo-operator/pom.xml clean package
+Result: BUILD SUCCESS
+Tests:  29 run, 0 failures, 0 errors, 0 skipped
+Timestamp: 2026-06-21T01:35:44+08:00
+
+================================================================================
+HELM VERIFICATION
+================================================================================
+
+Command: /opt/homebrew/bin/helm lint example/echo-operator/helm/echo-operator
+Result: 1 chart(s) linted, 0 chart(s) failed
+
+Command: /opt/homebrew/bin/helm template echo-operator example/echo-operator/helm/echo-operator --set webhook.createWebhookConfigurations=true
+Result: RENDER OK
+Verified rendered output contains:
+  - ValidatingWebhookConfiguration
+  - MutatingWebhookConfiguration
+  - conversion.webhook block
+  - containerPort 8443
+  - webhook Service targetPort webhook
+  - TLS Secret volume mount (secretName: echo-operator-webhook-tls)
+
+================================================================================
+NOTES / MINOR OBSERVATIONS
+================================================================================
+
+1. Java package for v1alpha2 CRD classes is `com.example.echooperator.api.v2` instead of `com.example.echooperator.api.v1alpha2`. The API version string is correctly `example.com/v1alpha2` and the CRD generator emits `v1alpha2`. This is a naming convention deviation, not a functional gap.
+
+2. Plan requested a separate `templates/webhook-service.yaml`; implementation added the webhook port to the existing `templates/service.yaml`. The rendered Helm output still exposes port 443 -> targetPort webhook and is functionally equivalent.
+
+3. Plan references a class `ConversionWebhookHandlerTest`; actual test class is `ConversionHandlerTest`. The SDK interface `ConversionWebhookHandler` exists and is tested.
+
+4. Default Helm values do not render ValidatingWebhookConfiguration/MutatingWebhookConfiguration because the operator self-registers them at runtime. Setting `webhook.createWebhookConfigurations=true` renders them correctly.
+
+================================================================================
+FINAL VERDICT
+================================================================================
+
+Must Have [7/7] | Must NOT Have [7/7] | Tasks [16/16] | Evidence [16/16] | VERDICT: APPROVE
+
+================================================================================
+END OF AUDIT
+================================================================================

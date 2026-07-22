@@ -1,0 +1,8 @@
+target/
+!target/echo-operator-0.1.0-SNAPSHOT.jar
+.git/
+*.md
+helm/
+scripts/
+.idea/
+*.iml
