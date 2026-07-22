@@ -1,9 +1,0 @@
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/LoadGenerator.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/Reporter.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/StressConfig.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/StressMetrics.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/StressReconciler.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/StressTestMain.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/api/v1alpha1/StressTestResource.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/api/v1alpha1/StressTestSpec.java
-/Volumes/work/Project/java-operator-framework/stress-test/src/main/java/com/example/stress/api/v1alpha1/StressTestStatus.java

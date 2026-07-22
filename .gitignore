@@ -1,0 +1,56 @@
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+dependency-reduced-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+# ===== IDE =====
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+bin/
+
+# VS Code
+.vscode/
+
+# NetBeans
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
+# Agent evidence logs under .omo/.sisyphus are intentionally tracked
+!/.omo/**/*.log
+!/.sisyphus/**/*.log
+
+# ===== Helm =====
+**/helm/**/*.tgz
+**/helm/**/charts/
+
+# ===== Local run / TLS artifacts (webhook dev certs etc.) =====
+certs/
+*.crt
+*.key
+*.pem
+kubeconfig*

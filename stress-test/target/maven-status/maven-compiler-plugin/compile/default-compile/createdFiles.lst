@@ -1,9 +1,0 @@
-com/example/stress/StressReconciler.class
-com/example/stress/api/v1alpha1/StressTestSpec.class
-com/example/stress/StressMetrics.class
-com/example/stress/Reporter.class
-com/example/stress/StressTestMain.class
-com/example/stress/StressConfig.class
-com/example/stress/api/v1alpha1/StressTestStatus.class
-com/example/stress/api/v1alpha1/StressTestResource.class
-com/example/stress/LoadGenerator.class
