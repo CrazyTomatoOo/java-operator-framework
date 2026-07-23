@@ -1,4 +1,4 @@
-{{- if .Values.rbac.create -}}
+{{- if and .Values.rbac.create .Values.webhook.enabled .Values.webhook.certAutoGenerate -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -29,4 +29,11 @@ rules:
   - apiGroups: ["example.com"]
     resources: ["echoresources/finalizers"]
     verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: [{{ .Values.webhook.certSecretName | quote }}]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create"]
 {{- end }}
