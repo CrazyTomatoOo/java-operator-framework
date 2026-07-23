@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "echo-operator.fullname" . }}
+  name: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "echo-operator.labels" . | nindent 4 }}

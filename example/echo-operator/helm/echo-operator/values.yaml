@@ -34,6 +34,7 @@ metrics:
 webhook:
   # Enable admission/conversion webhook exposure and cluster-scoped webhook RBAC.
   enabled: true
+  certAutoGenerate: true
   # Port the operator listens on for HTTPS admission and conversion webhooks.
   port: 8443
   # CA bundle for conversion/admission webhook client configs. Helm base64-encodes this value.
@@ -45,12 +46,11 @@ webhook:
   failurePolicy: Fail
   timeoutSeconds: 10
   admissionName: echo.example.com
+  certSecretName: echo-operator-webhook-ca
   tls:
     # TLS Secret is expected to be created externally by a cluster admin or external tooling.
     secretName: echo-operator-webhook-tls
   service:
-    # Defaults to the release namespace when empty.
-    namespace: ""
     # Defaults to the operator fullname when empty.
     name: ""
     # Service port used by CRD conversion and admission webhook client configs.

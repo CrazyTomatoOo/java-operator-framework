@@ -27,6 +27,10 @@ spec:
         runAsNonRoot: true
         runAsUser: 1001
         runAsGroup: 1001
+        {{- if and .Values.webhook.enabled .Values.webhook.certAutoGenerate }}
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+        {{- end }}
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -52,15 +56,38 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             {{- end }}
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: METRICS_PORT
               value: {{ .Values.metrics.port | quote }}
+            - name: WEBHOOK_ENABLED
+              value: {{ .Values.webhook.enabled | quote }}
             {{ if .Values.webhook.enabled }}
             - name: WEBHOOK_PORT
               value: {{ .Values.webhook.port | quote }}
+            - name: WEBHOOK_SERVICE_NAME
+              value: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
+            - name: WEBHOOK_SERVICE_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
             - name: WEBHOOK_SERVICE_PORT
               value: {{ .Values.webhook.service.port | quote }}
+            {{- if .Values.webhook.certAutoGenerate }}
+            - name: WEBHOOK_CERT_AUTO_GENERATE
+              value: "true"
+            - name: WEBHOOK_CERT_DIRECTORY
+              value: /tmp/echo-operator/certs
+            - name: WEBHOOK_CERT_SECRET_NAME
+              value: {{ .Values.webhook.certSecretName | quote }}
+            - name: WEBHOOK_CA_BUNDLE_PATH
+              value: /tmp/echo-operator/certs/ca.crt
+            {{- else }}
+            - name: WEBHOOK_CERT_AUTO_GENERATE
+              value: "false"
             - name: WEBHOOK_CA_BUNDLE_PATH
               value: /etc/echo-operator/certs/ca.crt
+            {{- end }}
             {{ end }}
             - name: LEADER_ELECTION_ENABLED
               value: {{ .Values.leaderElection.enabled | quote }}
@@ -90,15 +117,25 @@ spec:
                 - ALL
           volumeMounts:
             {{ if .Values.webhook.enabled }}
+            {{- if .Values.webhook.certAutoGenerate }}
+            - name: webhook-certs
+              mountPath: /tmp/echo-operator/certs
+            {{- else }}
             - name: webhook-tls
               mountPath: /etc/echo-operator/certs
               readOnly: true
+            {{- end }}
             {{ end }}
       volumes:
         {{ if .Values.webhook.enabled }}
+        {{- if .Values.webhook.certAutoGenerate }}
+        - name: webhook-certs
+          emptyDir: {}
+        {{- else }}
         - name: webhook-tls
           secret:
             secretName: {{ .Values.webhook.tls.secretName }}
+        {{- end }}
         {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
