@@ -1,6 +1,11 @@
 package com.example.echooperator;
 
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.api.model.SecretList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,7 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 class EchoOperatorMainTest {
@@ -81,8 +88,17 @@ class EchoOperatorMainTest {
         main.stop();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private KubernetesClient client() {
         KubernetesClient client = mock(KubernetesClient.class);
+        MixedOperation<Secret, SecretList, Resource<Secret>> secrets = mock(MixedOperation.class);
+        NonNamespaceOperation<Secret, SecretList, Resource<Secret>> namespacedSecrets = mock(NonNamespaceOperation.class);
+        Resource<Secret> secretResource = mock(Resource.class);
+        when(client.secrets()).thenReturn(secrets);
+        when(secrets.inNamespace(anyString())).thenReturn(namespacedSecrets);
+        when(namespacedSecrets.withName(anyString())).thenReturn(secretResource);
+        when(namespacedSecrets.resource(any(Secret.class))).thenReturn(secretResource);
+        when(secretResource.get()).thenReturn(null);
         when(client.getKubernetesSerialization()).thenReturn(new KubernetesSerialization());
         return client;
     }
