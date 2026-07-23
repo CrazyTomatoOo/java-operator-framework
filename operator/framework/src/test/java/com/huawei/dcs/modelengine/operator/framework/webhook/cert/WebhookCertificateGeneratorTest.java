@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.Signature;
+import java.security.GeneralSecurityException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebhookCertificateGeneratorTest {
@@ -44,6 +47,8 @@ class WebhookCertificateGeneratorTest {
         assertNull(generated.serverCertificatePath());
         assertNull(generated.serverPrivateKeyPath());
         assertEquals(Base64.getEncoder().encodeToString(generated.caCertificatePem()), generated.caBundleBase64());
+        assertPemBlock(generated.caPrivateKeyPem(), "PRIVATE KEY");
+        assertCaPrivateKeyMatchesCertificate(generated.caCertificate(), generated.caPrivateKey());
         assertCaCertificate(generated.caCertificate());
         assertServerCertificate(generated.serverCertificate(), generated.caCertificate());
         assertSubjectAlternativeNames(generated.serverCertificate(), List.of("webhook", "webhook.operators",
@@ -52,6 +57,59 @@ class WebhookCertificateGeneratorTest {
         assertPemBlock(generated.serverCertificatePem(), "CERTIFICATE");
         assertPemBlock(generated.serverPrivateKeyPem(), "PRIVATE KEY");
         assertEquals(2048, assertInstanceOf(RSAPrivateKey.class, generated.serverPrivateKey()).getModulus().bitLength());
+    }
+
+    @Test
+    void generateServerCertificateUsesExistingCaAndKeepsServerAuthEku() throws Exception {
+        WebhookCertificateGenerator generator = WebhookCertificateGenerator.builder("webhook", "operators")
+                .validity(Duration.ofDays(30))
+                .extraSubjectAlternativeNames(List.of("webhook.internal"))
+                .clusterDomain("example.local")
+                .build();
+
+        GeneratedCertificate ca = generator.generate();
+        GeneratedCertificate generated = generator.generateServerCertificate(ca.caCertificate(), ca.caPrivateKey());
+
+        assertNull(generated.caPath());
+        assertNull(generated.serverCertificatePath());
+        assertNull(generated.serverPrivateKeyPath());
+        assertEquals(ca.caCertificate(), generated.caCertificate());
+        assertEquals(ca.caPrivateKey(), generated.caPrivateKey());
+        assertCaPrivateKeyMatchesCertificate(generated.caCertificate(), generated.caPrivateKey());
+        assertServerCertificate(generated.serverCertificate(), generated.caCertificate());
+        assertSubjectAlternativeNames(generated.serverCertificate(), List.of("webhook", "webhook.operators",
+                "webhook.operators.svc", "webhook.operators.svc.example.local", "webhook.internal"));
+        assertCertificateValidity(generated.serverCertificate(), Duration.ofDays(30));
+        assertPemBlock(generated.caCertificatePem(), "CERTIFICATE");
+        assertPemBlock(generated.caPrivateKeyPem(), "PRIVATE KEY");
+        assertPemBlock(generated.serverCertificatePem(), "CERTIFICATE");
+        assertPemBlock(generated.serverPrivateKeyPem(), "PRIVATE KEY");
+        assertEquals(2048, assertInstanceOf(RSAPrivateKey.class, generated.serverPrivateKey()).getModulus().bitLength());
+    }
+
+    @Test
+    void generateServerCertificateRejectsMismatchedCaPrivateKey() throws Exception {
+        WebhookCertificateGenerator generator = WebhookCertificateGenerator.builder("webhook", "operators").build();
+
+        GeneratedCertificate ca = generator.generate();
+        GeneratedCertificate other = generator.generate();
+
+        assertThrows(GeneralSecurityException.class,
+                () -> generator.generateServerCertificate(ca.caCertificate(), other.caPrivateKey()));
+    }
+
+    @Test
+    void generatedCertificateRejectsNullCaPrivateKey() throws Exception {
+        WebhookCertificateGenerator generator = WebhookCertificateGenerator.builder("webhook", "operators")
+                .build();
+        GeneratedCertificate generated = generator.generate();
+
+        NullPointerException exception = assertThrows(NullPointerException.class,
+                () -> new GeneratedCertificate(generated.caCertificate(), null, generated.serverCertificate(),
+                        generated.serverPrivateKey(), generated.caCertificatePem(), generated.caPrivateKeyPem(),
+                        generated.serverCertificatePem(), generated.serverPrivateKeyPem(), null, null, null));
+
+        assertEquals("caPrivateKey must not be null", exception.getMessage());
     }
 
     @Test
@@ -94,6 +152,24 @@ class WebhookCertificateGeneratorTest {
         assertTrue(keyUsage[2]);
         assertEquals(List.of("1.3.6.1.5.5.7.3.1"), serverCertificate.getExtendedKeyUsage());
         assertNotNull(serverCertificate.getExtensionValue("2.5.29.35"));
+    }
+
+    private static void assertCertificateValidity(X509Certificate certificate, Duration expectedValidity) {
+        assertEquals(expectedValidity.toMillis(),
+                certificate.getNotAfter().getTime() - certificate.getNotBefore().getTime());
+    }
+
+    private static void assertCaPrivateKeyMatchesCertificate(X509Certificate caCertificate,
+            java.security.PrivateKey caPrivateKey) throws Exception {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        byte[] data = "certificate-authority-key-match".getBytes(StandardCharsets.US_ASCII);
+        signature.initSign(caPrivateKey);
+        signature.update(data);
+        byte[] signed = signature.sign();
+
+        signature.initVerify(caCertificate.getPublicKey());
+        signature.update(data);
+        assertTrue(signature.verify(signed));
     }
 
     private static void assertSubjectAlternativeNames(X509Certificate certificate, List<String> expectedNames)

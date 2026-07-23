@@ -114,6 +114,38 @@ public final class WebhookCertificateGenerator {
         return generateCertificate(caPath, serverCertificatePath, serverPrivateKeyPath);
     }
 
+    /**
+     * Generates a server certificate from an existing certificate authority without writing files.
+     *
+     * @param caCertificate the existing certificate authority certificate
+     * @param caPrivateKey the matching certificate authority private key
+     * @return the generated certificate authority and server certificate payloads in memory
+     * @throws GeneralSecurityException if key or certificate generation fails
+     * @throws IOException if PEM encoding fails
+     */
+    public GeneratedCertificate generateServerCertificate(X509Certificate caCertificate, java.security.PrivateKey caPrivateKey)
+            throws GeneralSecurityException, IOException {
+        Objects.requireNonNull(caCertificate, "caCertificate must not be null");
+        Objects.requireNonNull(caPrivateKey, "caPrivateKey must not be null");
+
+        ensureBouncyCastleProvider();
+
+        KeyPair caKeyPair = new KeyPair(caCertificate.getPublicKey(), caPrivateKey);
+        KeyPair serverKeyPair = generateKeyPair();
+        Instant notBefore = Instant.now();
+        Instant notAfter = notBefore.plus(this.validity);
+
+        X509Certificate serverCertificate = buildServerCertificate(caCertificate, caKeyPair, serverKeyPair, notBefore,
+                notAfter);
+        byte[] caPem = writePem(caCertificate);
+        byte[] caPrivateKeyPem = writePrivateKeyPem(caPrivateKey);
+        byte[] serverCertificatePem = writePem(serverCertificate);
+        byte[] serverPrivateKeyPem = writePrivateKeyPem(serverKeyPair.getPrivate());
+
+        return new GeneratedCertificate(caCertificate, caPrivateKey, serverCertificate, serverKeyPair.getPrivate(),
+                caPem, caPrivateKeyPem, serverCertificatePem, serverPrivateKeyPem, null, null, null);
+    }
+
     private GeneratedCertificate generateCertificate(Path caPath, Path serverCertificatePath, Path serverPrivateKeyPath)
             throws GeneralSecurityException, IOException {
         ensureBouncyCastleProvider();
@@ -127,6 +159,7 @@ public final class WebhookCertificateGenerator {
         X509Certificate serverCertificate = buildServerCertificate(caCertificate, caKeyPair, serverKeyPair, notBefore,
                 notAfter);
         byte[] caPem = writePem(caCertificate);
+        byte[] caPrivateKeyPem = writePrivateKeyPem(caKeyPair.getPrivate());
         byte[] serverCertificatePem = writePem(serverCertificate);
         byte[] serverPrivateKeyPem = writePrivateKeyPem(serverKeyPair.getPrivate());
 
@@ -136,8 +169,9 @@ public final class WebhookCertificateGenerator {
             writeAtomically(serverPrivateKeyPath, serverPrivateKeyPem, privateKeyPermissions());
         }
 
-        return new GeneratedCertificate(caCertificate, serverCertificate, serverKeyPair.getPrivate(), caPem,
-                serverCertificatePem, serverPrivateKeyPem, caPath, serverCertificatePath, serverPrivateKeyPath);
+        return new GeneratedCertificate(caCertificate, caKeyPair.getPrivate(), serverCertificate,
+                serverKeyPair.getPrivate(), caPem, caPrivateKeyPem, serverCertificatePem, serverPrivateKeyPem, caPath,
+                serverCertificatePath, serverPrivateKeyPath);
     }
 
     private KeyPair generateKeyPair() throws GeneralSecurityException {
