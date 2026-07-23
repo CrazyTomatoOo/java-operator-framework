@@ -161,16 +161,24 @@ public class EchoResourceV2 extends CustomResource<EchoSpecV2, EchoStatusV2> imp
 In addition to the variables listed in the local run section, Echo Operator recognizes:
 
 - `WEBHOOK_PORT` - port for the TLS webhook server, default `8443`
-- `WEBHOOK_CERT_AUTO_GENERATE` - enable automatic webhook certificate generation, default `true`
+- `WEBHOOK_ENABLED` - enable webhook serving and registration, default `true`. When `false`, the operator stops serving admission and conversion webhooks, deletes any stale `ValidatingWebhookConfiguration` and `MutatingWebhookConfiguration` it owns, renders the CRD conversion strategy as `None`, and keeps the metrics and health endpoints running.
+- `WEBHOOK_CERT_AUTO_GENERATE` - enable automatic webhook certificate generation, default `true`. When `true`, the operator generates a CA and server certificates on startup and persists the CA (private key and certificate) in the Kubernetes Secret named by `WEBHOOK_CERT_SECRET_NAME`. The CA survives pod restarts and Helm upgrades because it lives in the Secret, not on local disk. The private key is never written to the filesystem.
+- `WEBHOOK_CERT_SECRET_NAME` - name of the Secret that holds the webhook CA when `WEBHOOK_CERT_AUTO_GENERATE=true`, default `echo-operator-webhook-ca`. The operator creates the Secret if it does not exist and reads the CA back from it on subsequent startups.
 - `WEBHOOK_CERT_DIRECTORY` - directory to store generated certificates, default `/tmp/echo-operator/certs`
+- `WEBHOOK_SERVICE_NAME` - name of the Kubernetes Service used by webhook self-registration, default `echo-operator`
+- `WEBHOOK_SERVICE_NAMESPACE` - namespace of the webhook Service, defaults to the operator pod namespace (see `OPERATOR_POD_NAMESPACE`)
+- `OPERATOR_POD_NAMESPACE` - namespace the operator pod runs in, defaults to the watched `OPERATOR_NAMESPACE`. Used as the default for `WEBHOOK_SERVICE_NAMESPACE` and for namespaced resource lookups.
 - `WEBHOOK_CA_BUNDLE_PATH` - fallback path to the CA bundle used when `WEBHOOK_CERT_AUTO_GENERATE=false`; the sibling `tls.crt` and `tls.key` files are used for the server certificate and private key, default `/etc/echo-operator/certs/ca.crt`
 
 For local development you can set them before running `local-run.sh`:
 
 ```bash
 export WEBHOOK_PORT=8443
+export WEBHOOK_ENABLED=true
 export WEBHOOK_CERT_AUTO_GENERATE=true
+export WEBHOOK_CERT_SECRET_NAME=echo-operator-webhook-ca
 export WEBHOOK_CERT_DIRECTORY=/tmp/echo-operator/certs
+export WEBHOOK_SERVICE_NAME=echo-operator
 # only used when WEBHOOK_CERT_AUTO_GENERATE=false
 export WEBHOOK_CA_BUNDLE_PATH=/tmp/echo-operator/certs/ca.crt
 ```
@@ -184,7 +192,9 @@ webhook:
   port: 8443
   caBundle: ""                    # base64 CA bundle for CRD conversion / admission client configs
   path: /convert
-  createWebhookConfigurations: false   # set true to pre-create webhook configs via Helm
+  certAutoGenerate: true          # generate CA + server certs at startup; persists CA in certSecretName
+  certSecretName: echo-operator-webhook-ca  # Secret holding the CA when certAutoGenerate is true
+  createWebhookConfigurations: false   # set true to pre-create webhook configs via Helm (requires certAutoGenerate=false)
   failurePolicy: Fail
   timeoutSeconds: 10
   admissionName: echo.example.com
@@ -196,7 +206,11 @@ webhook:
     port: 443
 ```
 
-The TLS Secret must be created outside the chart by a cluster admin or external tooling. When `createWebhookConfigurations` is `false` (the default), the operator self-registers its admission webhook configurations on startup.
+When `certAutoGenerate` is `true` (the default), the operator generates a CA and server certificates on startup and persists the CA in the Secret named by `certSecretName`. The CA survives pod restarts and Helm upgrades because it lives in the Secret, not on local disk.
+
+When `createWebhookConfigurations` is `true`, the Helm chart pre-creates the `ValidatingWebhookConfiguration` and `MutatingWebhookConfiguration` resources. This mode only works with `certAutoGenerate=false` because Helm needs the CA bundle at install time, and auto-generated CAs are not available until the operator starts.
+
+When `createWebhookConfigurations` is `false` (the default), the operator self-registers its admission webhook configurations on startup.
 
 ## Example CR for v1alpha2
 
