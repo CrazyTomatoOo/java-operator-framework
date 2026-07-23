@@ -1,3 +1,4 @@
+{{- if and .Values.webhook.createWebhookConfigurations .Values.webhook.certAutoGenerate }}{{ fail "webhook.createWebhookConfigurations requires webhook.certAutoGenerate=false and a supplied webhook.caBundle" }}{{- end }}
 {{- if and .Values.webhook.enabled .Values.webhook.createWebhookConfigurations -}}
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
@@ -13,7 +14,7 @@ webhooks:
     timeoutSeconds: {{ .Values.webhook.timeoutSeconds }}
     clientConfig:
       service:
-        namespace: {{ default .Release.Namespace .Values.webhook.service.namespace | quote }}
+        namespace: {{ .Release.Namespace | quote }}
         name: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
         path: {{ printf "/mutate/%s" .Values.webhook.admissionName | quote }}
         port: {{ .Values.webhook.service.port }}
