@@ -1,4 +1,4 @@
-{{- if and .Values.rbac.create .Values.webhook.enabled -}}
+{{- if .Values.rbac.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -6,12 +6,17 @@ metadata:
   labels:
     {{- include "echo-operator.labels" . | nindent 4 }}
 rules:
-  # Self-registration for admission webhooks.
+{{- if .Values.webhook.enabled }}
   - apiGroups: ["admissionregistration.k8s.io"]
     resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # CRD access for conversion webhook self-registration and status checks.
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
     verbs: ["get", "list", "watch", "update", "patch"]
+{{- else }}
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+    resourceNames: [{{ printf "echo-operator.%s.echo.example.com" .Release.Namespace | quote }}]
+    verbs: ["get", "delete"]
+{{- end }}
 {{- end }}
