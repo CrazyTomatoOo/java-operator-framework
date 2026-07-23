@@ -13,10 +13,16 @@ import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhoo
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfigurationBuilder;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.WebhookClientConfig;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.WebhookClientConfigBuilder;
+import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceConversion;
+import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
+import io.fabric8.kubernetes.api.model.apiextensions.v1.ServiceReference;
+import io.fabric8.kubernetes.api.model.apiextensions.v1.WebhookConversion;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Objects;
@@ -29,6 +35,8 @@ public final class WebhookSelfRegistration {
     private static final String VALIDATING_KIND = "ValidatingWebhookConfiguration";
     private static final String MUTATING_KIND = "MutatingWebhookConfiguration";
     private static final String ADMISSION_REVIEW_VERSION = "v1";
+    private static final String WEBHOOK_CONVERSION_STRATEGY = "Webhook";
+    private static final int MAX_CONVERSION_CONFLICT_RETRIES = 3;
 
     private final KubernetesClient client;
     private final WebhookRegistrationConfig config;
@@ -49,6 +57,94 @@ public final class WebhookSelfRegistration {
                 .forEach(name -> registerValidatingWebhook(normalize(name), caBundle));
         Objects.requireNonNull(mutatorNames, "mutatorNames must not be null")
                 .forEach(name -> registerMutatingWebhook(normalize(name), caBundle));
+    }
+
+    public void patchConversionWebhookClientConfig(String crdName, Path caBundlePath,
+            String serviceName, String serviceNamespace, int servicePort) {
+        Objects.requireNonNull(crdName, "CRD name must not be null");
+        Objects.requireNonNull(serviceName, "service name must not be null");
+        Objects.requireNonNull(serviceNamespace, "service namespace must not be null");
+        String caBundle = caBundle(caBundlePath);
+        int conflictRetries = 0;
+        while (true) {
+            CustomResourceDefinition crd = client.apiextensions().v1().customResourceDefinitions()
+                    .withName(crdName).get();
+            CustomResourceConversion conversion = webhookConversion(crdName, crd);
+            WebhookConversion webhook = conversion.getWebhook();
+            io.fabric8.kubernetes.api.model.apiextensions.v1.WebhookClientConfig clientConfig = webhook.getClientConfig();
+            if (isConfigured(clientConfig, caBundle, serviceName, serviceNamespace, servicePort)) {
+                return;
+            }
+            if (clientConfig == null) {
+                clientConfig = new io.fabric8.kubernetes.api.model.apiextensions.v1.WebhookClientConfig();
+                webhook.setClientConfig(clientConfig);
+            }
+            clientConfig.setCaBundle(caBundle);
+            ServiceReference service = clientConfig.getService();
+            if (service == null) {
+                service = new ServiceReference();
+                clientConfig.setService(service);
+            }
+            service.setName(serviceName);
+            service.setNamespace(serviceNamespace);
+            service.setPort(servicePort);
+            try {
+                client.apiextensions().v1().customResourceDefinitions().resource(crd).update();
+                return;
+            } catch (KubernetesClientException exception) {
+                if (exception.getCode() != 409 || conflictRetries == MAX_CONVERSION_CONFLICT_RETRIES) {
+                    throw exception;
+                }
+                conflictRetries++;
+            }
+        }
+    }
+
+    public void unregisterAdmissionWebhooks(String baseName, Collection<String> validatorNames,
+            Collection<String> mutatorNames) {
+        Objects.requireNonNull(baseName, "base name must not be null");
+        Objects.requireNonNull(validatorNames, "validator names must not be null")
+                .forEach(name -> deleteValidatingWebhook(baseName + "." + normalize(name)));
+        Objects.requireNonNull(mutatorNames, "mutator names must not be null")
+                .forEach(name -> deleteMutatingWebhook(baseName + "." + normalize(name)));
+    }
+
+    private CustomResourceConversion webhookConversion(String crdName, CustomResourceDefinition crd) {
+        if (crd == null || crd.getSpec() == null || crd.getSpec().getConversion() == null
+                || !WEBHOOK_CONVERSION_STRATEGY.equals(crd.getSpec().getConversion().getStrategy())
+                || crd.getSpec().getConversion().getWebhook() == null) {
+            throw new IllegalStateException("CRD is missing or not configured for webhook conversion: " + crdName);
+        }
+        return crd.getSpec().getConversion();
+    }
+
+    private boolean isConfigured(io.fabric8.kubernetes.api.model.apiextensions.v1.WebhookClientConfig clientConfig,
+            String caBundle, String serviceName,
+            String serviceNamespace, int servicePort) {
+        ServiceReference service = clientConfig == null ? null : clientConfig.getService();
+        return clientConfig != null && caBundle.equals(clientConfig.getCaBundle()) && service != null
+                && serviceName.equals(service.getName()) && serviceNamespace.equals(service.getNamespace())
+                && Integer.valueOf(servicePort).equals(service.getPort());
+    }
+
+    private void deleteValidatingWebhook(String name) {
+        try {
+            client.admissionRegistration().v1().validatingWebhookConfigurations().withName(name).delete();
+        } catch (KubernetesClientException exception) {
+            if (exception.getCode() != 404) {
+                throw exception;
+            }
+        }
+    }
+
+    private void deleteMutatingWebhook(String name) {
+        try {
+            client.admissionRegistration().v1().mutatingWebhookConfigurations().withName(name).delete();
+        } catch (KubernetesClientException exception) {
+            if (exception.getCode() != 404) {
+                throw exception;
+            }
+        }
     }
 
     private void registerValidatingWebhook(String name, String caBundle) {
@@ -112,14 +208,18 @@ public final class WebhookSelfRegistration {
     }
 
     private String caBundle() {
+        return caBundle(config.caBundlePath());
+    }
+
+    private String caBundle(Path caBundlePath) {
         byte[] bytes;
         try {
-            bytes = Files.readAllBytes(config.caBundlePath());
+            bytes = Files.readAllBytes(Objects.requireNonNull(caBundlePath, "CA bundle path must not be null"));
         } catch (IOException exception) {
-            throw new IllegalStateException("CA bundle file is missing or unreadable: " + config.caBundlePath(), exception);
+            throw new IllegalStateException("CA bundle file is missing or unreadable: " + caBundlePath, exception);
         }
         if (bytes.length == 0) {
-            throw new IllegalStateException("CA bundle file is empty: " + config.caBundlePath());
+            throw new IllegalStateException("CA bundle file is empty: " + caBundlePath);
         }
         return Base64.getEncoder().encodeToString(bytes);
     }
