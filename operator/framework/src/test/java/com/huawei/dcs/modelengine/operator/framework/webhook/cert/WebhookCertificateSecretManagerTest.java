@@ -12,13 +12,15 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.PrivateKey;
+import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Set;
@@ -103,19 +105,21 @@ class WebhookCertificateSecretManagerTest {
     }
 
     @Test
-    void concurrentResolveCallsConvergeOnOneSecret() throws Exception {
+    void concurrentReplicaResolversReuseOneSecretAndWriteValidServerMaterial() throws Exception {
         GeneratedCertificate stored = generator().generate();
         server.expect().get().withPath(secretPath()).andReturn(200, secret(stored)).times(2);
         ExecutorService executor = Executors.newFixedThreadPool(2);
+        Path firstReplicaDirectory = tempDir.resolve("replica-one");
+        Path secondReplicaDirectory = tempDir.resolve("replica-two");
         try {
             CountDownLatch start = new CountDownLatch(1);
             Future<GeneratedCertificate> first = executor.submit(() -> {
                 start.await(10, TimeUnit.SECONDS);
-                return manager().resolve();
+                return manager(firstReplicaDirectory).resolve();
             });
             Future<GeneratedCertificate> second = executor.submit(() -> {
                 start.await(10, TimeUnit.SECONDS);
-                return manager().resolve();
+                return manager(secondReplicaDirectory).resolve();
             });
 
             start.countDown();
@@ -126,15 +130,10 @@ class WebhookCertificateSecretManagerTest {
             assertArrayEquals(stored.caCertificatePem(), resolvedOne.caCertificatePem());
             assertArrayEquals(stored.caCertificatePem(), resolvedTwo.caCertificatePem());
             assertArrayEquals(resolvedOne.caCertificatePem(), resolvedTwo.caCertificatePem());
-            assertArrayEquals(resolvedOne.caCertificatePem(), Files.readAllBytes(tempDir.resolve("ca.crt")));
-            byte[] localServerCertificate = Files.readAllBytes(tempDir.resolve("tls.crt"));
-            byte[] localServerPrivateKey = Files.readAllBytes(tempDir.resolve("tls.key"));
-            boolean firstWriterWon = Arrays.equals(resolvedOne.serverCertificatePem(), localServerCertificate)
-                    && Arrays.equals(resolvedOne.serverPrivateKeyPem(), localServerPrivateKey);
-            boolean secondWriterWon = Arrays.equals(resolvedTwo.serverCertificatePem(), localServerCertificate)
-                    && Arrays.equals(resolvedTwo.serverPrivateKeyPem(), localServerPrivateKey);
-            assertTrue(firstWriterWon || secondWriterWon);
-            assertFalse(Files.exists(tempDir.resolve("ca.key")));
+            assertValidLocalServerMaterial(resolvedOne);
+            assertValidLocalServerMaterial(resolvedTwo);
+            assertFalse(Files.exists(firstReplicaDirectory.resolve("ca.key")));
+            assertFalse(Files.exists(secondReplicaDirectory.resolve("ca.key")));
         } finally {
             executor.shutdownNow();
         }
@@ -168,8 +167,12 @@ class WebhookCertificateSecretManagerTest {
     }
 
     private WebhookCertificateSecretManager manager() {
+        return manager(tempDir);
+    }
+
+    private WebhookCertificateSecretManager manager(Path certificateDirectory) {
         return new WebhookCertificateSecretManager(client, SECRET_NAME, SECRET_NAMESPACE, SERVICE_NAME,
-                SERVICE_NAMESPACE, tempDir);
+                SERVICE_NAMESPACE, certificateDirectory);
     }
 
     private WebhookCertificateGenerator generator() {
@@ -206,6 +209,26 @@ class WebhookCertificateSecretManagerTest {
         assertArrayEquals(generated.caCertificatePem(), Files.readAllBytes(tempDir.resolve("ca.crt")));
         assertArrayEquals(generated.serverCertificatePem(), Files.readAllBytes(tempDir.resolve("tls.crt")));
         assertArrayEquals(generated.serverPrivateKeyPem(), Files.readAllBytes(tempDir.resolve("tls.key")));
+    }
+
+    private static void assertValidLocalServerMaterial(GeneratedCertificate generated) throws Exception {
+        assertArrayEquals(generated.caCertificatePem(), Files.readAllBytes(generated.caPath()));
+        X509Certificate localServerCertificate = readCertificate(generated.serverCertificatePath());
+        assertEquals(generated.serverCertificate(), localServerCertificate);
+        localServerCertificate.verify(generated.caCertificate().getPublicKey());
+        assertKeyMatchesCertificate(localServerCertificate,
+                PemCertificateUtils.readPrivateKey(generated.serverPrivateKeyPath()));
+    }
+
+    private static void assertKeyMatchesCertificate(X509Certificate certificate, PrivateKey privateKey) throws Exception {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        byte[] challenge = "operator-framework-webhook-server-key-match".getBytes(StandardCharsets.US_ASCII);
+        signature.initSign(privateKey);
+        signature.update(challenge);
+        byte[] signed = signature.sign();
+        signature.initVerify(certificate.getPublicKey());
+        signature.update(challenge);
+        assertTrue(signature.verify(signed), "local webhook certificate must match its private key");
     }
 
     private static X509Certificate readCertificate(Path path) throws Exception {

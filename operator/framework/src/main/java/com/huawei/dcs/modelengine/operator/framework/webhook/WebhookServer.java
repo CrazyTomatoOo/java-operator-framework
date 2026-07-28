@@ -13,6 +13,8 @@ import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * TLS webhook server backed by the JDK {@link HttpsServer}.
@@ -22,6 +24,7 @@ public final class WebhookServer implements AutoCloseable {
     public static final int DEFAULT_PORT = 8443;
 
     private final HttpsServer server;
+    private final ExecutorService executor;
     private final ReloadableSslContext sslContext;
     private final CertWatcher certWatcher;
     private final Object lifecycleLock = new Object();
@@ -58,6 +61,8 @@ public final class WebhookServer implements AutoCloseable {
         this.sslContext = context;
         this.certWatcher = new CertWatcher(certChainPath, privateKeyPath, caPath, context, pollingInterval);
         this.server = HttpsServer.create(new InetSocketAddress(Objects.requireNonNull(host, "host must not be null"), port), 0);
+        this.executor = Executors.newFixedThreadPool(4);
+        this.server.setExecutor(executor);
         this.server.setHttpsConfigurator(new ReloadingHttpsConfigurator(this.sslContext));
     }
 
@@ -66,6 +71,8 @@ public final class WebhookServer implements AutoCloseable {
         this.sslContext = Objects.requireNonNull(sslContext, "sslContext must not be null");
         this.certWatcher = certWatcher;
         this.server = HttpsServer.create(new InetSocketAddress(Objects.requireNonNull(host, "host must not be null"), port), 0);
+        this.executor = Executors.newFixedThreadPool(4);
+        this.server.setExecutor(executor);
         this.server.setHttpsConfigurator(new ReloadingHttpsConfigurator(this.sslContext));
     }
 
@@ -95,14 +102,27 @@ public final class WebhookServer implements AutoCloseable {
 
     public void stop() {
         synchronized (lifecycleLock) {
-            if (!running) {
-                return;
-            }
+            boolean wasRunning = running;
             running = false;
             if (certWatcher != null) {
                 certWatcher.stop();
             }
-            server.stop(0);
+            try {
+                try {
+                    if (!wasRunning) {
+                        try {
+                            // JDK HttpServer retains its bound socket when stopped before its first start.
+                            server.start();
+                        } catch (IllegalStateException ignored) {
+                            // The server was already stopped after a failed or completed start.
+                        }
+                    }
+                } finally {
+                    server.stop(0);
+                }
+            } finally {
+                executor.shutdownNow();
+            }
         }
     }
 

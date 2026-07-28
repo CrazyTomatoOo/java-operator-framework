@@ -8,6 +8,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,9 +23,16 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WebhookServerTest {
@@ -67,6 +75,78 @@ class WebhookServerTest {
 
         assertNotNull(sslContext.sslContext());
         assertTrue(before != sslContext.sslContext());
+    }
+
+    @Test
+    void stopBeforeStartReleasesTheBoundPort() throws Exception {
+        TestCertificate certificate = generateCertificate();
+        int port;
+        try (ServerSocket reservation = new ServerSocket(0)) {
+            port = reservation.getLocalPort();
+        }
+        WebhookServer server = new WebhookServer("localhost", port, certificate.certPath(), certificate.keyPath());
+
+        assertDoesNotThrow(server::stop);
+
+        WebhookServer replacement = new WebhookServer("localhost", port, certificate.certPath(), certificate.keyPath());
+        replacement.stop();
+    }
+
+    @Test
+    void stopAfterFailedStartStopsTheCertWatcher() throws Exception {
+        TestCertificate certificate = generateCertificate();
+        WebhookServer server = WebhookServer.withCertWatcher("localhost", 0, certificate.certPath(),
+                certificate.keyPath(), null, java.time.Duration.ofMillis(10));
+        long watcherThreadsBefore = liveCertWatcherThreads();
+        server.stop();
+
+        assertThrows(IllegalStateException.class, server::start);
+        try {
+            assertTrue(liveCertWatcherThreads() > watcherThreadsBefore);
+        } finally {
+            server.stop();
+        }
+        assertEquals(watcherThreadsBefore, liveCertWatcherThreads());
+    }
+
+    @Test
+    void fastRequestCompletesWhenAnotherRequestIsBlocked() throws Exception {
+        TestCertificate certificate = generateCertificate();
+        WebhookServer server = new WebhookServer("localhost", 0, certificate.certPath(), certificate.keyPath());
+        CountDownLatch blockedRequestStarted = new CountDownLatch(1);
+        CountDownLatch releaseBlockedRequest = new CountDownLatch(1);
+        ExecutorService callers = Executors.newSingleThreadExecutor();
+        server.register("/block", exchange -> {
+            blockedRequestStarted.countDown();
+            try {
+                releaseBlockedRequest.await();
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                exchange.close();
+                return;
+            }
+            write(exchange, 200, "released");
+        });
+        server.register("/fast", exchange -> write(exchange, 200, "fast"));
+
+        try {
+            server.start();
+            HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
+            Future<HttpResponse<String>> blocked = callers.submit(() -> client.send(request(server, "/block", 30),
+                    HttpResponse.BodyHandlers.ofString()));
+            assertTrue(blockedRequestStarted.await(2, TimeUnit.SECONDS));
+
+            HttpResponse<String> fast = client.send(request(server, "/fast", 2), HttpResponse.BodyHandlers.ofString());
+
+            assertEquals(200, fast.statusCode());
+            assertEquals("fast", fast.body());
+            releaseBlockedRequest.countDown();
+            assertEquals(200, blocked.get(2, TimeUnit.SECONDS).statusCode());
+        } finally {
+            releaseBlockedRequest.countDown();
+            callers.shutdownNow();
+            server.stop();
+        }
     }
 
     private TestCertificate generateCertificate() throws Exception {
@@ -118,6 +198,20 @@ class WebhookServerTest {
         String base64 = Base64.getMimeEncoder(64, "\n".getBytes(StandardCharsets.US_ASCII)).encodeToString(der);
         Files.writeString(path, "-----BEGIN " + label + "-----\n" + base64 + "\n-----END " + label + "-----\n",
                 StandardCharsets.US_ASCII);
+    }
+
+    private static HttpRequest request(WebhookServer server, String path, long timeoutSeconds) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create("https://localhost:" + server.address().getPort() + path))
+                .timeout(java.time.Duration.ofSeconds(timeoutSeconds))
+                .GET()
+                .build();
+    }
+
+    private static long liveCertWatcherThreads() {
+        return Thread.getAllStackTraces().keySet().stream()
+                .filter(thread -> thread.isAlive() && thread.getName().equals("operator-cert-watcher"))
+                .count();
     }
 
     private static SSLContext trustAllSslContext() throws Exception {
