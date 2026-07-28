@@ -38,6 +38,8 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.LongConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,13 +56,21 @@ public final class EchoOperatorMain {
     private static final int DEFAULT_METRICS_PORT = MetricsHealthServer.DEFAULT_PORT;
     private static final boolean DEFAULT_LEADER_ELECTION_ENABLED = false;
     private static final String DEFAULT_LEADER_ELECTION_LOCK_NAME = "echo-operator-lock";
+    private static final boolean DEFAULT_CONTROLLER_ENABLED = true;
     private static final boolean DEFAULT_WEBHOOK_ENABLED = true;
+    private static final boolean DEFAULT_WEBHOOK_REGISTRATION_CLEANUP_ENABLED = true;
+    private static final boolean DEFAULT_WEBHOOK_SELF_REGISTRATION_ENABLED = true;
+    private static final boolean DEFAULT_WEBHOOK_VALIDATING_ENABLED = true;
+    private static final boolean DEFAULT_WEBHOOK_MUTATING_ENABLED = true;
+    private static final boolean DEFAULT_WEBHOOK_CONVERSION_ENABLED = true;
     private static final boolean DEFAULT_WEBHOOK_CERT_AUTO_GENERATE = true;
     private static final String DEFAULT_WEBHOOK_CERT_SECRET_NAME = "echo-operator-webhook-ca";
     private static final String DEFAULT_WEBHOOK_CERT_DIRECTORY = "/tmp/echo-operator/certs";
     private static final String DEFAULT_WEBHOOK_CA_BUNDLE_PATH = "/etc/echo-operator/certs/ca.crt";
     private static final int DEFAULT_WEBHOOK_PORT = WebhookServer.DEFAULT_PORT;
     private static final int DEFAULT_WEBHOOK_SERVICE_PORT = 443;
+    private static final int WEBHOOK_PREDECESSOR_MAX_ATTEMPTS = 60;
+    private static final long WEBHOOK_PREDECESSOR_POLL_INTERVAL_MILLIS = 1_000L;
     private static final String DEFAULT_WEBHOOK_SERVICE_NAME = "echo-operator";
     private static final String WEBHOOK_NAME = "echo.example.com";
     private static final String V1ALPHA1 = "example.com/v1alpha1";
@@ -76,12 +86,25 @@ public final class EchoOperatorMain {
     private final ConversionHandler conversionHandler;
     private final WebhookSelfRegistration webhookSelfRegistration;
     private final EventRecorder eventRecorder;
+    private final LongConsumer predecessorPollSleeper;
+    private final AtomicBoolean webhookReady = new AtomicBoolean();
+    private final AtomicBoolean operatorStarted = new AtomicBoolean();
+    private final AtomicBoolean stopped = new AtomicBoolean();
 
     EchoOperatorMain(KubernetesClient client, Operator operator, MetricsHealthServer metricsHealthServer,
             OperatorConfig config, WebhookCertificatePaths certificatePaths, WebhookServer webhookServer,
             AdmissionHandler admissionHandler,
             ConversionHandler conversionHandler,
             WebhookSelfRegistration webhookSelfRegistration, EventRecorder eventRecorder) {
+        this(client, operator, metricsHealthServer, config, certificatePaths, webhookServer, admissionHandler,
+                conversionHandler, webhookSelfRegistration, eventRecorder, EchoOperatorMain::sleepBeforePredecessorPoll);
+    }
+
+    EchoOperatorMain(KubernetesClient client, Operator operator, MetricsHealthServer metricsHealthServer,
+            OperatorConfig config, WebhookCertificatePaths certificatePaths, WebhookServer webhookServer,
+            AdmissionHandler admissionHandler, ConversionHandler conversionHandler,
+            WebhookSelfRegistration webhookSelfRegistration, EventRecorder eventRecorder,
+            LongConsumer predecessorPollSleeper) {
         this.client = client;
         this.operator = operator;
         this.metricsHealthServer = metricsHealthServer;
@@ -92,86 +115,134 @@ public final class EchoOperatorMain {
         this.conversionHandler = conversionHandler;
         this.webhookSelfRegistration = webhookSelfRegistration;
         this.eventRecorder = eventRecorder;
+        this.predecessorPollSleeper = predecessorPollSleeper;
     }
 
     public static void main(String[] args) {
         OperatorConfig config = loadConfig();
         KubernetesClient client = new KubernetesClientBuilder().build();
+        EchoOperatorMain operatorMain = null;
         try {
-            EchoOperatorMain operatorMain = create(client, config);
+            operatorMain = create(client, config);
             operatorMain.start();
         } catch (Exception exception) {
             LOGGER.log(Level.SEVERE, "Failed to start Echo Operator", exception);
-            client.close();
+            if (operatorMain == null) {
+                client.close();
+            }
             throw new RuntimeException("Failed to start Echo Operator", exception);
         }
     }
 
     static EchoOperatorMain create(KubernetesClient client, OperatorConfig config) throws IOException {
-        Operator operator = new Operator(client).withNamespace(config.operatorNamespace());
+        return create(client, config, EchoOperatorMain::sleepBeforePredecessorPoll);
+    }
+
+    static EchoOperatorMain create(KubernetesClient client, OperatorConfig config, LongConsumer predecessorPollSleeper)
+            throws IOException {
         MetricsHealthServer metricsHealthServer = new MetricsHealthServer(config.metricsPort());
-        WebhookCertificatePaths certificatePaths = null;
-        AdmissionHandler admissionHandler = null;
-        ConversionHandler conversionHandler = null;
         WebhookServer webhookServer = null;
-        WebhookSelfRegistration webhookSelfRegistration = null;
-        if (config.webhookEnabled()) {
-            admissionHandler = new AdmissionHandler(client);
-            admissionHandler.registerValidator(WEBHOOK_NAME, com.example.echooperator.api.v1alpha2.EchoResource.class,
-                    new EchoValidatingWebhook());
-            admissionHandler.registerMutator(WEBHOOK_NAME, com.example.echooperator.api.v1alpha2.EchoResource.class,
-                    new EchoMutatingWebhook());
-            conversionHandler = new ConversionHandler(client);
-            EchoConverter echoConverter = new EchoConverter();
-            KubernetesSerialization serialization = client.getKubernetesSerialization();
-            conversionHandler.register(V1ALPHA1, V1ALPHA2, (desiredVersion, resource) -> ConversionResult.converted(
-                    echoConverter.toV2(toV1Resource(serialization, resource))));
-            conversionHandler.register(V1ALPHA2, V1ALPHA1, (desiredVersion, resource) -> ConversionResult.converted(
-                    echoConverter.toV1(toV2Resource(serialization, resource))));
+        try {
+            Operator operator;
+            EventRecorder eventRecorder;
+            if (config.controllerEnabled()) {
+                operator = new Operator(client).withNamespace(config.operatorNamespace());
+                eventRecorder = new EventRecorder(client, "echo-operator");
+                operator.register(com.example.echooperator.api.v1alpha2.EchoResource.class,
+                        new EchoReconciler(client, metricsHealthServer.metricsRegistry(), eventRecorder));
+            } else {
+                operator = null;
+                eventRecorder = null;
+            }
+            WebhookCertificatePaths certificatePaths = null;
+            AdmissionHandler admissionHandler = null;
+            ConversionHandler conversionHandler = null;
+            WebhookSelfRegistration webhookSelfRegistration = null;
+            if (config.webhookEnabled()) {
+                admissionHandler = new AdmissionHandler(client);
+                admissionHandler.registerValidator(WEBHOOK_NAME,
+                        com.example.echooperator.api.v1alpha2.EchoResource.class, new EchoValidatingWebhook());
+                admissionHandler.registerMutator(WEBHOOK_NAME,
+                        com.example.echooperator.api.v1alpha2.EchoResource.class, new EchoMutatingWebhook());
+                conversionHandler = new ConversionHandler(client);
+                EchoConverter echoConverter = new EchoConverter();
+                KubernetesSerialization serialization = client.getKubernetesSerialization();
+                conversionHandler.register(V1ALPHA1, V1ALPHA2, (desiredVersion, resource) -> ConversionResult.converted(
+                        echoConverter.toV2(toV1Resource(serialization, resource))));
+                conversionHandler.register(V1ALPHA2, V1ALPHA1, (desiredVersion, resource) -> ConversionResult.converted(
+                        echoConverter.toV1(toV2Resource(serialization, resource))));
+                if (!config.webhookValidatingEnabled()) {
+                    admissionHandler.disableValidator(WEBHOOK_NAME);
+                }
+                if (!config.webhookMutatingEnabled()) {
+                    admissionHandler.disableMutator(WEBHOOK_NAME);
+                }
+                if (!config.webhookConversionEnabled()) {
+                    conversionHandler.disable();
+                }
 
-            certificatePaths = resolveWebhookCertificatePaths(client, config);
-            webhookServer = WebhookServer.withCertWatcher(WebhookServer.DEFAULT_HOST, config.webhookPort(),
-                    certificatePaths.serverCertificatePath(), certificatePaths.serverPrivateKeyPath(), certificatePaths.caPath(),
-                    CertWatcher.DEFAULT_POLLING_INTERVAL);
-            admissionHandler.register(webhookServer);
-            conversionHandler.register(webhookServer);
-            WebhookRegistrationConfig registrationConfig = WebhookRegistrationConfig.builder(config.webhookServiceName(),
-                    config.webhookServiceNamespace(), certificatePaths.caPath()).withServicePort(config.webhookServicePort())
-                    .withBaseName(registrationBaseName(config)).withRules(List.of(new RuleWithOperationsBuilder()
-                            .withApiGroups("example.com")
-                            .withApiVersions("v1alpha1", "v1alpha2")
-                            .withOperations("CREATE", "UPDATE")
-                            .withResources("echoresources")
-                            .withScope("Namespaced")
-                            .build()))
-                    .build();
-            webhookSelfRegistration = new WebhookSelfRegistration(client, registrationConfig);
+                certificatePaths = resolveWebhookCertificatePaths(client, config);
+                webhookServer = WebhookServer.withCertWatcher(WebhookServer.DEFAULT_HOST, config.webhookPort(),
+                        certificatePaths.serverCertificatePath(), certificatePaths.serverPrivateKeyPath(),
+                        certificatePaths.caPath(), CertWatcher.DEFAULT_POLLING_INTERVAL);
+                admissionHandler.register(webhookServer);
+                conversionHandler.register(webhookServer);
+                WebhookRegistrationConfig registrationConfig = WebhookRegistrationConfig.builder(
+                        config.webhookServiceName(), config.webhookServiceNamespace(), certificatePaths.caPath())
+                        .withServicePort(config.webhookServicePort()).withBaseName(registrationBaseName(config))
+                        .withRules(List.of(new RuleWithOperationsBuilder()
+                                .withApiGroups("example.com")
+                                .withApiVersions("v1alpha1", "v1alpha2")
+                                .withOperations("CREATE", "UPDATE")
+                                .withResources("echoresources")
+                                .withScope("Namespaced")
+                                .build()))
+                        .build();
+                webhookSelfRegistration = new WebhookSelfRegistration(client, registrationConfig);
+            }
+            // Example (commented): register the same reconciler with a secondary ConfigMap watch.
+            // A ConfigMap labelled "echo-name: <echo-resource-name>" would trigger reconciliation
+            // for the matching EchoResource. Keeping this commented preserves the simple default path.
+            // operator.register(ControllerBuilder.forResource(EchoResource.class)
+            //         .withReconciler(new EchoReconciler(client, metricsHealthServer.metricsRegistry()))
+            //         .watches("configmaps", ConfigMap.class, Mappers.byLabel("echo-name"))
+            //         .build());
+
+            // Example (commented): watch Kubernetes Events for this custom resource.
+            // Do not enable this with this reconciler: it emits Events for EchoResource, so
+            // EventSubscriber.forInvolvedObject(EchoResource.class) can trigger an infinite
+            // reconciliation loop from the reconciler's own Events.
+            // operator.register(ControllerBuilder.forResource(EchoResource.class)
+            //         .withReconciler(new EchoReconciler(client, metricsHealthServer.metricsRegistry(), eventRecorder))
+            //         .withEventSubscriber(EventSubscriber.forInvolvedObject(EchoResource.class))
+            //         .build());
+
+            EchoOperatorMain main = new EchoOperatorMain(client, operator, metricsHealthServer, config, certificatePaths,
+                    webhookServer, admissionHandler, conversionHandler, webhookSelfRegistration, eventRecorder,
+                    predecessorPollSleeper);
+            main.addReadinessCheck();
+            return main;
+        } catch (IOException | RuntimeException | Error exception) {
+            if (webhookServer != null) {
+                try {
+                    webhookServer.stop();
+                } catch (RuntimeException | Error cleanupException) {
+                    exception.addSuppressed(cleanupException);
+                }
+            }
+            try {
+                // JDK HttpServer retains its bound socket when stopped before its first start.
+                metricsHealthServer.start();
+            } catch (RuntimeException | Error cleanupException) {
+                exception.addSuppressed(cleanupException);
+            }
+            try {
+                metricsHealthServer.close();
+            } catch (RuntimeException | Error cleanupException) {
+                exception.addSuppressed(cleanupException);
+            }
+            throw exception;
         }
-        EventRecorder eventRecorder = new EventRecorder(client, "echo-operator");
-
-        // Example (commented): register the same reconciler with a secondary ConfigMap watch.
-        // A ConfigMap labelled "echo-name: <echo-resource-name>" would trigger reconciliation
-        // for the matching EchoResource. Keeping this commented preserves the simple default path.
-        // operator.register(ControllerBuilder.forResource(EchoResource.class)
-        //         .withReconciler(new EchoReconciler(client, metricsHealthServer.metricsRegistry()))
-        //         .watches("configmaps", ConfigMap.class, Mappers.byLabel("echo-name"))
-        //         .build());
-
-        // Example (commented): watch Kubernetes Events for this custom resource.
-        // Do not enable this with this reconciler: it emits Events for EchoResource, so
-        // EventSubscriber.forInvolvedObject(EchoResource.class) can trigger an infinite
-        // reconciliation loop from the reconciler's own Events.
-        // operator.register(ControllerBuilder.forResource(EchoResource.class)
-        //         .withReconciler(new EchoReconciler(client, metricsHealthServer.metricsRegistry(), eventRecorder))
-        //         .withEventSubscriber(EventSubscriber.forInvolvedObject(EchoResource.class))
-        //         .build());
-
-        operator.register(com.example.echooperator.api.v1alpha2.EchoResource.class,
-                new EchoReconciler(client, metricsHealthServer.metricsRegistry(), eventRecorder));
-        EchoOperatorMain main = new EchoOperatorMain(client, operator, metricsHealthServer, config, certificatePaths,
-                webhookServer, admissionHandler, conversionHandler, webhookSelfRegistration, eventRecorder);
-        main.addReadinessCheck();
-        return main;
     }
 
     private static WebhookCertificatePaths resolveWebhookCertificatePaths(KubernetesClient client, OperatorConfig config)
@@ -214,51 +285,121 @@ public final class EchoOperatorMain {
     }
 
     void start() {
-        if (config.webhookEnabled()) {
-            webhookServer.start();
-            if (config.webhookCertAutoGenerate()) {
-                webhookSelfRegistration.patchConversionWebhookClientConfig("echoresources.example.com",
-                        certificatePaths.caPath(), config.webhookServiceName(), config.webhookServiceNamespace(),
-                        config.webhookServicePort());
+        webhookReady.set(false);
+        try {
+            metricsHealthServer.start();
+            LOGGER.info(() -> "Metrics/health server started on port " + metricsHealthServer.address().getPort());
+            if (config.webhookEnabled()) {
+                if (config.webhookSelfRegistrationEnabled()) {
+                    awaitPredecessorRemoval();
+                }
+                webhookServer.start();
+                if (config.webhookRegistrationCleanupEnabled()) {
+                    unregisterStaleAdmissionWebhooks();
+                } else {
+                    if (!config.webhookValidatingEnabled()) {
+                        unregisterStaleAdmissionWebhooks(List.of(WEBHOOK_NAME), List.of());
+                    }
+                    if (!config.webhookMutatingEnabled()) {
+                        unregisterStaleAdmissionWebhooks(List.of(), List.of(WEBHOOK_NAME));
+                    }
+                }
+                if (config.webhookCertAutoGenerate() && config.webhookConversionEnabled()) {
+                    webhookSelfRegistration.patchConversionWebhookClientConfig("echoresources.example.com",
+                            certificatePaths.caPath(), config.webhookServiceName(), config.webhookServiceNamespace(),
+                            config.webhookServicePort());
+                }
+                if (config.webhookSelfRegistrationEnabled()) {
+                    webhookSelfRegistration.register(admissionHandler);
+                }
+                webhookReady.set(true);
+                LOGGER.info(() -> "Webhook server started on port " + webhookServer.address().getPort());
             }
-            webhookSelfRegistration.register(admissionHandler);
-            LOGGER.info(() -> "Webhook server started on port " + webhookServer.address().getPort());
+
+            Runnable startOperator = () -> {
+                if (!config.webhookEnabled() && config.webhookRegistrationCleanupEnabled()) {
+                    unregisterStaleAdmissionWebhooks();
+                }
+                operatorStarted.set(true);
+                operator.start();
+                LOGGER.info("Echo Operator started");
+            };
+
+            addShutdownHook();
+
+            if (!config.controllerEnabled()) {
+                return;
+            }
+            if (config.leaderElectionEnabled()) {
+                LeaderElectionManager leaderElection = new LeaderElectionManager(client,
+                        config.leaderElectionLockName(), config.leaderElectionNamespace());
+                leaderElection.run(startOperator);
+            } else {
+                startOperator.run();
+            }
+        } catch (RuntimeException | Error exception) {
+            webhookReady.set(false);
+            stop();
+            throw exception;
         }
-        metricsHealthServer.start();
-        LOGGER.info(() -> "Metrics/health server started on port " + metricsHealthServer.address().getPort());
+    }
 
-        Runnable startOperator = () -> {
-            if (!config.webhookEnabled()) {
-                unregisterStaleAdmissionWebhooks();
+    private void awaitPredecessorRemoval() {
+        for (int attempt = 1; attempt <= WEBHOOK_PREDECESSOR_MAX_ATTEMPTS; attempt++) {
+            boolean validatingAbsent = config.webhookPredecessorValidatingName() == null
+                    || client.admissionRegistration().v1().validatingWebhookConfigurations()
+                            .withName(config.webhookPredecessorValidatingName()).get() == null;
+            boolean mutatingAbsent = config.webhookPredecessorMutatingName() == null
+                    || client.admissionRegistration().v1().mutatingWebhookConfigurations()
+                            .withName(config.webhookPredecessorMutatingName()).get() == null;
+            if (validatingAbsent && mutatingAbsent) {
+                return;
             }
-            operator.start();
-            LOGGER.info("Echo Operator started");
-        };
+            if (attempt < WEBHOOK_PREDECESSOR_MAX_ATTEMPTS) {
+                predecessorPollSleeper.accept(WEBHOOK_PREDECESSOR_POLL_INTERVAL_MILLIS);
+            }
+        }
+        throw new IllegalStateException("Timed out after " + WEBHOOK_PREDECESSOR_MAX_ATTEMPTS
+                + " attempts waiting for predecessor webhook configurations "
+                + "to be removed: validating=" + config.webhookPredecessorValidatingName()
+                + ", mutating=" + config.webhookPredecessorMutatingName());
+    }
 
-        addShutdownHook();
-
-        if (config.leaderElectionEnabled()) {
-            LeaderElectionManager leaderElection = new LeaderElectionManager(client, config.leaderElectionLockName(),
-                    config.leaderElectionNamespace());
-            leaderElection.run(startOperator);
-        } else {
-            startOperator.run();
+    private static void sleepBeforePredecessorPoll(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for predecessor webhook configurations", exception);
         }
     }
 
     private void unregisterStaleAdmissionWebhooks() {
+        unregisterStaleAdmissionWebhooks(List.of(WEBHOOK_NAME), List.of(WEBHOOK_NAME));
+    }
+
+    private void unregisterStaleAdmissionWebhooks(List<String> validatorNames, List<String> mutatorNames) {
         String baseName = registrationBaseName(config);
-        WebhookRegistrationConfig cleanupConfig = WebhookRegistrationConfig.builder(config.webhookServiceName(),
-                config.webhookServiceNamespace(), config.webhookCaBundlePath()).withServicePort(config.webhookServicePort())
-                .withBaseName(baseName).build();
-        new WebhookSelfRegistration(client, cleanupConfig).unregisterAdmissionWebhooks(baseName,
-                List.of(WEBHOOK_NAME), List.of(WEBHOOK_NAME));
+        WebhookSelfRegistration registration = webhookSelfRegistration;
+        if (registration == null) {
+            WebhookRegistrationConfig cleanupConfig = WebhookRegistrationConfig.builder(config.webhookServiceName(),
+                    config.webhookServiceNamespace(), config.webhookCaBundlePath())
+                    .withServicePort(config.webhookServicePort()).withBaseName(baseName).build();
+            registration = new WebhookSelfRegistration(client, cleanupConfig);
+        }
+        registration.unregisterAdmissionWebhooks(baseName, validatorNames, mutatorNames);
     }
 
     private void addReadinessCheck() {
         metricsHealthServer.addReadinessCheck(() -> {
-            var sources = operator.eventSources();
-            return !sources.isEmpty() && sources.stream().allMatch(source -> source.getInformer().hasSynced());
+            boolean controllerReady = true;
+            if (config.controllerEnabled()) {
+                var sources = operator.eventSources();
+                controllerReady = !sources.isEmpty()
+                        && sources.stream().allMatch(source -> source.getInformer().hasSynced());
+            }
+            boolean servingReady = !config.webhookEnabled() || webhookReady.get();
+            return controllerReady && servingReady;
         });
     }
 
@@ -267,6 +408,10 @@ public final class EchoOperatorMain {
     }
 
     void stop() {
+        webhookReady.set(false);
+        if (!stopped.compareAndSet(false, true)) {
+            return;
+        }
         LOGGER.info("Shutting down Echo Operator");
         if (webhookServer != null) {
             try {
@@ -277,25 +422,31 @@ public final class EchoOperatorMain {
         }
         // Operator.stop() closes the shared Kubernetes client, so the recorder must
         // flush pending counts before that.
-        try {
-            eventRecorder.close();
-        } catch (RuntimeException exception) {
-            LOGGER.log(Level.WARNING, "Error closing event recorder", exception);
+        if (eventRecorder != null) {
+            try {
+                eventRecorder.close();
+            } catch (RuntimeException exception) {
+                LOGGER.log(Level.WARNING, "Error closing event recorder", exception);
+            }
         }
-        try {
-            operator.stop();
-        } catch (RuntimeException exception) {
-            LOGGER.log(Level.WARNING, "Error stopping operator", exception);
+        if (operator != null) {
+            try {
+                operator.stop();
+            } catch (RuntimeException exception) {
+                LOGGER.log(Level.WARNING, "Error stopping operator", exception);
+            }
         }
         try {
             metricsHealthServer.close();
         } catch (RuntimeException exception) {
             LOGGER.log(Level.WARNING, "Error stopping metrics/health server", exception);
         }
-        try {
-            client.close();
-        } catch (RuntimeException exception) {
-            LOGGER.log(Level.WARNING, "Error closing Kubernetes client", exception);
+        if (operator == null || !operatorStarted.get()) {
+            try {
+                client.close();
+            } catch (RuntimeException exception) {
+                LOGGER.log(Level.WARNING, "Error closing Kubernetes client", exception);
+            }
         }
     }
 
@@ -315,8 +466,24 @@ public final class EchoOperatorMain {
                 DEFAULT_LEADER_ELECTION_LOCK_NAME);
         String webhookCaBundlePath = resolveConfig("WEBHOOK_CA_BUNDLE_PATH", env, defaults, "webhook.ca.bundle.path",
                 DEFAULT_WEBHOOK_CA_BUNDLE_PATH);
+        boolean controllerEnabled = resolveBooleanConfig("CONTROLLER_ENABLED", env, defaults, "controller.enabled",
+                DEFAULT_CONTROLLER_ENABLED);
         boolean webhookEnabled = resolveBooleanConfig("WEBHOOK_ENABLED", env, defaults, "webhook.enabled",
                 DEFAULT_WEBHOOK_ENABLED);
+        boolean webhookRegistrationCleanupEnabled = resolveBooleanConfig("WEBHOOK_REGISTRATION_CLEANUP_ENABLED", env,
+                defaults, "webhook.registration.cleanup.enabled", DEFAULT_WEBHOOK_REGISTRATION_CLEANUP_ENABLED);
+        boolean webhookSelfRegistrationEnabled = resolveBooleanConfig("WEBHOOK_SELF_REGISTRATION_ENABLED", env, defaults,
+                "webhook.self-registration.enabled", DEFAULT_WEBHOOK_SELF_REGISTRATION_ENABLED);
+        String webhookPredecessorValidatingName = resolveConfig("WEBHOOK_PREDECESSOR_VALIDATING_NAME", env, defaults,
+                "webhook.predecessor.validating.name", null);
+        String webhookPredecessorMutatingName = resolveConfig("WEBHOOK_PREDECESSOR_MUTATING_NAME", env, defaults,
+                "webhook.predecessor.mutating.name", null);
+        boolean webhookValidatingEnabled = resolveBooleanConfig("WEBHOOK_VALIDATING_ENABLED", env, defaults,
+                "webhook.validating.enabled", DEFAULT_WEBHOOK_VALIDATING_ENABLED);
+        boolean webhookMutatingEnabled = resolveBooleanConfig("WEBHOOK_MUTATING_ENABLED", env, defaults,
+                "webhook.mutating.enabled", DEFAULT_WEBHOOK_MUTATING_ENABLED);
+        boolean webhookConversionEnabled = resolveBooleanConfig("WEBHOOK_CONVERSION_ENABLED", env, defaults,
+                "webhook.conversion.enabled", DEFAULT_WEBHOOK_CONVERSION_ENABLED);
         boolean webhookCertAutoGenerate = resolveBooleanConfig("WEBHOOK_CERT_AUTO_GENERATE", env, defaults,
                 "webhook.cert.auto-generate", DEFAULT_WEBHOOK_CERT_AUTO_GENERATE);
         String webhookCertSecretName = resolveRequiredConfig("WEBHOOK_CERT_SECRET_NAME", env, defaults,
@@ -350,11 +517,17 @@ public final class EchoOperatorMain {
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("WEBHOOK_SERVICE_PORT must be an integer: " + webhookServicePortValue);
         }
+        if (!controllerEnabled && !webhookEnabled) {
+            throw new IllegalArgumentException("At least one of CONTROLLER_ENABLED or WEBHOOK_ENABLED must be true");
+        }
 
         return new OperatorConfig(namespace, operatorPodNamespace, metricsPort, leaderElectionEnabled,
                 leaderElectionNamespace, leaderElectionLockName, Path.of(webhookCaBundlePath), webhookEnabled,
+                webhookValidatingEnabled, webhookMutatingEnabled, webhookConversionEnabled,
                 webhookCertAutoGenerate, webhookCertSecretName, webhookServiceName, webhookServiceNamespace,
-                Path.of(webhookCertDirectory), webhookPort, webhookServicePort);
+                Path.of(webhookCertDirectory), webhookPort, webhookServicePort, controllerEnabled,
+                webhookRegistrationCleanupEnabled, webhookSelfRegistrationEnabled, webhookPredecessorValidatingName,
+                webhookPredecessorMutatingName);
     }
 
     private static String resolveConfig(String envVar, Properties defaults, String propertyKey, String fallback) {
@@ -467,17 +640,38 @@ public final class EchoOperatorMain {
 
     record OperatorConfig(String operatorNamespace, String operatorPodNamespace, int metricsPort,
             boolean leaderElectionEnabled, String leaderElectionNamespace, String leaderElectionLockName,
-            Path webhookCaBundlePath, boolean webhookEnabled, boolean webhookCertAutoGenerate,
+            Path webhookCaBundlePath, boolean webhookEnabled, boolean webhookValidatingEnabled,
+            boolean webhookMutatingEnabled, boolean webhookConversionEnabled, boolean webhookCertAutoGenerate,
             String webhookCertSecretName, String webhookServiceName, String webhookServiceNamespace,
-            Path webhookCertDirectory, int webhookPort, int webhookServicePort) {
+            Path webhookCertDirectory, int webhookPort, int webhookServicePort, boolean controllerEnabled,
+            boolean webhookRegistrationCleanupEnabled, boolean webhookSelfRegistrationEnabled,
+            String webhookPredecessorValidatingName, String webhookPredecessorMutatingName) {
+
+        OperatorConfig(String operatorNamespace, String operatorPodNamespace, int metricsPort,
+                boolean leaderElectionEnabled, String leaderElectionNamespace, String leaderElectionLockName,
+                Path webhookCaBundlePath, boolean webhookEnabled, boolean webhookValidatingEnabled,
+                boolean webhookMutatingEnabled, boolean webhookConversionEnabled, boolean webhookCertAutoGenerate,
+                String webhookCertSecretName, String webhookServiceName, String webhookServiceNamespace,
+                Path webhookCertDirectory, int webhookPort, int webhookServicePort) {
+            this(operatorNamespace, operatorPodNamespace, metricsPort, leaderElectionEnabled, leaderElectionNamespace,
+                    leaderElectionLockName, webhookCaBundlePath, webhookEnabled, webhookValidatingEnabled,
+                    webhookMutatingEnabled, webhookConversionEnabled, webhookCertAutoGenerate, webhookCertSecretName,
+                    webhookServiceName, webhookServiceNamespace, webhookCertDirectory, webhookPort, webhookServicePort,
+                    DEFAULT_CONTROLLER_ENABLED, DEFAULT_WEBHOOK_REGISTRATION_CLEANUP_ENABLED,
+                    DEFAULT_WEBHOOK_SELF_REGISTRATION_ENABLED, null, null);
+        }
 
         OperatorConfig(String operatorNamespace, int metricsPort, boolean leaderElectionEnabled,
                 String leaderElectionNamespace, String leaderElectionLockName, Path webhookCaBundlePath,
                 boolean webhookCertAutoGenerate, Path webhookCertDirectory, int webhookPort, int webhookServicePort) {
             this(operatorNamespace, operatorNamespace, metricsPort, leaderElectionEnabled, leaderElectionNamespace,
-                    leaderElectionLockName, webhookCaBundlePath, DEFAULT_WEBHOOK_ENABLED, webhookCertAutoGenerate,
+                    leaderElectionLockName, webhookCaBundlePath, DEFAULT_WEBHOOK_ENABLED,
+                    DEFAULT_WEBHOOK_VALIDATING_ENABLED, DEFAULT_WEBHOOK_MUTATING_ENABLED,
+                    DEFAULT_WEBHOOK_CONVERSION_ENABLED, webhookCertAutoGenerate,
                     DEFAULT_WEBHOOK_CERT_SECRET_NAME, DEFAULT_WEBHOOK_SERVICE_NAME, operatorNamespace,
-                    webhookCertDirectory, webhookPort, webhookServicePort);
+                    webhookCertDirectory, webhookPort, webhookServicePort, DEFAULT_CONTROLLER_ENABLED,
+                    DEFAULT_WEBHOOK_REGISTRATION_CLEANUP_ENABLED, DEFAULT_WEBHOOK_SELF_REGISTRATION_ENABLED,
+                    null, null);
         }
     }
 
