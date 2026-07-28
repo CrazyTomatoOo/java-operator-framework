@@ -1,0 +1,9 @@
+release=echo-smoke-combined-live-combined-20260727290000
+namespace=echo-smoke-combined-live-combined-20260727290000
+mode=combined
+controllerDeployment=echo-smoke-combined-live-combined-20260727290000-echo-operator
+webhookDeployment=echo-smoke-combined-live-combined-20260727290000-echo-operator
+controllerService=echo-smoke-combined-live-combined-20260727290000-echo-operator
+webhookService=echo-smoke-combined-live-combined-20260727290000-echo-operator
+controllerSA=echo-smoke-combined-live-combined-20260727290000-echo-operator
+webhookSA=echo-smoke-combined-live-combined-20260727290000-echo-operator

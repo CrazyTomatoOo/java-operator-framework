@@ -1,0 +1,65 @@
+Task 3 manual Helm render observables
+
+[default combined]
+resource_count=8
+resource=ServiceAccount/contract-echo-operator
+resource=CustomResourceDefinition/echoresources.example.com
+resource=ClusterRole/contract-echo-operator
+resource=ClusterRoleBinding/contract-echo-operator
+resource=Role/contract-echo-operator
+resource=RoleBinding/contract-echo-operator
+resource=Service/contract-echo-operator
+resource=Deployment/contract-echo-operator
+deployment.name=contract-echo-operator
+deployment.replicas=1
+deployment.selector={"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+pod.labels={"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+service.name=contract-echo-operator
+service.selector={"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+serviceAccount.name=contract-echo-operator
+
+[split]
+resource_count=11
+resource=ServiceAccount/contract-echo-operator-controller
+resource=ServiceAccount/contract-echo-operator-webhook
+resource=CustomResourceDefinition/echoresources.example.com
+resource=ClusterRole/contract-echo-operator
+resource=ClusterRoleBinding/contract-echo-operator
+resource=Role/contract-echo-operator
+resource=RoleBinding/contract-echo-operator
+resource=Service/contract-echo-operator-controller
+resource=Service/contract-echo-operator
+resource=Deployment/contract-echo-operator-controller
+resource=Deployment/contract-echo-operator-webhook
+controller_deployment.name=contract-echo-operator-controller
+controller_deployment.replicas=1
+controller_deployment.selector={"app.kubernetes.io/component": "controller", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+controller_pod.labels={"app.kubernetes.io/component": "controller", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+controller_sa=contract-echo-operator-controller
+webhook_deployment.name=contract-echo-operator-webhook
+webhook_deployment.replicas=1
+webhook_deployment.selector={"app.kubernetes.io/component": "webhook", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+webhook_pod.labels={"app.kubernetes.io/component": "webhook", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+webhook_sa=contract-echo-operator-webhook
+controller_service.name=contract-echo-operator-controller
+controller_service.selector={"app.kubernetes.io/component": "controller", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+webhook_service.name=contract-echo-operator
+webhook_service.selector={"app.kubernetes.io/component": "webhook", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+
+[poison isolation]
+resource_count=11
+poison_deployment.name=contract-echo-operator-controller
+poison_deployment.replicas=2
+poison_deployment.resources={"limits": {"cpu": "999m", "memory": "999Mi"}, "requests": {"cpu": "111m", "memory": "111Mi"}}
+poison_deployment.labels={"app.kubernetes.io/component": "controller", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+poison_deployment.sa=contract-echo-operator-controller
+poison_deployment.name=contract-echo-operator-webhook
+poison_deployment.replicas=3
+poison_deployment.resources={"limits": {"cpu": "888m", "memory": "888Mi"}, "requests": {"cpu": "222m", "memory": "222Mi"}}
+poison_deployment.labels={"app.kubernetes.io/component": "webhook", "app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}
+poison_deployment.sa=contract-echo-operator-webhook
+
+poison top-level replicas=9 must NOT appear in any split Deployment
+poison top-level resources must NOT appear in any split Deployment
+poison top-level podLabels must NOT appear in any split Deployment labels
+poison top-level serviceAccount.name must NOT appear in any split Deployment SA

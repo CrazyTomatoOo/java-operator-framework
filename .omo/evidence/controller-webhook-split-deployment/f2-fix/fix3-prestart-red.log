@@ -1,0 +1,28 @@
+[INFO] Scanning for projects...
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO] Running com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.447 s <<< FAILURE! -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+[ERROR] com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest.stopBeforeStartReleasesTheBoundPort -- Time elapsed: 0.438 s <<< ERROR!
+java.net.BindException: Address already in use
+	at jdk.httpserver/sun.net.httpserver.ServerImpl.<init>(ServerImpl.java:144)
+	at jdk.httpserver/sun.net.httpserver.HttpsServerImpl.<init>(HttpsServerImpl.java:50)
+	at jdk.httpserver/sun.net.httpserver.DefaultHttpServerProvider.createHttpsServer(DefaultHttpServerProvider.java:39)
+	at jdk.httpserver/com.sun.net.httpserver.HttpsServer.create(HttpsServer.java:95)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer.<init>(WebhookServer.java:63)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer.<init>(WebhookServer.java:46)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer.<init>(WebhookServer.java:42)
+	at com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest.stopBeforeStartReleasesTheBoundPort(WebhookServerTest.java:90)
+
+[INFO] Results:
+[ERROR] Errors: 
+[ERROR]   WebhookServerTest.stopBeforeStartReleasesTheBoundPort:90 » Bind Address already in use
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] BUILD FAILURE
+[INFO] Total time:  2.576 s
+[INFO] Finished at: 2026-07-28T00:55:40+08:00
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project operator-framework: 
+[ERROR] Please refer to /Volumes/work/Project/java-operator-framework/operator/framework/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+
+[full output: ~/Library/Application Support/rtk/tee/1785171340_mvn_test.log]

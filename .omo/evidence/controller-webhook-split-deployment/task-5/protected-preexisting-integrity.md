@@ -1,0 +1,20 @@
+# Protected pre-existing dirty-file integrity
+
+Read-only Git scope checks used `GIT_MASTER=1 git status --porcelain=v1`, `GIT_MASTER=1 git diff --name-only -- <protected paths>`, and `GIT_MASTER=1 git hash-object <protected paths>`. SHA-256 then compared the protected files to Task 4's `protected-preexisting-sha256.before` receipt.
+
+All ten protected hashes match exactly:
+
+```text
+1afb61cb07aef543ff41d3e9f1369277255e12bf5c31bef19c05eb6d8120a09d  example/echo-operator/README.md
+c8acad74838c3f95eaa94034b2edb435f07f60654790f986dc8207903b5c12dd  example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java
+d1e7cc0e3ea165e72e86d811486cf0209959853c13e2e78941ae1ad5e26878ef  example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainConfigTest.java
+8334888fd9e6d73b1df482aa769f27718ecde98609a8dfb3de2d40e488c548bf  example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainWiringTest.java
+4c5a9fe156fa9e9afd42249f355faf491f60d59a25ed03b65ccbeaf33b38f5bb  operator/framework/README.md
+0784b826df83dde2b06a0e617d7147325e6876523bf66e38474e02e1d790c2d3  operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandler.java
+bac39b6d31a2dbb11a5085028070e14fe3add41a5f24fec4d35f3d311ab84e95  operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandler.java
+4972a726023abc3391c74ec06337fc72e62947e110b17847837ac9336eaae648  operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java
+f402ebe311f2319d345f06f0766db45607e2d3565342f1d9af4340369e55383  operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandlerTest.java
+7318316c2660f7c04a821a40c4d90ba573d9acda7cac2341164df1bdd41ccf97  operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandlerTest.java
+```
+
+Every hash matches the Task 4 receipt verbatim. No protected path changed during Task 5.

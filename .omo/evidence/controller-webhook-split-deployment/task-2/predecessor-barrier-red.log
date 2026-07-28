@@ -1,0 +1,18 @@
+[INFO] Scanning for projects...
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[ERROR] COMPILATION ERROR : 
+[ERROR] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainWiringTest.java:[160,53] 无法将类 com.example.echooperator.EchoOperatorMain中的方法 create应用到给定类型;
+  需要: io.fabric8.kubernetes.client.KubernetesClient,com.example.echooperator.EchoOperatorMain.OperatorConfig
+  找到:    io.fabric8.kubernetes.client.KubernetesClient,com.example.echooperator.EchoOperatorMain.OperatorConfig,pollDelays::add
+  原因: 实际参数列表和形式参数列表长度不同
+[INFO] BUILD FAILURE
+[INFO] Total time:  1.798 s
+[INFO] Finished at: 2026-07-27T19:07:37+08:00
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:testCompile (default-testCompile) on project echo-operator: Compilation failure
+[ERROR] /Volumes/work/Project/java-operator-framework/example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainWiringTest.java:[160,53] 无法将类 com.example.echooperator.EchoOperatorMain中的方法 create应用到给定类型;
+[ERROR]   需要: io.fabric8.kubernetes.client.KubernetesClient,com.example.echooperator.EchoOperatorMain.OperatorConfig
+[ERROR]   找到:    io.fabric8.kubernetes.client.KubernetesClient,com.example.echooperator.EchoOperatorMain.OperatorConfig,pollDelays::add
+[ERROR]   原因: 实际参数列表和形式参数列表长度不同
+
+[full output: ~/Library/Application Support/rtk/tee/1785150457_mvn_test.log]

@@ -1,143 +1,81 @@
 {
   "schema_version": 2,
-  "active_work_id": "webhook-ca-secret-persistence-a9542cb8",
+  "active_work_id": "controller-webhook-split-deployment-8c6f9032",
   "works": {
-    "webhook-ca-secret-persistence-a9542cb8": {
-      "work_id": "webhook-ca-secret-persistence-a9542cb8",
-      "active_plan": "/Volumes/work/Project/java-operator-framework/.omo/plans/webhook-ca-secret-persistence.md",
-      "plan_name": "webhook-ca-secret-persistence",
+    "controller-webhook-split-deployment-8c6f9032": {
+      "work_id": "controller-webhook-split-deployment-8c6f9032",
+      "active_plan": "/Volumes/work/Project/java-operator-framework/.omo/plans/controller-webhook-split-deployment.md",
+      "plan_name": "controller-webhook-split-deployment",
       "status": "completed",
-      "started_at": "2026-07-23T04:48:12.304Z",
-      "updated_at": "2026-07-23T06:24:42.827Z",
+      "started_at": "2026-07-27T07:02:19.640Z",
+      "updated_at": "2026-07-27T17:21:41.153Z",
       "session_ids": [
-        "opencode:ses_0783cd85affeBl7Jfh7QFL2i25"
+        "opencode:ses_05e7d477dffe3Cw9sbibw5Dyrx"
       ],
       "session_origins": {
-        "opencode:ses_0783cd85affeBl7Jfh7QFL2i25": "direct"
+        "opencode:ses_05e7d477dffe3Cw9sbibw5Dyrx": "direct"
       },
       "agent": "atlas",
       "task_sessions": {
+        "todo:1": {
+          "task_key": "todo:1",
+          "task_label": "1",
+          "task_title": "Define and test the runtime capability/configuration contract",
+          "session_id": "opencode:ses_05d9aa315ffeNSOcg5jJOWGLO9",
+          "agent": "Sisyphus-Junior",
+          "started_at": "2026-07-27T07:12:21.485Z",
+          "status": "completed",
+          "updated_at": "2026-07-27T07:16:48.154Z"
+        },
         "todo:2": {
           "task_key": "todo:2",
           "task_label": "2",
-          "task_title": "Task",
-          "session_id": "opencode:ses_072a3458bfferCD5O7LFivKAT4",
+          "task_title": "Compose controller-only, webhook-only, and combined lifecycles with capability-specific readiness",
+          "session_id": "opencode:ses_05d081dd7ffeIoQb49RgePUJXh",
           "agent": "Sisyphus-Junior",
-          "category": "quick",
-          "updated_at": "2026-07-23T05:22:58.835Z",
-          "started_at": "2026-07-23T05:09:28.753Z",
+          "started_at": "2026-07-27T07:34:50.542Z",
           "status": "completed",
-          "ended_at": "2026-07-23T05:22:58.835Z",
-          "elapsed_ms": 810082
-        },
-        "todo:4": {
-          "task_key": "todo:4",
-          "task_label": "4",
-          "task_title": "Task",
-          "session_id": "opencode:ses_0729227ddffeJW6dRdMFOE46oU",
-          "agent": "Sisyphus-Junior",
-          "category": "unspecified-low",
-          "updated_at": "2026-07-23T05:35:38.056Z",
-          "started_at": "2026-07-23T05:34:54.746Z",
-          "status": "completed",
-          "ended_at": "2026-07-23T05:35:38.056Z",
-          "elapsed_ms": 43310
-        },
-        "todo:5": {
-          "task_key": "todo:5",
-          "task_label": "5",
-          "task_title": "Task",
-          "session_id": "opencode:ses_0728656b5ffeXz32iDFzUVG7pb",
-          "agent": "Sisyphus-Junior",
-          "started_at": "2026-07-23T06:00:23.306Z",
-          "status": "completed",
-          "updated_at": "2026-07-23T06:05:43.244Z",
-          "ended_at": "2026-07-23T06:05:43.244Z",
-          "elapsed_ms": 319938
-        },
-        "todo:15": {
-          "task_key": "todo:15",
-          "task_label": "15",
-          "task_title": "Task",
-          "session_id": "opencode:ses_0726b0903ffe8BK5SysAiwYOIF",
-          "agent": "Sisyphus-Junior",
-          "category": "unspecified-low",
-          "updated_at": "2026-07-23T06:22:07.497Z",
-          "started_at": "2026-07-23T06:21:11.579Z",
-          "status": "completed",
-          "ended_at": "2026-07-23T06:22:07.497Z",
-          "elapsed_ms": 55918
+          "updated_at": "2026-07-27T10:08:51.986Z"
         }
       },
-      "ended_at": "2026-07-23T06:24:42.827Z",
-      "elapsed_ms": 5790523
+      "ended_at": "2026-07-27T17:21:41.153Z",
+      "elapsed_ms": 37161513
     }
   },
-  "active_plan": "/Volumes/work/Project/java-operator-framework/.omo/plans/webhook-ca-secret-persistence.md",
-  "started_at": "2026-07-23T04:48:12.304Z",
+  "active_plan": "/Volumes/work/Project/java-operator-framework/.omo/plans/controller-webhook-split-deployment.md",
+  "started_at": "2026-07-27T07:02:19.640Z",
   "status": "completed",
-  "updated_at": "2026-07-23T06:24:42.827Z",
+  "updated_at": "2026-07-27T17:21:41.153Z",
   "session_ids": [
-    "opencode:ses_0783cd85affeBl7Jfh7QFL2i25"
+    "opencode:ses_05e7d477dffe3Cw9sbibw5Dyrx"
   ],
   "session_origins": {
-    "opencode:ses_0783cd85affeBl7Jfh7QFL2i25": "direct"
+    "opencode:ses_05e7d477dffe3Cw9sbibw5Dyrx": "direct"
   },
-  "plan_name": "webhook-ca-secret-persistence",
+  "plan_name": "controller-webhook-split-deployment",
   "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Define and test the runtime capability/configuration contract",
+      "session_id": "opencode:ses_05d9aa315ffeNSOcg5jJOWGLO9",
+      "agent": "Sisyphus-Junior",
+      "started_at": "2026-07-27T07:12:21.485Z",
+      "status": "completed",
+      "updated_at": "2026-07-27T07:16:48.154Z"
+    },
     "todo:2": {
       "task_key": "todo:2",
       "task_label": "2",
-      "task_title": "Task",
-      "session_id": "opencode:ses_072a3458bfferCD5O7LFivKAT4",
+      "task_title": "Compose controller-only, webhook-only, and combined lifecycles with capability-specific readiness",
+      "session_id": "opencode:ses_05d081dd7ffeIoQb49RgePUJXh",
       "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-07-23T05:22:58.835Z",
-      "started_at": "2026-07-23T05:09:28.753Z",
+      "started_at": "2026-07-27T07:34:50.542Z",
       "status": "completed",
-      "ended_at": "2026-07-23T05:22:58.835Z",
-      "elapsed_ms": 810082
-    },
-    "todo:4": {
-      "task_key": "todo:4",
-      "task_label": "4",
-      "task_title": "Task",
-      "session_id": "opencode:ses_0729227ddffeJW6dRdMFOE46oU",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-low",
-      "updated_at": "2026-07-23T05:35:38.056Z",
-      "started_at": "2026-07-23T05:34:54.746Z",
-      "status": "completed",
-      "ended_at": "2026-07-23T05:35:38.056Z",
-      "elapsed_ms": 43310
-    },
-    "todo:5": {
-      "task_key": "todo:5",
-      "task_label": "5",
-      "task_title": "Task",
-      "session_id": "opencode:ses_0728656b5ffeXz32iDFzUVG7pb",
-      "agent": "Sisyphus-Junior",
-      "started_at": "2026-07-23T06:00:23.306Z",
-      "status": "completed",
-      "updated_at": "2026-07-23T06:05:43.244Z",
-      "ended_at": "2026-07-23T06:05:43.244Z",
-      "elapsed_ms": 319938
-    },
-    "todo:15": {
-      "task_key": "todo:15",
-      "task_label": "15",
-      "task_title": "Task",
-      "session_id": "opencode:ses_0726b0903ffe8BK5SysAiwYOIF",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-low",
-      "updated_at": "2026-07-23T06:22:07.497Z",
-      "started_at": "2026-07-23T06:21:11.579Z",
-      "status": "completed",
-      "ended_at": "2026-07-23T06:22:07.497Z",
-      "elapsed_ms": 55918
+      "updated_at": "2026-07-27T10:08:51.986Z"
     }
   },
   "agent": "atlas",
-  "ended_at": "2026-07-23T06:24:42.827Z",
-  "elapsed_ms": 5790523
+  "ended_at": "2026-07-27T17:21:41.153Z",
+  "elapsed_ms": 37161513
 }

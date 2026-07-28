@@ -1,0 +1,611 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "6"
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:00:32Z"
+    generation: 6
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236965"
+    uid: f9b13546-5244-45cd-976a-e3430fce04fd
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+        app.kubernetes.io/name: echo-operator
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+          app.kubernetes.io/name: echo-operator
+      spec:
+        containers:
+        - env:
+          - name: OPERATOR_NAMESPACE
+            value: echo-smoke-combined-live-combined-20260727290000
+          - name: OPERATOR_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: METRICS_PORT
+            value: "8080"
+          - name: CONTROLLER_ENABLED
+            value: "true"
+          - name: WEBHOOK_ENABLED
+            value: "true"
+          - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+            value: "true"
+          - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+            value: "false"
+          - name: WEBHOOK_PORT
+            value: "8443"
+          - name: WEBHOOK_SERVICE_NAME
+            value: echo-smoke-combined-live-combined-20260727290000-echo-operator
+          - name: WEBHOOK_SERVICE_NAMESPACE
+            value: echo-smoke-combined-live-combined-20260727290000
+          - name: WEBHOOK_SERVICE_PORT
+            value: "443"
+          - name: WEBHOOK_CERT_AUTO_GENERATE
+            value: "false"
+          - name: WEBHOOK_CA_BUNDLE_PATH
+            value: /etc/echo-operator/certs/ca.crt
+          - name: LEADER_ELECTION_ENABLED
+            value: "false"
+          - name: LEADER_ELECTION_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: example/echo-operator:smoke-live-combined-20260727290000
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: operator
+          ports:
+          - containerPort: 8080
+            name: metrics
+            protocol: TCP
+          - containerPort: 8443
+            name: webhook
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/echo-operator/certs
+            name: webhook-tls
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          runAsGroup: 1001
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: echo-smoke-combined-live-combined-20260727290000-echo-operator
+        serviceAccountName: echo-smoke-combined-live-combined-20260727290000-echo-operator
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: webhook-tls
+          secret:
+            defaultMode: 420
+            secretName: echo-smoke-combined-live-combined-20260727290000-webhook-tls
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-07-27T16:00:43Z"
+      lastUpdateTime: "2026-07-27T16:00:43Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-07-27T16:00:32Z"
+      lastUpdateTime: "2026-07-27T16:02:14Z"
+      message: ReplicaSet "echo-smoke-combined-live-combined-20260727290000-echo-operator-7df58cf998"
+        has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 6
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:00:32Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236315"
+    uid: ab4645b0-2455-4459-95eb-143f57f6cb89
+  spec:
+    clusterIP: 10.106.96.134
+    clusterIPs:
+    - 10.106.96.134
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics
+      port: 8080
+      protocol: TCP
+      targetPort: metrics
+    - name: webhook
+      port: 443
+      protocol: TCP
+      targetPort: webhook
+    selector:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/name: echo-operator
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:02:02Z"
+    generateName: echo-smoke-combined-live-combined-20260727290000-echo-operator-7df58cf998-
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/name: echo-operator
+      pod-template-hash: 7df58cf998
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operwtvlp
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: echo-smoke-combined-live-combined-20260727290000-echo-operator-7df58cf998
+      uid: bc30fa36-408a-4c1c-9267-251a0bd2afdb
+    resourceVersion: "2236950"
+    uid: b2d573bf-37a6-4238-8c9b-a1e1fc6a91f5
+  spec:
+    containers:
+    - env:
+      - name: OPERATOR_NAMESPACE
+        value: echo-smoke-combined-live-combined-20260727290000
+      - name: OPERATOR_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: METRICS_PORT
+        value: "8080"
+      - name: CONTROLLER_ENABLED
+        value: "true"
+      - name: WEBHOOK_ENABLED
+        value: "true"
+      - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+        value: "true"
+      - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+        value: "false"
+      - name: WEBHOOK_PORT
+        value: "8443"
+      - name: WEBHOOK_SERVICE_NAME
+        value: echo-smoke-combined-live-combined-20260727290000-echo-operator
+      - name: WEBHOOK_SERVICE_NAMESPACE
+        value: echo-smoke-combined-live-combined-20260727290000
+      - name: WEBHOOK_SERVICE_PORT
+        value: "443"
+      - name: WEBHOOK_CERT_AUTO_GENERATE
+        value: "false"
+      - name: WEBHOOK_CA_BUNDLE_PATH
+        value: /etc/echo-operator/certs/ca.crt
+      - name: LEADER_ELECTION_ENABLED
+        value: "false"
+      - name: LEADER_ELECTION_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: example/echo-operator:smoke-live-combined-20260727290000
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: operator
+      ports:
+      - containerPort: 8080
+        name: metrics
+        protocol: TCP
+      - containerPort: 8443
+        name: webhook
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/echo-operator/certs
+        name: webhook-tls
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-q2qxm
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccount: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    serviceAccountName: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: webhook-tls
+      secret:
+        defaultMode: 420
+        secretName: echo-smoke-combined-live-combined-20260727290000-webhook-tls
+    - name: kube-api-access-q2qxm
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:02:03Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:02:02Z"
+      observedGeneration: 1
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:02:14Z"
+      observedGeneration: 1
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:02:14Z"
+      observedGeneration: 1
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:02:02Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - allocatedResources:
+        cpu: 100m
+        memory: 128Mi
+      containerID: docker://05a2d9d6d9dc3607482e3e21aeabf4929f9132a7f9a3a0ec7f3f94ca03a1bbd0
+      image: example/echo-operator:smoke-live-combined-20260727290000
+      imageID: docker://sha256:5eccbe6aaf38b786c22ce3a32ddf83dcf4e4810a9362dc385881e6f1c74d02df
+      lastState: {}
+      name: operator
+      ready: true
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-07-27T16:02:02Z"
+      volumeMounts:
+      - mountPath: /etc/echo-operator/certs
+        name: webhook-tls
+        readOnly: true
+        recursiveReadOnly: Disabled
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-q2qxm
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 1
+    phase: Running
+    podIP: 10.1.2.81
+    podIPs:
+    - ip: 10.1.2.81
+    qosClass: Burstable
+    startTime: "2026-07-27T16:02:02Z"
+- addressType: IPv4
+  apiVersion: discovery.k8s.io/v1
+  endpoints:
+  - addresses:
+    - 10.1.2.81
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    nodeName: docker-desktop
+    targetRef:
+      kind: Pod
+      name: echo-smoke-combined-live-combined-20260727290000-echo-operwtvlp
+      namespace: echo-smoke-combined-live-combined-20260727290000
+      uid: b2d573bf-37a6-4238-8c9b-a1e1fc6a91f5
+  kind: EndpointSlice
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2026-07-27T16:02:15Z"
+    creationTimestamp: "2026-07-27T16:00:32Z"
+    generateName: echo-smoke-combined-live-combined-20260727290000-echo-operator-
+    generation: 23
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+      helm.sh/chart: echo-operator-0.1.0
+      kubernetes.io/service-name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operq6df2
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+      uid: ab4645b0-2455-4459-95eb-143f57f6cb89
+    resourceVersion: "2236968"
+    uid: 7d139a7e-629d-43c1-a107-e1ba3bdb1031
+  ports:
+  - name: webhook
+    port: 8443
+    protocol: TCP
+  - name: metrics
+    port: 8080
+    protocol: TCP
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-07-27T16:00:16Z"
+    name: default
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236276"
+    uid: 219ba13f-5cd8-49e1-8c66-0e4bd2a3ca65
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:00:32Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236309"
+    uid: dbbd4834-f0c2-4492-b406-fd3818610dcc
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:00:44Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator-controller
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236372"
+    uid: 1dcdba0f-0508-425e-8409-455f22859504
+  rules:
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources/status
+    verbs:
+    - get
+    - update
+    - patch
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources/finalizers
+    verbs:
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - services
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - get
+    - create
+    - patch
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:00:44Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator-controller
+    namespace: echo-smoke-combined-live-combined-20260727290000
+    resourceVersion: "2236374"
+    uid: 20a2ada6-a1af-4096-9ec1-123200a2ba54
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator-controller
+  subjects:
+  - kind: ServiceAccount
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+    namespace: echo-smoke-combined-live-combined-20260727290000
+kind: List
+metadata:
+  resourceVersion: ""

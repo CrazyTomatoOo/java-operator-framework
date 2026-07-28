@@ -1,0 +1,7 @@
+Forwarding from 127.0.0.1:51544 -> 8080
+Forwarding from [::1]:51544 -> 8080
+Handling connection for 51544
+E0727 23:56:14.157895    2032 portforward.go:424] "Unhandled Error" err=<
+	an error occurred forwarding 51544 -> 8080: error forwarding port 8080 to pod c3c6f1eceae7847bd6da6f269963b61c8a97315860b1b4eff5ea2837e6f7f908, uid : exit status 1: 2026/07/27 15:56:14 socat[36984] E connect(6, AF=2 127.0.0.1:8080, 16): Connection refused
+ >
+error: lost connection to pod

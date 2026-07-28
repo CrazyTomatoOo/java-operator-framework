@@ -1,0 +1,4 @@
+framework-clean-install.log=0
+example-clean-test.log=0
+helm-lint.log=0
+helm-contract-test.log=0

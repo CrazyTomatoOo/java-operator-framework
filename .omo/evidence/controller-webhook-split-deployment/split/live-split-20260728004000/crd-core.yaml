@@ -1,0 +1,113 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    meta.helm.sh/release-name: echo-operator
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2026-07-23T07:07:31Z"
+  generation: 29
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: echoresources.example.com
+  resourceVersion: "2239224"
+  uid: 1637bff4-43d9-40b8-a610-21bdecd4698f
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFVENDQWZtZ0F3SUJBZ0lVRy92WCtKTXFOWWljV0c2bEpBcWNKczZQR3Njd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0dERVdNQlFHQTFVRUF3d05aV05vYnkxemJXOXJaUzFqWVRBZUZ3MHlOakEzTWpjeE5qRXhORGhhRncweQpOakEzTWpneE5qRXhORGhhTUJneEZqQVVCZ05WQkFNTURXVmphRzh0YzIxdmEyVXRZMkV3Z2dFaU1BMEdDU3FHClNJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUNLN1dCUlkrYlJYNWx0SVNlRTFrcFJPeUduTDhGdFpUTDYKNlQxZjlvdUNFQWxsRU80VTNDWHJ0UE9mdml6TitWQkVvTlJrakJzczlCMGtyVG1uRVZ5Z3NkaUxDSzFCZlFkeQpUZ0dDb1VxNldBZVpaWDdHTDV5NkVwYVNuT0lnd0E3dXQzKzU4V2YveWlMSUQrNFc4Y3MyQTFHKzhNV0Z6UDJOCmpZUGMxUk5qM05kbmlBWjBkRzB5eUU1UVNPQ29VbzNuNm0wVTJ1YUdiazJxN0p3U21PblBRS0dEbFdwcm1TUE8KY3hsRmFYb0oycUpSam1rd0dXdldVVFRsdkhPT3Qvd0dLOVlqaGI3VUVwODl2d0QwUlEwTCt5bDhTVThCZ0VQbQpaMVZDNmRqamlyQzhwL05RT2tpTDdYcHJWVmM0ZWREUXIwTUlQKzFHMXovTWZaSzhHelM1QWdNQkFBR2pVekJSCk1CMEdBMVVkRGdRV0JCUUFYNG9od2NyK09iRUR1Y1o0UUQzdExnelZ3akFmQmdOVkhTTUVHREFXZ0JRQVg0b2gKd2NyK09iRUR1Y1o0UUQzdExnelZ3akFQQmdOVkhSTUJBZjhFQlRBREFRSC9NQTBHQ1NxR1NJYjNEUUVCQ3dVQQpBNElCQVFCZDlvYUZhdWNmUGs4VFJ4V1FaSlZpdTBJOWVzU3pQbTdiTFIrTjJJV0RGQ01ySXo3UUxReWhSaTMrCjF5Y0hHcjFOQVQwd1ZCZHBVd2FiNFpvN3BudVk2c0w0NFlrRzY2STRiakdnNDRNRXYyOCtNcm8rUkM1alZmeE0KcXgyOWNicVA0Vk1mZGkrMnBMdksxdXRISWEydDJrNU9MN3NibTg5MDVabFZCYXZWd29oQ3p5bjV1ZVVhTW9MSwpnMDNlRk8yY1B4Q29OTmQrSEc1ZVB6TTNtbzFZbStRbDhuR0V1TktmeURlUnlOWnphQStNOHd3a2VhRi9ra0wxCkRpa0pMLytSWVp2c2NITGdPS2doaFlNcWZpOVlCSlRTRFV1M1llV0dvMW52WTZ3Szk1QnpFTjk0dUVRSmI4bUMKdFlrN2Z4ZlpQbnZmTUJuSFJaclh4bEFQWGtVdQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+        service:
+          name: echo-smoke-split-live-split-20260728004000-echo-operator
+          namespace: echo-smoke-split-live-split-20260728004000
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  group: example.com
+  names:
+    kind: EchoResource
+    listKind: EchoResourceList
+    plural: echoresources
+    shortNames:
+    - echo
+    singular: echoresource
+  scope: Namespaced
+  versions:
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              logLevel:
+                default: INFO
+                type: string
+              message:
+                type: string
+              replicas:
+                default: 1
+                type: integer
+            required:
+            - message
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              phase:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - deprecated: true
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              message:
+                type: string
+              replicas:
+                default: 1
+                type: integer
+            required:
+            - message
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              phase:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: EchoResource
+    listKind: EchoResourceList
+    plural: echoresources
+    shortNames:
+    - echo
+    singular: echoresource
+  conditions:
+  - lastTransitionTime: "2026-07-23T07:07:31Z"
+    message: no conflicts found
+    reason: NoConflicts
+    status: "True"
+    type: NamesAccepted
+  - lastTransitionTime: "2026-07-23T07:07:31Z"
+    message: the initial names have been accepted
+    reason: InitialNamesAccepted
+    status: "True"
+    type: Established
+  storedVersions:
+  - v1alpha2

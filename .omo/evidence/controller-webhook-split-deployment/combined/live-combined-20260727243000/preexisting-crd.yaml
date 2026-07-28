@@ -1,0 +1,113 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    meta.helm.sh/release-name: echo-operator
+    meta.helm.sh/release-namespace: default
+  creationTimestamp: "2026-07-23T07:07:31Z"
+  generation: 12
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: echoresources.example.com
+  resourceVersion: "2227657"
+  uid: 1637bff4-43d9-40b8-a610-21bdecd4698f
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURmRENDQW1TZ0F3SUJBZ0lWQVBLVEpHcjVFUnlvRS9nVWl5SXFJRmJXeHNlYU1BMEdDU3FHU0liM0RRRUIKQ3dVQU1GUXhVakJRQmdOVkJBTU1TV1ZqYUc4dGMyMXZhMlV0WTI5dFltbHVaV1F0YkdsMlpTMWpiMjFpYVc1bApaQzB5TURJMk1EY3lOekkwTWpBd01DMWxZMmh2TFc5d1pYSmhkRzl5SUhkbFltaHZiMnNnUTBFd0hoY05Nall3Ck56STNNVFV4TXpJM1doY05NamN3TnpJM01UVXhNekkzV2pCVU1WSXdVQVlEVlFRRERFbGxZMmh2TFhOdGIydGwKTFdOdmJXSnBibVZrTFd4cGRtVXRZMjl0WW1sdVpXUXRNakF5TmpBM01qY3lOREl3TURBdFpXTm9ieTF2Y0dWeQpZWFJ2Y2lCM1pXSm9iMjlySUVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBCnVubXRDZnFJR3p0cVV6RktodnMxRkoxT2xlMHN2dHZJU2dDK1FCcVRLR1pQNTU4K21UUStVM1VPcWxCQlpPUncKUEdZemJRNEFuRml0N0lVdGFJdHNOeXZjekdOY2x4dFpNbmJXUUlPSHVzaHE4L09DNjFUaHB5RnNXYW55blpKUwpFeFA5eS9tbU41UFo1RVhHeDlaWWxsemRNM3AxclFDZitwc1hKaHphaTZONG5LMWpoODZZM3VVUFY5MUd2cm1qCkVQRzdhZExkN3pFM1BoaElsK0hET3BhMXF2aHhzcCtMTDU1bm8yMWtBeG1oa1VFaXNGVGtMSEZpaElVQWlKb2gKWElaSk8vS2hRbENMNDlRWkNZT2N1V1VudTZjU1daei9OclNCajBZa2EvU3dGMUM1VGtUWUN5SGdsRkdhVmdqRgpNVk10ZTFxODRJNGxmYnMxQW5maDdRSURBUUFCbzBVd1F6QVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQTRHCkExVWREd0VCL3dRRUF3SUJCakFkQmdOVkhRNEVGZ1FVM3JPU2FQV1poMEdiWEllQUNheFhjVHY3cnk0d0RRWUoKS29aSWh2Y05BUUVMQlFBRGdnRUJBRWZ3TmtWTW0yajVTdzhQRndhNVZ3QWFnVklrUUtRdEg3VnZ2aUZXYmlWSwpoNzdiRXArNTVXZWxWSC9IUHM0NzhEbFhJSmN6ZlhHR2RYNjZiUFcvcGc5NjBrMGIwTnZFdnFySEp4TXZJZTg5ClcvYWpyM2NQWTdNMitRdUwrTTB1N2g0WVpQRitiQStSeHQ5WTE1cks0SzJQdmlrYUZ1Z2ppd090alJHemNEYmcKaXMyRXE3WU1zSE9rR1daUTI3SDFaeWJ5OHFlOWlOV21ZK2hWMDlVUHo1WC9laVdoMVVVSmVpeXp3K0tQM21OaQpIMXdEZDlTamZjRjZOdmVpekNlMjRyTEpDVGNFRHZIVkZCY25VNzhaWEFCR3grenljQVhRcTlXQ3JtelFVL2oyClVKamdQN3ptS2c2U0dDQWlSZnNpd1J0UndlVVhHNjM3YTBMWDdLdFM0a2M9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+        service:
+          name: echo-smoke-combined-live-combined-20260727242000-echo-operator
+          namespace: echo-smoke-combined-live-combined-20260727242000
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  group: example.com
+  names:
+    kind: EchoResource
+    listKind: EchoResourceList
+    plural: echoresources
+    shortNames:
+    - echo
+    singular: echoresource
+  scope: Namespaced
+  versions:
+  - name: v1alpha2
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              logLevel:
+                default: INFO
+                type: string
+              message:
+                type: string
+              replicas:
+                default: 1
+                type: integer
+            required:
+            - message
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              phase:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - deprecated: true
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              message:
+                type: string
+              replicas:
+                default: 1
+                type: integer
+            required:
+            - message
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              phase:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: EchoResource
+    listKind: EchoResourceList
+    plural: echoresources
+    shortNames:
+    - echo
+    singular: echoresource
+  conditions:
+  - lastTransitionTime: "2026-07-23T07:07:31Z"
+    message: no conflicts found
+    reason: NoConflicts
+    status: "True"
+    type: NamesAccepted
+  - lastTransitionTime: "2026-07-23T07:07:31Z"
+    message: the initial names have been accepted
+    reason: InitialNamesAccepted
+    status: "True"
+    type: Established
+  storedVersions:
+  - v1alpha2

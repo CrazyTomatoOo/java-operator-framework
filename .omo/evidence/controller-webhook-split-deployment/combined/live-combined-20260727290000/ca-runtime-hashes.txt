@@ -1,0 +1,4 @@
+983036858c24cc7625452f7907535b1fda178d1e10d9043081aac9d49176925e  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727290000/ca-runtime-crd.pem
+983036858c24cc7625452f7907535b1fda178d1e10d9043081aac9d49176925e  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727290000/ca-runtime-mutating.pem
+983036858c24cc7625452f7907535b1fda178d1e10d9043081aac9d49176925e  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727290000/ca-runtime-secret.pem
+983036858c24cc7625452f7907535b1fda178d1e10d9043081aac9d49176925e  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727290000/ca-runtime-validating.pem

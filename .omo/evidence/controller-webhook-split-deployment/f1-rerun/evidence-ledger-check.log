@@ -1,0 +1,427 @@
+TASK_1_ARTIFACT=baseline/BASE PASS bytes=41
+TASK_1_ARTIFACT=baseline/BLOCKED.txt PASS bytes=1189
+TASK_1_ARTIFACT=baseline/cleanup-receipt.txt PASS bytes=362
+TASK_1_ARTIFACT=baseline/dirty-file-sha256.txt PASS bytes=5494
+TASK_1_ARTIFACT=baseline/dirty-file-sha256.z PASS bytes=5494
+TASK_1_ARTIFACT=baseline/echo-operator-chart.tar PASS bytes=40960
+TASK_1_ARTIFACT=baseline/initial-status.porcelain-v1.z PASS bytes=2684
+TASK_1_DECLARED_ARTIFACTS=PASS checked=7 directory=baseline
+TASK_1_ARTIFACT=task-1/characterization-green.log PASS bytes=2988
+TASK_1_ARTIFACT=task-1/config-tests-rerun.log PASS bytes=2988
+TASK_1_ARTIFACT=task-1/config-tests.log PASS bytes=2988
+TASK_1_ARTIFACT=task-1/manual-config-observables.txt PASS bytes=1683
+TASK_1_ARTIFACT=task-1/red-config-tests.log PASS bytes=10841
+TASK_1_DECLARED_ARTIFACTS=PASS checked=5 directory=task-1
+TASK_1_ALL_DECLARED_ARTIFACTS=PASS
+TASK_2_ARTIFACT=task-2/combined-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/combined-red.log PASS bytes=1418
+TASK_2_ARTIFACT=task-2/controller-only-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/controller-only-red.log PASS bytes=1595
+TASK_2_ARTIFACT=task-2/full-example-tests.log PASS bytes=326
+TASK_2_ARTIFACT=task-2/idempotent-stop-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/idempotent-stop-red.log PASS bytes=1376
+TASK_2_ARTIFACT=task-2/lifecycle-tests.log PASS bytes=326
+TASK_2_ARTIFACT=task-2/predecessor-barrier-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/predecessor-barrier-red.log PASS bytes=1666
+TASK_2_ARTIFACT=task-2/shared-client-focused-final.log PASS bytes=326
+TASK_2_ARTIFACT=task-2/shared-client-full-final.log PASS bytes=326
+TASK_2_ARTIFACT=task-2/shared-client-ownership-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/shared-client-ownership-red.log PASS bytes=1662
+TASK_2_ARTIFACT=task-2/stop-scenarios-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/verification.md PASS bytes=1756
+TASK_2_ARTIFACT=task-2/webhook-failure-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/webhook-failure-red.log PASS bytes=1445
+TASK_2_ARTIFACT=task-2/webhook-only-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/webhook-only-red.log PASS bytes=1615
+TASK_2_ARTIFACT=task-2/webhook-post-start-failures-green.log PASS bytes=325
+TASK_2_ARTIFACT=task-2/wiring-green.log PASS bytes=326
+TASK_2_DECLARED_ARTIFACTS=PASS checked=22 directory=task-2
+TASK_2_ALL_DECLARED_ARTIFACTS=PASS
+TASK_3_ARTIFACT=task-3/adversarial-results.txt PASS bytes=462
+TASK_3_ARTIFACT=task-3/cleanup-receipt.txt PASS bytes=526
+TASK_3_ARTIFACT=task-3/dirty-worktree-integrity.txt PASS bytes=991
+TASK_3_ARTIFACT=task-3/green-contract-default.log PASS bytes=737
+TASK_3_ARTIFACT=task-3/green-contract-fullnameoverride.log PASS bytes=770
+TASK_3_ARTIFACT=task-3/green-contract-repeat.log PASS bytes=929
+TASK_3_ARTIFACT=task-3/green-contract-split.log PASS bytes=770
+TASK_3_ARTIFACT=task-3/green-contract.log PASS bytes=929
+TASK_3_ARTIFACT=task-3/helm-lint.log PASS bytes=130
+TASK_3_ARTIFACT=task-3/manual-render-observables.txt PASS bytes=3919
+TASK_3_ARTIFACT=task-3/red-contract.log PASS bytes=184
+TASK_3_ARTIFACT=task-3/red-pem-body.log PASS bytes=239
+TASK_3_ARTIFACT=task-3/red-split-repro.log PASS bytes=311
+TASK_3_DECLARED_ARTIFACTS=PASS checked=13 directory=task-3
+TASK_3_ALL_DECLARED_ARTIFACTS=PASS
+TASK_4_ARTIFACT=task-4/adversarial-results.txt PASS bytes=1079
+TASK_4_ARTIFACT=task-4/characterization-contract.log PASS bytes=1036
+TASK_4_ARTIFACT=task-4/cleanup-receipt.txt PASS bytes=357
+TASK_4_ARTIFACT=task-4/combined.yaml PASS bytes=11700
+TASK_4_ARTIFACT=task-4/green-contract-first.log PASS bytes=1206
+TASK_4_ARTIFACT=task-4/green-contract-second.log PASS bytes=1112
+TASK_4_ARTIFACT=task-4/helm-lint-first.log PASS bytes=209
+TASK_4_ARTIFACT=task-4/helm-lint-second.log PASS bytes=209
+TASK_4_ARTIFACT=task-4/integrity-result.txt PASS bytes=352
+TASK_4_ARTIFACT=task-4/manual-combined-observables.txt PASS bytes=5709
+TASK_4_ARTIFACT=task-4/protected-preexisting-sha256.after PASS bytes=1607
+TASK_4_ARTIFACT=task-4/protected-preexisting-sha256.before PASS bytes=1607
+TASK_4_ARTIFACT=task-4/red-contract.log PASS bytes=350
+TASK_4_DECLARED_ARTIFACTS=PASS checked=13 directory=task-4
+TASK_4_ALL_DECLARED_ARTIFACTS=PASS
+TASK_5_ARTIFACT=task-5/adversarial-results.md PASS bytes=1543
+TASK_5_ARTIFACT=task-5/cleanup-receipt.md PASS bytes=634
+TASK_5_ARTIFACT=task-5/manual-split-observables.md PASS bytes=3276
+TASK_5_ARTIFACT=task-5/protected-preexisting-integrity.md PASS bytes=2084
+TASK_5_ARTIFACT=task-5/verification.md PASS bytes=1929
+TASK_5_DECLARED_ARTIFACTS=PASS checked=5 directory=task-5
+TASK_5_ALL_DECLARED_ARTIFACTS=PASS
+TASK_6_ARTIFACT=task-6/adversarial-results.md PASS bytes=1579
+TASK_6_ARTIFACT=task-6/cleanup-receipt.md PASS bytes=636
+TASK_6_ARTIFACT=task-6/rbac-matrix.txt PASS bytes=4735
+TASK_6_ARTIFACT=task-6/verification.md PASS bytes=2737
+TASK_6_DECLARED_ARTIFACTS=PASS checked=4 directory=task-6
+TASK_6_ALL_DECLARED_ARTIFACTS=PASS
+TASK_7_ARTIFACT=task-7/helm-green.log PASS bytes=1733
+TASK_7_ARTIFACT=task-7/helm-red.log PASS bytes=765
+TASK_7_ARTIFACT=task-7/java-green.log PASS bytes=326
+TASK_7_ARTIFACT=task-7/java-red.log PASS bytes=2007
+TASK_7_ARTIFACT=task-7/ownership-tests.log PASS bytes=4171
+TASK_7_ARTIFACT=task-7/summary.md PASS bytes=1068
+TASK_7_DECLARED_ARTIFACTS=PASS checked=6 directory=task-7
+TASK_7_ALL_DECLARED_ARTIFACTS=PASS
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-deny.log PASS bytes=278
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-direct-probe.log PASS bytes=276
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-endpointslices.yaml PASS bytes=1768
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-mutating-configuration.yaml PASS bytes=2722
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-probe-ca.b64 PASS bytes=1692
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-validating-configuration.yaml PASS bytes=2698
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/admission-webhook-pod.log PASS bytes=530
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/auth-1.log PASS bytes=4
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/auth-2.log PASS bytes=121
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/auth-3.log PASS bytes=106
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/baseline-archive-list.log PASS bytes=1029
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/baseline-deployment.json PASS bytes=10294
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/baseline-service.json PASS bytes=1855
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-bytes.txt PASS bytes=666
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-crd.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-crd.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-hashes.txt PASS bytes=879
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-mutating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-mutating.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-secret.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-secret.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-validating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-helm-validating.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-bytes.txt PASS bytes=678
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-crd.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-crd.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-hashes.txt PASS bytes=891
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-mutating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-mutating.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-secret.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-secret.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-validating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/ca-runtime-validating.pem PASS bytes=1123
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/cleanup-receipt.log PASS bytes=1885
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/cluster-info.log PASS bytes=247
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/commands.log PASS bytes=20640
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/conversion-alpha1-to-alpha2.json PASS bytes=1078
+ERROR=Task 8: EMPTY combined/live-combined-20260727290000/conversion-alpha1-to-alpha2.stderr.log
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/conversion-alpha1-to-alpha2.stderr.log FAIL empty
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/conversion-alpha2-create.log PASS bytes=72
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/conversion-alpha2-to-alpha1.json PASS bytes=1103
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/conversion-alpha2-to-alpha1.stderr.log PASS bytes=96
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/crd-core.yaml PASS bytes=4412
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/crd-final.yaml PASS bytes=4240
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/crd-lifecycle.txt PASS bytes=188
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/delete-alpha-two-live-combined-20260727290000.log PASS bytes=138
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/delete-mutation-live-combined-20260727290000.log PASS bytes=137
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/delete-reconcile-live-combined-20260727290000.log PASS bytes=138
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-baseline.log PASS bytes=462
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-default-combined.log PASS bytes=461
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-external-runtime.log PASS bytes=461
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-helm-to-runtime-held.log PASS bytes=461
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-mismatched-ca.log PASS bytes=461
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/deploy-runtime-to-helm.log PASS bytes=461
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/external-tls-secret.log PASS bytes=76
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/framework-build.log PASS bytes=26739
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/held-webhook-pod.json PASS bytes=13760
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/held-webhook-pod.log PASS bytes=186
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/hold-mutating.log PASS bytes=138
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/hold-validating.log PASS bytes=142
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/http-controller-healthz.log PASS bytes=11
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/http-controller-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/http-held-webhook-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/http-webhook-healthz.log PASS bytes=11
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/http-webhook-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/image-build.log PASS bytes=18088
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/invalid-kube-context.log PASS bytes=41
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/kube-context.log PASS bytes=15
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mismatched-ca-failure-policy.log PASS bytes=4
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mismatched-ca-webhook-request.log PASS bytes=538
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mutating-core.yaml PASS bytes=5313
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mutating-final.yaml PASS bytes=5525
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mutation-create.log PASS bytes=167
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/mutation-read.json PASS bytes=923
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/namespace-create.log PASS bytes=67
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/openssl-ca.log PASS bytes=1045
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/openssl-serving.log PASS bytes=1773
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/openssl-wrong-ca.log PASS bytes=1916
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/port-forward-admission-webhook.log PASS bytes=106
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/port-forward-combined.log PASS bytes=196
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/port-forward-held-webhook.log PASS bytes=136
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/preexisting-crd.yaml PASS bytes=4220
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/preserved-crd-external-ca-patch.log PASS bytes=80
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/readiness-endpoints.txt PASS bytes=57
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/reconciliation-create.log PASS bytes=72
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/reconciliation-status.json PASS bytes=1120
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/release-held-mutating.log PASS bytes=138
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/release-held-validating.log PASS bytes=142
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/resolved-identities.txt PASS bytes=603
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/resources-core.yaml PASS bytes=26455
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/resources-final.yaml PASS bytes=19325
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/rollout-echo-smoke-combined-live-combined-20260727290000-echo-operator.log PASS bytes=100
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/smoke.log PASS bytes=1412
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/static-contract.log PASS bytes=29
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/topology-resources.json PASS bytes=14735
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/upgraded-deployment.json PASS bytes=11351
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/upgraded-service.json PASS bytes=1855
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/validating-core.yaml PASS bytes=5261
+TASK_8_ARTIFACT=combined/live-combined-20260727290000/validating-final.yaml PASS bytes=5477
+TASK_8_DECLARED_ARTIFACTS=FAIL checked=98 directory=combined/live-combined-20260727290000
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-deny.log PASS bytes=275
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-direct-probe.log PASS bytes=276
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-endpointslices.yaml PASS bytes=1723
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-mutating-configuration.yaml PASS bytes=2506
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-probe-ca.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-validating-configuration.yaml PASS bytes=2482
+TASK_8_ARTIFACT=split/live-split-20260728004000/admission-webhook-pod.log PASS bytes=421
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-1.log PASS bytes=4
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-2.log PASS bytes=120
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-3.log PASS bytes=121
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-4.log PASS bytes=3
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-5.log PASS bytes=3
+TASK_8_ARTIFACT=split/live-split-20260728004000/auth-6.log PASS bytes=106
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-bytes.txt PASS bytes=642
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-crd.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-crd.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-hashes.txt PASS bytes=855
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-mutating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-mutating.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-secret.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-secret.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-validating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-helm-validating.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-bytes.txt PASS bytes=654
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-crd.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-crd.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-hashes.txt PASS bytes=867
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-mutating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-mutating.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-secret.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-secret.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-validating.b64 PASS bytes=1500
+TASK_8_ARTIFACT=split/live-split-20260728004000/ca-runtime-validating.pem PASS bytes=1123
+TASK_8_ARTIFACT=split/live-split-20260728004000/cleanup-receipt.log PASS bytes=1878
+TASK_8_ARTIFACT=split/live-split-20260728004000/cluster-info.log PASS bytes=247
+TASK_8_ARTIFACT=split/live-split-20260728004000/commands.log PASS bytes=19078
+TASK_8_ARTIFACT=split/live-split-20260728004000/conversion-alpha1-to-alpha2.json PASS bytes=1060
+ERROR=Task 8: EMPTY split/live-split-20260728004000/conversion-alpha1-to-alpha2.stderr.log
+TASK_8_ARTIFACT=split/live-split-20260728004000/conversion-alpha1-to-alpha2.stderr.log FAIL empty
+TASK_8_ARTIFACT=split/live-split-20260728004000/conversion-alpha2-create.log PASS bytes=69
+TASK_8_ARTIFACT=split/live-split-20260728004000/conversion-alpha2-to-alpha1.json PASS bytes=1085
+TASK_8_ARTIFACT=split/live-split-20260728004000/conversion-alpha2-to-alpha1.stderr.log PASS bytes=96
+TASK_8_ARTIFACT=split/live-split-20260728004000/crd-core.yaml PASS bytes=4208
+TASK_8_ARTIFACT=split/live-split-20260728004000/crd-final.yaml PASS bytes=4228
+TASK_8_ARTIFACT=split/live-split-20260728004000/crd-lifecycle.txt PASS bytes=185
+TASK_8_ARTIFACT=split/live-split-20260728004000/delete-alpha-two-live-split-20260728004000.log PASS bytes=129
+TASK_8_ARTIFACT=split/live-split-20260728004000/delete-mutation-live-split-20260728004000.log PASS bytes=128
+TASK_8_ARTIFACT=split/live-split-20260728004000/delete-reconcile-live-split-20260728004000.log PASS bytes=129
+TASK_8_ARTIFACT=split/live-split-20260728004000/deploy-helm-to-runtime-held.log PASS bytes=428
+TASK_8_ARTIFACT=split/live-split-20260728004000/deploy-initial-split.log PASS bytes=429
+TASK_8_ARTIFACT=split/live-split-20260728004000/deploy-mismatched-ca.log PASS bytes=428
+TASK_8_ARTIFACT=split/live-split-20260728004000/deploy-runtime-to-helm.log PASS bytes=428
+TASK_8_ARTIFACT=split/live-split-20260728004000/external-tls-secret.log PASS bytes=70
+TASK_8_ARTIFACT=split/live-split-20260728004000/framework-build.log PASS bytes=21369
+TASK_8_ARTIFACT=split/live-split-20260728004000/held-webhook-pod.json PASS bytes=13249
+TASK_8_ARTIFACT=split/live-split-20260728004000/held-webhook-pod.log PASS bytes=186
+TASK_8_ARTIFACT=split/live-split-20260728004000/held-webhook-startup.log PASS bytes=307
+TASK_8_ARTIFACT=split/live-split-20260728004000/hold-mutating.log PASS bytes=132
+TASK_8_ARTIFACT=split/live-split-20260728004000/hold-validating.log PASS bytes=136
+TASK_8_ARTIFACT=split/live-split-20260728004000/http-controller-healthz.log PASS bytes=11
+TASK_8_ARTIFACT=split/live-split-20260728004000/http-controller-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=split/live-split-20260728004000/http-held-webhook-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=split/live-split-20260728004000/http-webhook-healthz.log PASS bytes=11
+TASK_8_ARTIFACT=split/live-split-20260728004000/http-webhook-readyz.log PASS bytes=11
+TASK_8_ARTIFACT=split/live-split-20260728004000/image-build.log PASS bytes=18085
+TASK_8_ARTIFACT=split/live-split-20260728004000/invalid-kube-context.log PASS bytes=41
+TASK_8_ARTIFACT=split/live-split-20260728004000/kube-context.log PASS bytes=15
+TASK_8_ARTIFACT=split/live-split-20260728004000/mismatched-ca-failure-policy.log PASS bytes=4
+TASK_8_ARTIFACT=split/live-split-20260728004000/mismatched-ca-webhook-request.log PASS bytes=523
+TASK_8_ARTIFACT=split/live-split-20260728004000/mutating-core.yaml PASS bytes=5097
+TASK_8_ARTIFACT=split/live-split-20260728004000/mutating-final.yaml PASS bytes=5489
+TASK_8_ARTIFACT=split/live-split-20260728004000/mutation-create.log PASS bytes=164
+TASK_8_ARTIFACT=split/live-split-20260728004000/mutation-read.json PASS bytes=905
+TASK_8_ARTIFACT=split/live-split-20260728004000/namespace-create.log PASS bytes=61
+TASK_8_ARTIFACT=split/live-split-20260728004000/openssl-ca.log PASS bytes=1182
+TASK_8_ARTIFACT=split/live-split-20260728004000/openssl-serving.log PASS bytes=2108
+TASK_8_ARTIFACT=split/live-split-20260728004000/openssl-wrong-ca.log PASS bytes=960
+TASK_8_ARTIFACT=split/live-split-20260728004000/port-forward-admission-webhook.log PASS bytes=106
+TASK_8_ARTIFACT=split/live-split-20260728004000/port-forward-controller.log PASS bytes=136
+TASK_8_ARTIFACT=split/live-split-20260728004000/port-forward-held-webhook.log PASS bytes=136
+TASK_8_ARTIFACT=split/live-split-20260728004000/port-forward-webhook.log PASS bytes=136
+TASK_8_ARTIFACT=split/live-split-20260728004000/preexisting-crd.yaml PASS bytes=4208
+TASK_8_ARTIFACT=split/live-split-20260728004000/preserved-crd-external-ca-patch.log PASS bytes=80
+TASK_8_ARTIFACT=split/live-split-20260728004000/readiness-endpoints.txt PASS bytes=57
+TASK_8_ARTIFACT=split/live-split-20260728004000/reconciliation-create.log PASS bytes=69
+TASK_8_ARTIFACT=split/live-split-20260728004000/reconciliation-status.json PASS bytes=1102
+TASK_8_ARTIFACT=split/live-split-20260728004000/release-held-mutating.log PASS bytes=132
+TASK_8_ARTIFACT=split/live-split-20260728004000/release-held-validating.log PASS bytes=136
+TASK_8_ARTIFACT=split/live-split-20260728004000/resolved-identities.txt PASS bytes=581
+TASK_8_ARTIFACT=split/live-split-20260728004000/resources-core.yaml PASS bytes=46481
+TASK_8_ARTIFACT=split/live-split-20260728004000/resources-final.yaml PASS bytes=33395
+TASK_8_ARTIFACT=split/live-split-20260728004000/rollout-echo-smoke-split-live-split-20260728004000-echo-oper-controller.log PASS bytes=101
+TASK_8_ARTIFACT=split/live-split-20260728004000/rollout-echo-smoke-split-live-split-20260728004000-echo-oper-webhook.log PASS bytes=98
+TASK_8_ARTIFACT=split/live-split-20260728004000/smoke.log PASS bytes=1371
+TASK_8_ARTIFACT=split/live-split-20260728004000/split-endpointslices.json PASS bytes=5798
+TASK_8_ARTIFACT=split/live-split-20260728004000/split-pods.json PASS bytes=29686
+TASK_8_ARTIFACT=split/live-split-20260728004000/static-contract.log PASS bytes=29
+TASK_8_ARTIFACT=split/live-split-20260728004000/topology-resources.json PASS bytes=26277
+TASK_8_ARTIFACT=split/live-split-20260728004000/validating-core.yaml PASS bytes=5045
+TASK_8_ARTIFACT=split/live-split-20260728004000/validating-final.yaml PASS bytes=5441
+TASK_8_DECLARED_ARTIFACTS=FAIL checked=99 directory=split/live-split-20260728004000
+TASK_8_ALL_DECLARED_ARTIFACTS=FAIL
+TASK_9_ARTIFACT=task-9/docs-check.log PASS bytes=2228
+TASK_9_ARTIFACT=task-9/docs-contract-failure.log PASS bytes=298
+TASK_9_DECLARED_ARTIFACTS=PASS checked=2 directory=task-9
+TASK_9_ALL_DECLARED_ARTIFACTS=PASS
+TASK_4_ARTIFACT=task-4/combined.yaml PASS bytes=11700
+TASK_9_ARTIFACT=task-9/docs-contract-failure.log PASS bytes=298
+TASK_1_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_2_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_3_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_4_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_5_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_6_HAPPY_FAILURE_EVIDENCE=PASS
+TASK_7_HAPPY_FAILURE_EVIDENCE=PASS
+ERROR=Task 8: missing happy or failure evidence (combined/smoke.log, combined/invalid-kube-context.log)
+TASK_8_HAPPY_FAILURE_EVIDENCE=FAIL
+TASK_9_HAPPY_FAILURE_EVIDENCE=PASS
+F1_GATE_EXIT_SUMMARY_LOG=PASS exits=['0', '0', '0', '0']
+F1_RENDER_COMMANDS_FINAL_LOG=PASS exits=['0', '0', '0', '0']
+SKIP_ALLOWED=combined/live-combined-20260727290000/framework-build.log:80:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=combined/live-combined-20260727290000/framework-build.log:89:[INFO] Tests are skipped.
+SKIP_ALLOWED=combined/live-combined-20260727290000/framework-build.log:153:[INFO] Tests are skipped.
+SKIP_ALLOWED=combined/live-combined-20260727290000/image-build.log:47:[INFO] Tests are skipped.
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:65:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.359 s -- in com.example.echooperator.EchoConversionEndpointTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:67:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.example.echooperator.EchoOperatorMainConfigTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:73:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.653 s -- in com.example.echooperator.EchoOperatorMainTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:161:[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.169 s -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:163:[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.example.echooperator.api.v1alpha1.CrdGenerationTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:165:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.example.echooperator.controller.EchoOperatorSecondaryWatchTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:247:[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.145 s -- in com.example.echooperator.controller.EchoReconcilerTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:249:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.example.echooperator.controller.EdgeCaseTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:251:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.example.echooperator.converter.EchoConverterTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:253:[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.example.echooperator.webhook.EchoMutatingWebhookTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:255:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.example.echooperator.webhook.EchoValidatingWebhookTest
+SKIP_ALLOWED=f1-rerun/example-clean-test.log:259:[INFO] Tests run: 69, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:27:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:42:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.huawei.dcs.modelengine.operator.framework.ControllerBuilderTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:50:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.505 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorBackwardCompatibilityTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:52:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.148 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorLauncherTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:54:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.huawei.dcs.modelengine.operator.framework.OperatorSecondaryWatchTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2277:[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.579 s -- in com.huawei.dcs.modelengine.operator.framework.event.EventRecorderTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2279:[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.event.EventSubscriberTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2281:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.huawei.dcs.modelengine.operator.framework.health.HealthServerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2283:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManagerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2285:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.huawei.dcs.modelengine.operator.framework.metrics.MetricsServerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2287:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.ReconcilerInterfaceTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2289:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2291:[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.RequestTriggerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2293:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2295:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.huawei.dcs.modelengine.operator.framework.retry.ExponentialBackoffRetryPolicyTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2297:[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.huawei.dcs.modelengine.operator.framework.retry.RateLimiterTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2299:[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.source.MappersTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2301:[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.huawei.dcs.modelengine.operator.framework.source.ReconciliationQueueTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2303:[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventSourceTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2305:[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2307:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceEventTypeTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2309:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in com.huawei.dcs.modelengine.operator.framework.source.ResourceMapperTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2311:[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.huawei.dcs.modelengine.operator.framework.source.SecondaryEventIntegrationTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2313:[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.huawei.dcs.modelengine.operator.framework.util.FinalizerHelperTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2315:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.huawei.dcs.modelengine.operator.framework.util.OwnerReferenceHelperTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2317:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.579 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2319:[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.120 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandlerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2321:[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.195 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.PemCertificateUtilsTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2344:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.604 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.TlsCertReloadTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2346:[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.769 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateGeneratorTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2396:[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.415 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateSecretManagerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2398:[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandlerTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2400:[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResultTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2474:[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.890 s -- in com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistrationTest
+SKIP_ALLOWED=f1-rerun/framework-clean-install.log:2478:[INFO] Tests run: 168, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=split/live-split-20260728004000/framework-build.log:26:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=split/live-split-20260728004000/framework-build.log:35:[INFO] Tests are skipped.
+SKIP_ALLOWED=split/live-split-20260728004000/framework-build.log:99:[INFO] Tests are skipped.
+SKIP_ALLOWED=split/live-split-20260728004000/image-build.log:47:[INFO] Tests are skipped.
+SKIP_ALLOWED=task-1/characterization-green.log:20:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=task-1/characterization-green.log:26:[INFO] Tests are skipped.
+SKIP_ALLOWED=task-1/characterization-green.log:46:[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-1/config-tests-rerun.log:20:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=task-1/config-tests-rerun.log:26:[INFO] Tests are skipped.
+SKIP_ALLOWED=task-1/config-tests-rerun.log:46:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-1/config-tests.log:20:[INFO] skip non existing resourceDirectory /Volumes/work/Project/java-operator-framework/operator/framework/src/test/resources
+SKIP_ALLOWED=task-1/config-tests.log:26:[INFO] Tests are skipped.
+SKIP_ALLOWED=task-1/config-tests.log:46:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-1/manual-config-observables.txt:34:Focused JUnit result: 16 tests run; 0 failures; 0 errors; 0 skipped. See config-tests.log and config-tests-rerun.log.
+SKIP_ALLOWED=task-2/combined-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/combined-red.log:5:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.818 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/combined-red.log:12:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/controller-only-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/controller-only-red.log:5:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.910 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/controller-only-red.log:13:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/full-example-tests.log:5:[INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/idempotent-stop-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/idempotent-stop-red.log:5:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.721 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/idempotent-stop-red.log:12:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/lifecycle-tests.log:5:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/predecessor-barrier-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/shared-client-focused-final.log:5:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/shared-client-full-final.log:5:[INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/shared-client-ownership-green.log:5:[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/shared-client-ownership-red.log:5:[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.732 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/shared-client-ownership-red.log:14:[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/stop-scenarios-green.log:5:[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/verification.md:4:- Result after shared-client ownership correction: 16 tests, 0 failures, 0 errors, 0 skipped.
+SKIP_ALLOWED=task-2/verification.md:7:- Result after shared-client ownership correction: 64 tests, 0 failures, 0 errors, 0 skipped.
+SKIP_ALLOWED=task-2/webhook-failure-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/webhook-failure-red.log:5:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.754 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/webhook-failure-red.log:14:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/webhook-only-green.log:5:[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/webhook-only-red.log:5:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.249 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-2/webhook-only-red.log:13:[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/webhook-post-start-failures-green.log:5:[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-2/wiring-green.log:5:[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-5/verification.md:23:-> BUILD SUCCESS; Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-7/java-green.log:5:[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-7/java-red.log:5:[ERROR] Tests run: 15, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.152 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+SKIP_ALLOWED=task-7/java-red.log:15:[ERROR] Tests run: 15, Failures: 0, Errors: 1, Skipped: 0
+SKIP_ALLOWED=task-7/ownership-tests.log:7:[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-7/ownership-tests.log:31:[INFO] Tests run: 35, Failures: 0, Errors: 0, Skipped: 0
+SKIP_ALLOWED=task-7/ownership-tests.log:42:[INFO] Tests run: 67, Failures: 0, Errors: 0, Skipped: 0
+ERROR=real SKIP/NOT RUN evidence: combined/live-combined-20260727290000/framework-build.log:247:[WARNING] Usually this is not harmful and you can skip these warnings,
+ERROR=real SKIP/NOT RUN evidence: combined/live-combined-20260727290000/image-build.log:141:[WARNING] Usually this is not harmful and you can skip these warnings,
+ERROR=real SKIP/NOT RUN evidence: split/live-split-20260728004000/framework-build.log:193:[WARNING] Usually this is not harmful and you can skip these warnings,
+ERROR=real SKIP/NOT RUN evidence: split/live-split-20260728004000/image-build.log:141:[WARNING] Usually this is not harmful and you can skip these warnings,
+ERROR=real SKIP/NOT RUN evidence: task-5/adversarial-results.md:8:- **Flake resistance:** the full parsed Helm contract passed twice consecutively. The concurrent test completed with six focused tests and no skips.
+ERROR=real SKIP/NOT RUN evidence: task-7/summary.md:19:- Full example suite: 67/67 passed, zero skipped.
+REAL_SKIP_SCAN=FAIL allowed_count=100 real_count=6
+TASK_8_COMBINED_SMOKE=PASS marker_count=10
+TASK_8_SPLIT_SMOKE=PASS marker_count=10
+TASK_9_DOCS_SEMANTIC_SUMMARY=PASS
+TASK_9_FAILURE_ARTIFACT=PASS
+RENDER_COMBINED_DEFAULT=PASS deployments=1 services=1
+RENDER_COMBINED_CONTROLLER_ONLY=PASS deployments=1 services=1
+RENDER_SPLIT_RUNTIME=PASS deployments=2 services=2
+RENDER_SPLIT_HELM_OWNED=PASS deployments=2 services=2
+NON_FINAL_RENDER_ATTEMPTS=RECORDED_NOT_COUNTED render-capture-invalid-attempt.log,render-commands.log
+EVIDENCE_LEDGER=FAIL error_count=9

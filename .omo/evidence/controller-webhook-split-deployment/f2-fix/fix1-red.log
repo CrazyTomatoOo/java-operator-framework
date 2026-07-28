@@ -1,0 +1,23 @@
+[INFO] Scanning for projects...
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO] Running com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.719 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] com.example.echooperator.EchoOperatorMainWiringTest.stopBeforeStartClosesEveryControllerOwnedResourceAtMostOnce -- Time elapsed: 0.710 s <<< FAILURE!
+Wanted but not invoked:
+kubernetesClient.close();
+-> at com.example.echooperator.EchoOperatorMainWiringTest.stopBeforeStartClosesEveryControllerOwnedResourceAtMostOnce(EchoOperatorMainWiringTest.java:555)
+Actually, there were zero interactions with this mock.
+
+[INFO] Results:
+[ERROR] Failures: 
+[ERROR]   EchoOperatorMainWiringTest.stopBeforeStartClosesEveryControllerOwnedResourceAtMostOnce:555 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+[INFO] Total time:  2.996 s
+[INFO] Finished at: 2026-07-28T00:50:19+08:00
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project echo-operator: There are test failures.
+[ERROR] Please refer to /Volumes/work/Project/java-operator-framework/example/echo-operator/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+
+[full output: ~/Library/Application Support/rtk/tee/1785171019_mvn_test.log]

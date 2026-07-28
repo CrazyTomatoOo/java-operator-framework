@@ -1,0 +1,673 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-07-27T16:05:58Z",
+                "generateName": "echo-smoke-split-live-split-20260728003000-echo-oper-controller-6b9b8dcd67-",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "controller",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728003000",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "pod-template-hash": "6b9b8dcd67"
+                },
+                "name": "echo-smoke-split-live-split-20260728003000-echo-oper-contrpvrz9",
+                "namespace": "echo-smoke-split-live-split-20260728003000",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "echo-smoke-split-live-split-20260728003000-echo-oper-controller-6b9b8dcd67",
+                        "uid": "2a42f644-e214-401c-923c-1fef89293ff3"
+                    }
+                ],
+                "resourceVersion": "2238063",
+                "uid": "25e05129-8a03-4ca7-a142-d68222b5ff6c"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "OPERATOR_NAMESPACE",
+                                "value": "echo-smoke-split-live-split-20260728003000"
+                            },
+                            {
+                                "name": "OPERATOR_POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "METRICS_PORT",
+                                "value": "8080"
+                            },
+                            {
+                                "name": "CONTROLLER_ENABLED",
+                                "value": "true"
+                            },
+                            {
+                                "name": "WEBHOOK_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "WEBHOOK_REGISTRATION_CLEANUP_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "WEBHOOK_SELF_REGISTRATION_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "LEADER_ELECTION_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "LEADER_ELECTION_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "image": "example/echo-operator:smoke-live-split-20260728003000",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": "metrics",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 15,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "operator",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "name": "metrics",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/readyz",
+                                "port": "metrics",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-x2chg",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "docker-desktop",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "runAsGroup": 1001,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "echo-smoke-split-live-split-20260728003000-echo-oper-controller",
+                "serviceAccountName": "echo-smoke-split-live-split-20260728003000-echo-oper-controller",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "kube-api-access-x2chg",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:59Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:58Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:06:10Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:06:10Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:58Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "cpu": "100m",
+                            "memory": "128Mi"
+                        },
+                        "containerID": "docker://a87f0dbbd8a1ad414ca3b22b307d18610df816d2500c7aec56e1c17298842f58",
+                        "image": "example/echo-operator:smoke-live-split-20260728003000",
+                        "imageID": "docker://sha256:aac5d1b6e049e3b11facac8020a1b8c800d8369e52d303f3536eacbfd2dad05e",
+                        "lastState": {},
+                        "name": "operator",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-07-27T16:05:58Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-x2chg",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.65.3",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.65.3"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Running",
+                "podIP": "10.1.2.91",
+                "podIPs": [
+                    {
+                        "ip": "10.1.2.91"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-07-27T16:05:58Z"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "metadata": {
+                "creationTimestamp": "2026-07-27T16:05:58Z",
+                "generateName": "echo-smoke-split-live-split-20260728003000-echo-oper-webhook-6df8b6f5dc-",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "webhook",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728003000",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "pod-template-hash": "6df8b6f5dc"
+                },
+                "name": "echo-smoke-split-live-split-20260728003000-echo-oper-webhomvrs5",
+                "namespace": "echo-smoke-split-live-split-20260728003000",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "apps/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "ReplicaSet",
+                        "name": "echo-smoke-split-live-split-20260728003000-echo-oper-webhook-6df8b6f5dc",
+                        "uid": "89d0c59c-ff4a-4430-b414-29b5010b7f6c"
+                    }
+                ],
+                "resourceVersion": "2238067",
+                "uid": "cb85e3fa-1f8a-4d15-a20e-e77d50ecdff8"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "OPERATOR_NAMESPACE",
+                                "value": "echo-smoke-split-live-split-20260728003000"
+                            },
+                            {
+                                "name": "OPERATOR_POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "apiVersion": "v1",
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "METRICS_PORT",
+                                "value": "8080"
+                            },
+                            {
+                                "name": "CONTROLLER_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "WEBHOOK_ENABLED",
+                                "value": "true"
+                            },
+                            {
+                                "name": "WEBHOOK_REGISTRATION_CLEANUP_ENABLED",
+                                "value": "false"
+                            },
+                            {
+                                "name": "WEBHOOK_SELF_REGISTRATION_ENABLED",
+                                "value": "true"
+                            },
+                            {
+                                "name": "WEBHOOK_PREDECESSOR_VALIDATING_NAME",
+                                "value": "echo-smoke-split-live-split-20260728003000-echo-operator-validating"
+                            },
+                            {
+                                "name": "WEBHOOK_PREDECESSOR_MUTATING_NAME",
+                                "value": "echo-smoke-split-live-split-20260728003000-echo-operator-mutating"
+                            },
+                            {
+                                "name": "WEBHOOK_PORT",
+                                "value": "8443"
+                            },
+                            {
+                                "name": "WEBHOOK_SERVICE_NAME",
+                                "value": "echo-smoke-split-live-split-20260728003000-echo-operator"
+                            },
+                            {
+                                "name": "WEBHOOK_SERVICE_NAMESPACE",
+                                "value": "echo-smoke-split-live-split-20260728003000"
+                            },
+                            {
+                                "name": "WEBHOOK_SERVICE_PORT",
+                                "value": "443"
+                            },
+                            {
+                                "name": "WEBHOOK_CERT_AUTO_GENERATE",
+                                "value": "false"
+                            },
+                            {
+                                "name": "WEBHOOK_CA_BUNDLE_PATH",
+                                "value": "/etc/echo-operator/certs/ca.crt"
+                            }
+                        ],
+                        "image": "example/echo-operator:smoke-live-split-20260728003000",
+                        "imagePullPolicy": "IfNotPresent",
+                        "livenessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/healthz",
+                                "port": "metrics",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 10,
+                            "periodSeconds": 15,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "name": "operator",
+                        "ports": [
+                            {
+                                "containerPort": 8080,
+                                "name": "metrics",
+                                "protocol": "TCP"
+                            },
+                            {
+                                "containerPort": 8443,
+                                "name": "webhook",
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "readinessProbe": {
+                            "failureThreshold": 3,
+                            "httpGet": {
+                                "path": "/readyz",
+                                "port": "metrics",
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 5,
+                            "periodSeconds": 10,
+                            "successThreshold": 1,
+                            "timeoutSeconds": 1
+                        },
+                        "resources": {
+                            "limits": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "capabilities": {
+                                "drop": [
+                                    "ALL"
+                                ]
+                            },
+                            "readOnlyRootFilesystem": true
+                        },
+                        "terminationMessagePath": "/dev/termination-log",
+                        "terminationMessagePolicy": "File",
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/echo-operator/certs",
+                                "name": "webhook-tls",
+                                "readOnly": true
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-d87qw",
+                                "readOnly": true
+                            }
+                        ]
+                    }
+                ],
+                "dnsPolicy": "ClusterFirst",
+                "enableServiceLinks": true,
+                "nodeName": "docker-desktop",
+                "preemptionPolicy": "PreemptLowerPriority",
+                "priority": 0,
+                "restartPolicy": "Always",
+                "schedulerName": "default-scheduler",
+                "securityContext": {
+                    "runAsGroup": 1001,
+                    "runAsNonRoot": true,
+                    "runAsUser": 1001,
+                    "seccompProfile": {
+                        "type": "RuntimeDefault"
+                    }
+                },
+                "serviceAccount": "echo-smoke-split-live-split-20260728003000-echo-oper-webhook",
+                "serviceAccountName": "echo-smoke-split-live-split-20260728003000-echo-oper-webhook",
+                "terminationGracePeriodSeconds": 30,
+                "tolerations": [
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/not-ready",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    },
+                    {
+                        "effect": "NoExecute",
+                        "key": "node.kubernetes.io/unreachable",
+                        "operator": "Exists",
+                        "tolerationSeconds": 300
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "webhook-tls",
+                        "secret": {
+                            "defaultMode": 420,
+                            "secretName": "echo-smoke-split-live-split-20260728003000-webhook-tls"
+                        }
+                    },
+                    {
+                        "name": "kube-api-access-d87qw",
+                        "projected": {
+                            "defaultMode": 420,
+                            "sources": [
+                                {
+                                    "serviceAccountToken": {
+                                        "expirationSeconds": 3607,
+                                        "path": "token"
+                                    }
+                                },
+                                {
+                                    "configMap": {
+                                        "items": [
+                                            {
+                                                "key": "ca.crt",
+                                                "path": "ca.crt"
+                                            }
+                                        ],
+                                        "name": "kube-root-ca.crt"
+                                    }
+                                },
+                                {
+                                    "downwardAPI": {
+                                        "items": [
+                                            {
+                                                "fieldRef": {
+                                                    "apiVersion": "v1",
+                                                    "fieldPath": "metadata.namespace"
+                                                },
+                                                "path": "namespace"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "status": {
+                "conditions": [
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:59Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodReadyToStartContainers"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:58Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Initialized"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:06:10Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "Ready"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:06:10Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "ContainersReady"
+                    },
+                    {
+                        "lastProbeTime": null,
+                        "lastTransitionTime": "2026-07-27T16:05:58Z",
+                        "observedGeneration": 1,
+                        "status": "True",
+                        "type": "PodScheduled"
+                    }
+                ],
+                "containerStatuses": [
+                    {
+                        "allocatedResources": {
+                            "cpu": "100m",
+                            "memory": "128Mi"
+                        },
+                        "containerID": "docker://4847658010f4a1eb73036b87393b382b252584461633503fd88dceb5f38536e5",
+                        "image": "example/echo-operator:smoke-live-split-20260728003000",
+                        "imageID": "docker://sha256:aac5d1b6e049e3b11facac8020a1b8c800d8369e52d303f3536eacbfd2dad05e",
+                        "lastState": {},
+                        "name": "operator",
+                        "ready": true,
+                        "resources": {
+                            "limits": {
+                                "cpu": "500m",
+                                "memory": "512Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "128Mi"
+                            }
+                        },
+                        "restartCount": 0,
+                        "started": true,
+                        "state": {
+                            "running": {
+                                "startedAt": "2026-07-27T16:05:58Z"
+                            }
+                        },
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/etc/echo-operator/certs",
+                                "name": "webhook-tls",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            },
+                            {
+                                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                                "name": "kube-api-access-d87qw",
+                                "readOnly": true,
+                                "recursiveReadOnly": "Disabled"
+                            }
+                        ]
+                    }
+                ],
+                "hostIP": "192.168.65.3",
+                "hostIPs": [
+                    {
+                        "ip": "192.168.65.3"
+                    }
+                ],
+                "observedGeneration": 1,
+                "phase": "Running",
+                "podIP": "10.1.2.90",
+                "podIPs": [
+                    {
+                        "ip": "10.1.2.90"
+                    }
+                ],
+                "qosClass": "Burstable",
+                "startTime": "2026-07-27T16:05:58Z"
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

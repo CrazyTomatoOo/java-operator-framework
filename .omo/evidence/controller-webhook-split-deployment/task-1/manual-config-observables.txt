@@ -1,0 +1,34 @@
+Manual QA surface: EchoOperatorMain.loadConfig(Map<String, String>, Properties), exercised by EchoOperatorMainConfigTest.
+
+Defaults:
+- controllerEnabled=true
+- webhookEnabled=true
+- webhookRegistrationCleanupEnabled=true
+- webhookSelfRegistrationEnabled=true
+- webhookPredecessorValidatingName=null
+- webhookPredecessorMutatingName=null
+
+Environment and property values:
+- CONTROLLER_ENABLED=false resolves controllerEnabled=false.
+- WEBHOOK_REGISTRATION_CLEANUP_ENABLED=false resolves cleanup=false.
+- WEBHOOK_SELF_REGISTRATION_ENABLED=false resolves self-registration=false.
+- WEBHOOK_PREDECESSOR_VALIDATING_NAME=env-validating resolves that exact name.
+- webhook.predecessor.mutating.name=property-mutating resolves that exact name.
+
+Environment precedence:
+- Environment values override controller.enabled, webhook.registration.cleanup.enabled,
+  webhook.self-registration.enabled, webhook.predecessor.validating.name, and
+  webhook.predecessor.mutating.name properties.
+
+Capability combinations:
+- (controller=true, webhook=true): accepted.
+- (controller=true, webhook=false): accepted.
+- (controller=false, webhook=true): accepted.
+- (controller=false, webhook=false): At least one of CONTROLLER_ENABLED or WEBHOOK_ENABLED must be true
+
+Strict boolean errors:
+- CONTROLLER_ENABLED=yes: CONTROLLER_ENABLED must be true or false: yes
+- webhook.registration.cleanup.enabled=maybe: webhook.registration.cleanup.enabled must be true or false: maybe
+- WEBHOOK_SELF_REGISTRATION_ENABLED=sometimes: WEBHOOK_SELF_REGISTRATION_ENABLED must be true or false: sometimes
+
+Focused JUnit result: 16 tests run; 0 failures; 0 errors; 0 skipped. See config-tests.log and config-tests-rerun.log.

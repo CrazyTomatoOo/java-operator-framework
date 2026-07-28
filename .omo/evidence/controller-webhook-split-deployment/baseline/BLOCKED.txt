@@ -1,0 +1,16 @@
+BLOCKED: Pre-existing dirty product paths overlap the Task 1-9 implementation area.
+
+Direct Task 1 overlap:
+- example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java
+- example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainConfigTest.java
+
+Other plan-area overlaps detected in the same immutable initial snapshot:
+- example/echo-operator/README.md
+- example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainWiringTest.java
+- operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandler.java
+- operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandler.java
+- operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java
+- operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandlerTest.java
+- operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandlerTest.java
+
+No product file was edited and no Maven or LSP verification was run.

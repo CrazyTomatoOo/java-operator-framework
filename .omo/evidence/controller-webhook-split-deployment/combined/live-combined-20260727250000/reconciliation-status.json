@@ -1,0 +1,28 @@
+{
+    "apiVersion": "example.com/v1alpha2",
+    "kind": "EchoResource",
+    "metadata": {
+        "annotations": {
+            "echo.example.com/mutated": "true",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"example.com/v1alpha2\",\"kind\":\"EchoResource\",\"metadata\":{\"annotations\":{},\"name\":\"reconcile-live-combined-20260727250000\",\"namespace\":\"echo-smoke-combined-live-combined-20260727250000\"},\"spec\":{\"logLevel\":\"INFO\",\"message\":\"reconciliation\",\"replicas\":1}}\n"
+        },
+        "creationTimestamp": "2026-07-27T15:29:35Z",
+        "finalizers": [
+            "echo.example.com/finalizer"
+        ],
+        "generation": 1,
+        "name": "reconcile-live-combined-20260727250000",
+        "namespace": "echo-smoke-combined-live-combined-20260727250000",
+        "resourceVersion": "2230303",
+        "uid": "f5675905-266b-4db0-936d-06ef3d0d378f"
+    },
+    "spec": {
+        "logLevel": "INFO",
+        "message": "reconciliation",
+        "replicas": 1
+    },
+    "status": {
+        "message": "reconciliation",
+        "phase": "READY"
+    }
+}

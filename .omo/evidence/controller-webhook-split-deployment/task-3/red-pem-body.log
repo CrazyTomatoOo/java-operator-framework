@@ -1,0 +1,7 @@
+combined contract passed
+split contract passed
+poison isolation passed
+fullnameOverride contract passed
+external CA Secret comparison passed
+negative contract passed: envelope-only-pem
+expected invalid-base64-pem to fail, but it succeeded

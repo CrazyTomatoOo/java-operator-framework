@@ -1,0 +1,38 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: "2026-07-27T15:00:26Z"
+  generation: 1
+  name: echo-operator.echo-smoke-combined-live-combined-20260727233000.echo.example.com
+  resourceVersion: "2225448"
+  uid: eada9bca-e828-4b15-928a-088e0c606506
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURmRENDQW1TZ0F3SUJBZ0lWQU9sWXZKZThDeFlxLzJxQmJvbVAzUGwrM3dNRk1BMEdDU3FHU0liM0RRRUIKQ3dVQU1GUXhVakJRQmdOVkJBTU1TV1ZqYUc4dGMyMXZhMlV0WTI5dFltbHVaV1F0YkdsMlpTMWpiMjFpYVc1bApaQzB5TURJMk1EY3lOekl6TXpBd01DMWxZMmh2TFc5d1pYSmhkRzl5SUhkbFltaHZiMnNnUTBFd0hoY05Nall3Ck56STNNVFV3TURJMVdoY05NamN3TnpJM01UVXdNREkxV2pCVU1WSXdVQVlEVlFRRERFbGxZMmh2TFhOdGIydGwKTFdOdmJXSnBibVZrTFd4cGRtVXRZMjl0WW1sdVpXUXRNakF5TmpBM01qY3lNek13TURBdFpXTm9ieTF2Y0dWeQpZWFJ2Y2lCM1pXSm9iMjlySUVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBCmszbDBTR2t1ZGZISVZzRnFkOEtZbTl3Zndla2xob3g5UHAwdkhqclpSR2JZbFl1Ri9LT3VJV2FsWEIzUVhHdlAKZlZycXBFUEtBeWtPQTJVTkRNMHZOVEU0UjV5aEh6c25xdERWME5PaEtkWlBCeXUyQUdoL0l4dThTK1J4NmFUaQpPNjNLa2M1VVZ6VGhCRStJcWw3ZzlRNlpNd2VPU0h3a2pQdHlKbDJlWW00L2lHWUVVL0tzTFVTbEdYVjFGbEhYCm9ZOGRkdEdyTFRtUzdXS0ZXajdRMS92R3VHYTNnemNaTElnUVpFTlV3TkZOazdUcTJvL0NGN1NOam1QSjVVcTcKbC90M1ptem1lKzNES1VYWW5lODkvUnNVbTRibDJ4OFZISmplNnRneGhPZlBFdEprNjdPbm10em10YzFCai92cAp3U1p0bFhJZWV3OG9HdDN2YU5TaERRSURBUUFCbzBVd1F6QVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUFNQTRHCkExVWREd0VCL3dRRUF3SUJCakFkQmdOVkhRNEVGZ1FVeWdXL2lhL1dxWEd4dWlzQ0xBQW1kQ1hnUDNzd0RRWUoKS29aSWh2Y05BUUVMQlFBRGdnRUJBRzBqYzdXRTZqeWxYcHlZd0ZRekpaTTN5UVE4K0pDczQ2MXNZb3NzMnhZawpjZlk2SzI0a3pZZ2F2elQwaThyREplUzg5Mi9lRzJHREZ5QUNzQ1dvTTZPYlk1Y3VheDZ1Yi9aV1dSYVBSYTlhCmxhMERaS04zRHlQeG5OMCs2R2xWbnRCeGY1L0VwbzBhNEJmSDlYZmdBY2pHOGtKbG02WFJhdWhKNjdaK2FQYjMKUDFjL0tWeHdLMDlKazhsQ1Rwb0tTeGdsKzRXSFpoRWkvcmRENm56eWlMSkdtblZZYjlRYVR2OGFjbnBGVDlEeQo2Y3NWREVOc2tyL1pvUEdBWTlHdzlxMlZTY2xMMzJWWllrM3BxVFNOUFpkejlsTURUYzJVbjF1NzE3aE5XVW5ECml4ODRyUmNmL0FFZUhZVC9ybkcvVjJpZWlQdXBGaVVIa2lEeTVtU1VFd2s9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    service:
+      name: echo-smoke-combined-live-combined-20260727233000-echo-operator
+      namespace: echo-smoke-combined-live-combined-20260727233000
+      path: /mutate/echo.example.com
+      port: 443
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: echo-operator.echo-smoke-combined-live-combined-20260727233000.echo.example.com
+  namespaceSelector: {}
+  objectSelector: {}
+  reinvocationPolicy: Never
+  rules:
+  - apiGroups:
+    - example.com
+    apiVersions:
+    - v1alpha1
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - echoresources
+    scope: Namespaced
+  sideEffects: None
+  timeoutSeconds: 10

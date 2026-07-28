@@ -1,0 +1,25 @@
++ env KUBECONFIG=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727225000/definitely-invalid-kubeconfig SMOKE_PRECHECK_ONLY=true example/echo-operator/scripts/smoke-test.sh 
++ kubectl config current-context 
++ kubectl cluster-info 
++ kubectl create namespace echo-smoke-combined-live-combined-20260727225000 
++ kubectl get crd echoresources.example.com -o yaml 
++ /Volumes/work/Project/java-operator-framework/example/echo-operator/scripts/build-image.sh 
++ tar -tf /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/baseline/echo-operator-chart.tar 
++ env CHART_DIR=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727225000/baseline-chart/example/echo-operator/helm/echo-operator RELEASE_NAME=echo-smoke-combined-live-combined-20260727225000 NAMESPACE=echo-smoke-combined-live-combined-20260727225000 DEPLOYMENT_MODE=combined IMAGE_TAG=latest HELM_VALUES_FILE= HELM_POST_RENDERER=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727225000/omit-preexisting-crd.py HELM_WAIT=true SKIP_BUILD=true /Volumes/work/Project/java-operator-framework/example/echo-operator/scripts/deploy.sh 
++ kubectl get deployment\,service -n echo-smoke-combined-live-combined-20260727225000 -l app.kubernetes.io/instance=echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl rollout status deployment/echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 --timeout=300s 
++ kubectl get deployment echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl get service echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 -o json 
++ env CHART_DIR=/Volumes/work/Project/java-operator-framework/example/echo-operator/helm/echo-operator RELEASE_NAME=echo-smoke-combined-live-combined-20260727225000 NAMESPACE=echo-smoke-combined-live-combined-20260727225000 DEPLOYMENT_MODE=combined IMAGE_TAG=latest HELM_VALUES_FILE= HELM_POST_RENDERER=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727225000/omit-preexisting-crd.py HELM_WAIT=true SKIP_BUILD=true /Volumes/work/Project/java-operator-framework/example/echo-operator/scripts/deploy.sh 
++ kubectl get deployment\,service -n echo-smoke-combined-live-combined-20260727225000 -l app.kubernetes.io/instance=echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl rollout status deployment/echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 --timeout=300s 
++ kubectl get deployment echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl get service echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl get deployment\,service -n echo-smoke-combined-live-combined-20260727225000 -l app.kubernetes.io/instance=echo-smoke-combined-live-combined-20260727225000 -o json 
++ kubectl rollout status deployment/echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 --timeout=300s 
++ kubectl rollout status deployment/echo-smoke-combined-live-combined-20260727225000-echo-operator -n echo-smoke-combined-live-combined-20260727225000 --timeout=300s 
++ kubectl port-forward -n echo-smoke-combined-live-combined-20260727225000 svc/echo-smoke-combined-live-combined-20260727225000-echo-operator 57150:8080 
++ curl --silent --show-error --output /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727225000/http-controller-healthz.log --write-out %\{http_code\} http://127.0.0.1:57150/healthz 
++ curl --silent --show-error --output /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727225000/http-controller-readyz.log --write-out %\{http_code\} http://127.0.0.1:57150/readyz 
++ curl --silent --show-error --output /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727225000/http-webhook-healthz.log --write-out %\{http_code\} http://127.0.0.1:57150/healthz 
++ curl --silent --show-error --output /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727225000/http-webhook-readyz.log --write-out %\{http_code\} http://127.0.0.1:57150/readyz 

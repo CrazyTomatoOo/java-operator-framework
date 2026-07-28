@@ -1,0 +1,8 @@
+COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns
+EXIT_CODE=0 OUTPUT=combined-default-final.yaml STDERR=combined-default-final.stderr.log
+COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set webhook.enabled=false
+EXIT_CODE=0 OUTPUT=combined-controller-only-final.yaml STDERR=combined-controller-only-final.stderr.log
+COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set deploymentMode=split
+EXIT_CODE=0 OUTPUT=split-runtime-final.yaml STDERR=split-runtime-final.stderr.log
+COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set deploymentMode=split --set webhook.certAutoGenerate=false --set webhook.createWebhookConfigurations=true --set-file webhook.caBundle=/Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/combined/live-combined-20260727290000/ca-helm-secret.pem
+EXIT_CODE=0 OUTPUT=split-helm-owned-final.yaml STDERR=split-helm-owned-final.stderr.log

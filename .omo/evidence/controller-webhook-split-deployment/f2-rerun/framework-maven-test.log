@@ -1,0 +1,9 @@
+[INFO] Scanning for projects...
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[INFO] Results:
+[INFO] Tests run: 168, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  16.372 s
+[INFO] Finished at: 2026-07-28T01:11:23+08:00
+

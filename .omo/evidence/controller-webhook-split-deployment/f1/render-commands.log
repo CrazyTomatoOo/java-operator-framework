@@ -1,0 +1,1 @@
+COMMAND: helm template f1 echo-operator-chart --namespace f1-ns 

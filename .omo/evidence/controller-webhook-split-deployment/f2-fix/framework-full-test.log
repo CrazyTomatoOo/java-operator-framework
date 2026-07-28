@@ -1,0 +1,15 @@
+[INFO] Scanning for projects...
+[INFO] -----------< com.huawei.dcs.modelengine:operator-framework >------------
+[INFO] Building operator-framework 0.1.0-SNAPSHOT
+[WARNING] No resources were registered with the 'customResources' method to be generated
+[INFO] Results:
+[INFO] Tests run: 168, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Building jar: /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/pom.xml to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.pom
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT.jar
+[INFO] Installing /Volumes/work/Project/java-operator-framework/operator/framework/target/operator-framework-0.1.0-SNAPSHOT-sources.jar to /Users/crazytomatooo/.m2/repository/com/huawei/dcs/modelengine/operator-framework/0.1.0-SNAPSHOT/operator-framework-0.1.0-SNAPSHOT-sources.jar
+[INFO] BUILD SUCCESS
+[INFO] Total time:  16.605 s
+[INFO] Finished at: 2026-07-28T01:04:41+08:00
+

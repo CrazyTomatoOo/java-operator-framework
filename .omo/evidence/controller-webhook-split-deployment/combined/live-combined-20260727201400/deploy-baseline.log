@@ -1,0 +1,3 @@
+Deploying combined Helm release echo-smoke-combined-live-combined-20260727201400 to namespace echo-smoke-combined-live-combined-20260727201400...
+Release "echo-smoke-combined-live-combined-20260727201400" does not exist. Installing it now.
+Error: Unable to continue with install: CustomResourceDefinition "echoresources.example.com" in namespace "" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "echo-smoke-combined-live-combined-20260727201400": current value is "echo-operator"; annotation validation error: key "meta.helm.sh/release-namespace" must equal "echo-smoke-combined-live-combined-20260727201400": current value is "default"

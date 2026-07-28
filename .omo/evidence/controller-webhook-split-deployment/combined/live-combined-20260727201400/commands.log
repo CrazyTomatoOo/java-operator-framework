@@ -1,0 +1,7 @@
++ env KUBECONFIG=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727201400/definitely-invalid-kubeconfig SMOKE_PRECHECK_ONLY=true example/echo-operator/scripts/smoke-test.sh 
++ kubectl config current-context 
++ kubectl cluster-info 
++ kubectl create namespace echo-smoke-combined-live-combined-20260727201400 
++ /Volumes/work/Project/java-operator-framework/example/echo-operator/scripts/build-image.sh 
++ tar -tf /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/baseline/echo-operator-chart.tar 
++ env CHART_DIR=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-combined-20260727201400/baseline-chart/example/echo-operator/helm/echo-operator RELEASE_NAME=echo-smoke-combined-live-combined-20260727201400 NAMESPACE=echo-smoke-combined-live-combined-20260727201400 DEPLOYMENT_MODE=combined IMAGE_TAG=latest HELM_VALUES_FILE= HELM_WAIT=true SKIP_BUILD=true /Volumes/work/Project/java-operator-framework/example/echo-operator/scripts/deploy.sh 

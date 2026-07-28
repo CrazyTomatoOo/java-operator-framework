@@ -1,0 +1,1 @@
+shell syntax passed: deploy.sh undeploy.sh smoke-test.sh helm-contract-test.sh

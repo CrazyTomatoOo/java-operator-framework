@@ -1,0 +1,3 @@
+adversarial result set: unknown-mode, split-without-webhook, disabled-webhook-configurations, auto-generated-helm-configurations, missing-external-secret, missing-external-ca, invalid-external-ca, reserved-selector-label, missing-split-sa, colliding-split-sa, colliding-services, overlong-service-name, invalid-service-name
+default repeat: byte-for-byte identical
+default and split candidates: all expected negative renders exited nonzero with exact diagnostics

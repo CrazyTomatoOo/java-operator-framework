@@ -1,0 +1,2 @@
+Warning: example.com/v1alpha1 EchoResource is deprecated; use example.com/v1alpha2 EchoResource
+echoresource.example.com/mutation-live-combined-20260727280000 created

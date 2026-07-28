@@ -1,0 +1,16 @@
+original_status=1
+stopping port-forward pid=88453
+killed port-forward pid=88453
+waited port-forward pid=88453
+delete runtime validating=echo-operator.echo-smoke-combined-live-combined-20260727231000.echo.example.com
+validatingwebhookconfiguration.admissionregistration.k8s.io "echo-operator.echo-smoke-combined-live-combined-20260727231000.echo.example.com" deleted
+delete runtime mutating=echo-operator.echo-smoke-combined-live-combined-20260727231000.echo.example.com
+mutatingwebhookconfiguration.admissionregistration.k8s.io "echo-operator.echo-smoke-combined-live-combined-20260727231000.echo.example.com" deleted
+uninstall release=echo-smoke-combined-live-combined-20260727231000 namespace=echo-smoke-combined-live-combined-20260727231000
+Uninstalling Helm release echo-smoke-combined-live-combined-20260727231000 from namespace echo-smoke-combined-live-combined-20260727231000...
+release "echo-smoke-combined-live-combined-20260727231000" uninstalled
+Uninstall complete.
+delete namespace=echo-smoke-combined-live-combined-20260727231000
+namespace "echo-smoke-combined-live-combined-20260727231000" deleted
+error: timed out waiting for the condition on namespaces/echo-smoke-combined-live-combined-20260727231000
+cleanup_status=1

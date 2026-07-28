@@ -1,0 +1,6 @@
+JAVA_PASS: EchoOperatorMain constants contract passed
+[2026-07-28T01:07:14+08:00] PASS: EchoOperatorMain constants
+[2026-07-28T01:07:14+08:00] 
+[2026-07-28T01:07:14+08:00] === Phase 3: English README required content ===
+EN_FAIL: English README missing required token: 'deploymentMode'
+exit_code=0

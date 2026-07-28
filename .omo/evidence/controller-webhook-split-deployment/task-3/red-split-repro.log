@@ -1,0 +1,7 @@
+RED EVIDENCE: split mode renders 1 Deployment(s), 1 Service(s), 1 ServiceAccount(s)
+  Deployment: contract-echo-operator
+  Service: contract-echo-operator
+  ServiceAccount: contract-echo-operator
+
+POISON TEST: top-level replicas=9, nested controller=2, webhook=3
+  Deployment contract-echo-operator: replicas=9

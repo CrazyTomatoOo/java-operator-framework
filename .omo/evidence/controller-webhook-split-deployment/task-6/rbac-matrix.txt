@@ -1,0 +1,64 @@
+# Task 6 exact rendered RBAC matrix
+
+Manual parsed-YAML QA rendered `contract` in `contract-ns` with Helm and extracted only
+ServiceAccounts, Roles, RoleBindings, ClusterRoles, and ClusterRoleBindings. The checked
+resource references below are literal rendered values; `scripts/helm-contract-test.sh`
+also asserts the complete parsed object set and every exact rule set.
+
+## Identity and binding references
+
+| Render | ServiceAccounts | RoleBinding subject(s) | ClusterRoleBinding subject |
+|---|---|---|---|
+| combined auto | `contract-echo-operator` | `contract-echo-operator@contract-ns` | `contract-echo-operator@contract-ns` |
+| split auto | `contract-echo-operator-controller`, `contract-echo-operator-webhook` | controller Role -> controller SA; webhook Secret Role -> webhook SA | webhook SA |
+| split watched + lease | same split SAs in `contract-ns` | controller RoleBinding is in `watched-ns`, but its subject remains `contract-echo-operator-controller@contract-ns`; Secret and Lease bindings are in `contract-ns` | webhook SA in `contract-ns` |
+| custom SAs with `rbac.create=false` and `serviceAccount.create=false` | none managed | none | none |
+
+## Namespaced controller matrix
+
+Role `<fullname>-controller` is rendered in `operator.namespace`, or `Release.Namespace`
+when it is unset. It contains exactly:
+
+| API group | Resources | Resource names | Verbs |
+|---|---|---|---|
+| `example.com` | `echoresources` | unrestricted | `get,list,watch,create,update,patch,delete` |
+| `example.com` | `echoresources/status` | unrestricted | `get,update,patch` |
+| `example.com` | `echoresources/finalizers` | unrestricted | `update` |
+| core | `pods,services` | unrestricted | `get,list,watch,create,update,patch,delete` |
+| `apps` | `deployments` | unrestricted | `get,list,watch,create,update,patch,delete` |
+| core | `events` | unrestricted | `get,create,patch` |
+
+With `leaderElection.enabled=true`, distinct Role/RoleBinding
+`<fullname>-controller-lease` is rendered only in `contract-ns` (the lock/release
+namespace), for the controller SA only: `coordination.k8s.io/leases` with
+`get,list,watch,create,update,patch,delete`.
+
+## Webhook matrix
+
+| Condition | Scope / object | Exact rules / references |
+|---|---|---|
+| `webhook.enabled && certAutoGenerate` | release Role `<fullname>-webhook-secret` | core `secrets`: named `get` only on `echo-operator-webhook-ca`; separate unscoped `create` only |
+| runtime admission (`webhook.enabled && !createWebhookConfigurations`) | ClusterRole `<fullname>-webhook` | separate unscoped `create` rules for validating and mutating configurations; `get,update,patch,delete` only on `echo-operator.contract-ns.echo.example.com` for each kind |
+| runtime predecessor barrier | same ClusterRole | `get` only on `contract-echo-operator-validating` (validating) and `contract-echo-operator-mutating` (mutating) |
+| Helm-owner migration cleanup or combined controller-only | same ClusterRole | `get,delete` only on `echo-operator.contract-ns.echo.example.com`, separately for validating and mutating configurations |
+| auto-generated conversion | same ClusterRole | `apiextensions.k8s.io/customresourcedefinitions`, `resourceNames=[echoresources.example.com]`, `get,update,patch` only |
+| external static conversion / Helm-owned admission | same ClusterRole | no Secret role, no admission create/barrier/mutation rules, and no CRD rule; cleanup rules above are the complete ClusterRole |
+
+### Watched-namespace admission-name correction
+
+Runtime admission `resourceNames` always use the effective watched namespace, matching
+Java `registrationBaseName`: `echo-operator.<watched-namespace>.echo.example.com`.
+The explicit parsed render with release namespace `release-ns`,
+`operator.namespace=watched-ns`, and leader election enabled constrains both validating
+and mutating runtime-owner rules to `echo-operator.watched-ns.echo.example.com`.
+Its controller Role/RoleBinding remain in `watched-ns`; every binding subject remains a
+ServiceAccount in `release-ns`. Release-equal renders remain
+`echo-operator.contract-ns.echo.example.com`.
+
+## Parsed isolation outcomes
+
+- Split controller is denied Secret `get`, admission configuration `create`, CRD `patch`, and Lease `update` unless the controller-only lease Role is explicitly enabled.
+- Split webhook is denied EchoResource update, Deployment delete, Event create, and every Lease verb.
+- External runtime registration keeps admission owner and exact predecessor `get` rules but has neither Secret nor CRD patch rights.
+- Cleanup can delete only the runtime stable name; it cannot delete either Helm predecessor name.
+- Combined preserves one ServiceAccount; its separate Role/Binding references retain the same release-namespace subject.

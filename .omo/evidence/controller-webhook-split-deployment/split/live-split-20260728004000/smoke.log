@@ -1,0 +1,12 @@
+[2026-07-28T00:11:34+08:00] invalid kube context prerequisite contract failed as required
+[2026-07-28T00:11:34+08:00] preserving the pre-existing CRD outside this isolated Helm release
+[2026-07-28T00:12:03+08:00] runtime-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
+[2026-07-28T00:12:06+08:00] split Services select only their matching component Pods
+[2026-07-28T00:12:24+08:00] admission, mutation, bidirectional conversion, reconciliation status, and deletion cleanup passed
+[2026-07-28T00:12:24+08:00] exact ServiceAccount authorization matrix and negative assertion passed
+[2026-07-28T00:12:39+08:00] helm-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
+[2026-07-28T00:12:39+08:00] in-place runtime to Helm ownership transition converged to one owner of each admission configuration
+[2026-07-28T00:12:52+08:00] runtime-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
+[2026-07-28T00:12:52+08:00] in-place Helm to runtime transition held predecessors at NotReady, then registered exactly one owner after deletion
+[2026-07-28T00:13:07+08:00] mismatched external CA caused a failurePolicy=Fail API-server webhook request failure
+[2026-07-28T00:13:07+08:00] all split topology smoke assertions passed; cleanup will now remove the release and namespace

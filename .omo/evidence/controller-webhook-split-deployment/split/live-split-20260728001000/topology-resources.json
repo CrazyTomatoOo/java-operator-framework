@@ -1,0 +1,555 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "1",
+                    "meta.helm.sh/release-name": "echo-smoke-split-live-split-20260728001000",
+                    "meta.helm.sh/release-namespace": "echo-smoke-split-live-split-20260728001000"
+                },
+                "creationTimestamp": "2026-07-27T16:02:47Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "controller",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/managed-by": "Helm",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "app.kubernetes.io/version": "0.1.0",
+                    "helm.sh/chart": "echo-operator-0.1.0"
+                },
+                "name": "echo-smoke-split-live-split-20260728001000-echo-oper-controller",
+                "namespace": "echo-smoke-split-live-split-20260728001000",
+                "resourceVersion": "2237246",
+                "uid": "21c8874b-f8c7-4833-8285-287eb1930071"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app.kubernetes.io/component": "controller",
+                        "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                        "app.kubernetes.io/name": "echo-operator"
+                    }
+                },
+                "strategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "25%",
+                        "maxUnavailable": "25%"
+                    },
+                    "type": "RollingUpdate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app.kubernetes.io/component": "controller",
+                            "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                            "app.kubernetes.io/name": "echo-operator"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "OPERATOR_NAMESPACE",
+                                        "value": "echo-smoke-split-live-split-20260728001000"
+                                    },
+                                    {
+                                        "name": "OPERATOR_POD_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "METRICS_PORT",
+                                        "value": "8080"
+                                    },
+                                    {
+                                        "name": "CONTROLLER_ENABLED",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_REGISTRATION_CLEANUP_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_SELF_REGISTRATION_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "LEADER_ELECTION_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "LEADER_ELECTION_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": "example/echo-operator:smoke-live-split-20260728001000",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/healthz",
+                                        "port": "metrics",
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 15,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "operator",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "name": "metrics",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/readyz",
+                                        "port": "metrics",
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 5,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "500m",
+                                        "memory": "512Mi"
+                                    },
+                                    "requests": {
+                                        "cpu": "100m",
+                                        "memory": "128Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "readOnlyRootFilesystem": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File"
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {
+                            "runAsGroup": 1001,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1001,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "serviceAccount": "echo-smoke-split-live-split-20260728001000-echo-oper-controller",
+                        "serviceAccountName": "echo-smoke-split-live-split-20260728001000-echo-oper-controller",
+                        "terminationGracePeriodSeconds": 30
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-07-27T16:03:00Z",
+                        "lastUpdateTime": "2026-07-27T16:03:00Z",
+                        "message": "Deployment has minimum availability.",
+                        "reason": "MinimumReplicasAvailable",
+                        "status": "True",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-07-27T16:02:47Z",
+                        "lastUpdateTime": "2026-07-27T16:03:00Z",
+                        "message": "ReplicaSet \"echo-smoke-split-live-split-20260728001000-echo-oper-controller-7b79bf76d9\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    }
+                ],
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "metadata": {
+                "annotations": {
+                    "deployment.kubernetes.io/revision": "1",
+                    "meta.helm.sh/release-name": "echo-smoke-split-live-split-20260728001000",
+                    "meta.helm.sh/release-namespace": "echo-smoke-split-live-split-20260728001000"
+                },
+                "creationTimestamp": "2026-07-27T16:02:47Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "webhook",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/managed-by": "Helm",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "app.kubernetes.io/version": "0.1.0",
+                    "helm.sh/chart": "echo-operator-0.1.0"
+                },
+                "name": "echo-smoke-split-live-split-20260728001000-echo-oper-webhook",
+                "namespace": "echo-smoke-split-live-split-20260728001000",
+                "resourceVersion": "2237241",
+                "uid": "18f56b39-0164-447e-ba6b-2aa0ed1c00c2"
+            },
+            "spec": {
+                "progressDeadlineSeconds": 600,
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app.kubernetes.io/component": "webhook",
+                        "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                        "app.kubernetes.io/name": "echo-operator"
+                    }
+                },
+                "strategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "25%",
+                        "maxUnavailable": "25%"
+                    },
+                    "type": "RollingUpdate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app.kubernetes.io/component": "webhook",
+                            "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                            "app.kubernetes.io/name": "echo-operator"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "OPERATOR_NAMESPACE",
+                                        "value": "echo-smoke-split-live-split-20260728001000"
+                                    },
+                                    {
+                                        "name": "OPERATOR_POD_NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "METRICS_PORT",
+                                        "value": "8080"
+                                    },
+                                    {
+                                        "name": "CONTROLLER_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_ENABLED",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_REGISTRATION_CLEANUP_ENABLED",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_SELF_REGISTRATION_ENABLED",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_PREDECESSOR_VALIDATING_NAME",
+                                        "value": "echo-smoke-split-live-split-20260728001000-echo-operator-validating"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_PREDECESSOR_MUTATING_NAME",
+                                        "value": "echo-smoke-split-live-split-20260728001000-echo-operator-mutating"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_PORT",
+                                        "value": "8443"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_SERVICE_NAME",
+                                        "value": "echo-smoke-split-live-split-20260728001000-echo-operator"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_SERVICE_NAMESPACE",
+                                        "value": "echo-smoke-split-live-split-20260728001000"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_SERVICE_PORT",
+                                        "value": "443"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_CERT_AUTO_GENERATE",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "WEBHOOK_CA_BUNDLE_PATH",
+                                        "value": "/etc/echo-operator/certs/ca.crt"
+                                    }
+                                ],
+                                "image": "example/echo-operator:smoke-live-split-20260728001000",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/healthz",
+                                        "port": "metrics",
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 15,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "name": "operator",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "name": "metrics",
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 8443,
+                                        "name": "webhook",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/readyz",
+                                        "port": "metrics",
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 5,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "cpu": "500m",
+                                        "memory": "512Mi"
+                                    },
+                                    "requests": {
+                                        "cpu": "100m",
+                                        "memory": "128Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "allowPrivilegeEscalation": false,
+                                    "capabilities": {
+                                        "drop": [
+                                            "ALL"
+                                        ]
+                                    },
+                                    "readOnlyRootFilesystem": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/echo-operator/certs",
+                                        "name": "webhook-tls",
+                                        "readOnly": true
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {
+                            "runAsGroup": 1001,
+                            "runAsNonRoot": true,
+                            "runAsUser": 1001,
+                            "seccompProfile": {
+                                "type": "RuntimeDefault"
+                            }
+                        },
+                        "serviceAccount": "echo-smoke-split-live-split-20260728001000-echo-oper-webhook",
+                        "serviceAccountName": "echo-smoke-split-live-split-20260728001000-echo-oper-webhook",
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "name": "webhook-tls",
+                                "secret": {
+                                    "defaultMode": 420,
+                                    "secretName": "echo-smoke-split-live-split-20260728001000-webhook-tls"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-07-27T16:03:00Z",
+                        "lastUpdateTime": "2026-07-27T16:03:00Z",
+                        "message": "Deployment has minimum availability.",
+                        "reason": "MinimumReplicasAvailable",
+                        "status": "True",
+                        "type": "Available"
+                    },
+                    {
+                        "lastTransitionTime": "2026-07-27T16:02:47Z",
+                        "lastUpdateTime": "2026-07-27T16:03:00Z",
+                        "message": "ReplicaSet \"echo-smoke-split-live-split-20260728001000-echo-oper-webhook-6b5945b5b7\" has successfully progressed.",
+                        "reason": "NewReplicaSetAvailable",
+                        "status": "True",
+                        "type": "Progressing"
+                    }
+                ],
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "echo-smoke-split-live-split-20260728001000",
+                    "meta.helm.sh/release-namespace": "echo-smoke-split-live-split-20260728001000"
+                },
+                "creationTimestamp": "2026-07-27T16:02:47Z",
+                "labels": {
+                    "app.kubernetes.io/component": "controller",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/managed-by": "Helm",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "app.kubernetes.io/version": "0.1.0",
+                    "helm.sh/chart": "echo-operator-0.1.0"
+                },
+                "name": "echo-smoke-split-live-split-20260728001000-echo-oper-controller",
+                "namespace": "echo-smoke-split-live-split-20260728001000",
+                "resourceVersion": "2237166",
+                "uid": "c56051cd-8105-4c93-a435-c22a1adb412b"
+            },
+            "spec": {
+                "clusterIP": "10.99.139.126",
+                "clusterIPs": [
+                    "10.99.139.126"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "metrics",
+                        "port": 8080,
+                        "protocol": "TCP",
+                        "targetPort": "metrics"
+                    }
+                ],
+                "selector": {
+                    "app.kubernetes.io/component": "controller",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/name": "echo-operator"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "meta.helm.sh/release-name": "echo-smoke-split-live-split-20260728001000",
+                    "meta.helm.sh/release-namespace": "echo-smoke-split-live-split-20260728001000"
+                },
+                "creationTimestamp": "2026-07-27T16:02:47Z",
+                "labels": {
+                    "app.kubernetes.io/component": "webhook",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/managed-by": "Helm",
+                    "app.kubernetes.io/name": "echo-operator",
+                    "app.kubernetes.io/version": "0.1.0",
+                    "helm.sh/chart": "echo-operator-0.1.0"
+                },
+                "name": "echo-smoke-split-live-split-20260728001000-echo-operator",
+                "namespace": "echo-smoke-split-live-split-20260728001000",
+                "resourceVersion": "2237170",
+                "uid": "51822162-e680-488d-b9ac-62db4d6e57bf"
+            },
+            "spec": {
+                "clusterIP": "10.101.165.165",
+                "clusterIPs": [
+                    "10.101.165.165"
+                ],
+                "internalTrafficPolicy": "Cluster",
+                "ipFamilies": [
+                    "IPv4"
+                ],
+                "ipFamilyPolicy": "SingleStack",
+                "ports": [
+                    {
+                        "name": "webhook",
+                        "port": 443,
+                        "protocol": "TCP",
+                        "targetPort": "webhook"
+                    }
+                ],
+                "selector": {
+                    "app.kubernetes.io/component": "webhook",
+                    "app.kubernetes.io/instance": "echo-smoke-split-live-split-20260728001000",
+                    "app.kubernetes.io/name": "echo-operator"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

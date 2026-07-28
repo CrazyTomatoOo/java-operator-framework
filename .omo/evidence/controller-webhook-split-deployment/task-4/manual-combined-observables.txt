@@ -1,0 +1,57 @@
+Command: bounded Python/YAML parser rendering default combined, webhook-disabled combined, and external-TLS Helm-owned combined with helm template contract --namespace contract-ns.
+Result: exit 0. The TemporaryDirectory holding the generated CA and render inputs was removed automatically.
+
+[
+  {
+    "case": "default-combined",
+    "resourceCounts": {"ClusterRole": 1, "ClusterRoleBinding": 1, "CustomResourceDefinition": 1, "Deployment": 1, "Role": 1, "RoleBinding": 1, "Service": 1, "ServiceAccount": 1},
+    "deployment": {
+      "name": "contract-echo-operator",
+      "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "podSelector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "ownershipEnv": {"CONTROLLER_ENABLED": "true", "WEBHOOK_ENABLED": "true", "WEBHOOK_REGISTRATION_CLEANUP_ENABLED": "false", "WEBHOOK_SELF_REGISTRATION_ENABLED": "true"},
+      "webhookEnv": {"WEBHOOK_CERT_AUTO_GENERATE": "true", "WEBHOOK_CERT_DIRECTORY": "/tmp/echo-operator/certs", "WEBHOOK_CERT_SECRET_NAME": "echo-operator-webhook-ca", "WEBHOOK_CA_BUNDLE_PATH": "/tmp/echo-operator/certs/ca.crt", "WEBHOOK_SERVICE_NAME": "contract-echo-operator", "WEBHOOK_SERVICE_NAMESPACE": "contract-ns", "WEBHOOK_SERVICE_PORT": "443"},
+      "containerPorts": [{"name": "metrics", "containerPort": 8080, "protocol": "TCP"}, {"name": "webhook", "containerPort": 8443, "protocol": "TCP"}],
+      "volumeMounts": [{"name": "webhook-certs", "mountPath": "/tmp/echo-operator/certs"}],
+      "volumes": [{"name": "webhook-certs", "emptyDir": {}}]
+    },
+    "service": {"name": "contract-echo-operator", "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}, "ports": [{"name": "metrics", "port": 8080, "targetPort": "metrics"}, {"name": "webhook", "port": 443, "targetPort": "webhook"}]},
+    "configurations": [{"kind": "CustomResourceDefinition", "conversionStrategy": "Webhook", "clientService": {"name": "contract-echo-operator", "namespace": "contract-ns", "path": "/convert", "port": 443}, "caBundleLength": 0}]
+  },
+  {
+    "case": "webhook-disabled-combined",
+    "resourceCounts": {"ClusterRole": 1, "ClusterRoleBinding": 1, "CustomResourceDefinition": 1, "Deployment": 1, "RoleBinding": 1, "Service": 1, "ServiceAccount": 1},
+    "deployment": {
+      "name": "contract-echo-operator",
+      "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "podSelector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "ownershipEnv": {"CONTROLLER_ENABLED": "true", "WEBHOOK_ENABLED": "false", "WEBHOOK_REGISTRATION_CLEANUP_ENABLED": "true", "WEBHOOK_SELF_REGISTRATION_ENABLED": "false"},
+      "webhookEnv": {},
+      "containerPorts": [{"name": "metrics", "containerPort": 8080, "protocol": "TCP"}],
+      "volumeMounts": null,
+      "volumes": null
+    },
+    "service": {"name": "contract-echo-operator", "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}, "ports": [{"name": "metrics", "port": 8080, "targetPort": "metrics"}]},
+    "configurations": [{"kind": "CustomResourceDefinition", "conversionStrategy": "None", "clientService": null, "caBundleLength": 0}]
+  },
+  {
+    "case": "external-tls-helm-owned-combined",
+    "resourceCounts": {"ClusterRole": 1, "ClusterRoleBinding": 1, "CustomResourceDefinition": 1, "Deployment": 1, "MutatingWebhookConfiguration": 1, "RoleBinding": 1, "Service": 1, "ServiceAccount": 1, "ValidatingWebhookConfiguration": 1},
+    "deployment": {
+      "name": "contract-echo-operator",
+      "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "podSelector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"},
+      "ownershipEnv": {"CONTROLLER_ENABLED": "true", "WEBHOOK_ENABLED": "true", "WEBHOOK_REGISTRATION_CLEANUP_ENABLED": "true", "WEBHOOK_SELF_REGISTRATION_ENABLED": "false"},
+      "webhookEnv": {"WEBHOOK_CERT_AUTO_GENERATE": "false", "WEBHOOK_CA_BUNDLE_PATH": "/etc/echo-operator/certs/ca.crt", "WEBHOOK_SERVICE_NAME": "contract-echo-operator", "WEBHOOK_SERVICE_NAMESPACE": "contract-ns", "WEBHOOK_SERVICE_PORT": "443"},
+      "containerPorts": [{"name": "metrics", "containerPort": 8080, "protocol": "TCP"}, {"name": "webhook", "containerPort": 8443, "protocol": "TCP"}],
+      "volumeMounts": [{"name": "webhook-tls", "mountPath": "/etc/echo-operator/certs", "readOnly": true}],
+      "volumes": [{"name": "webhook-tls", "secret": {"secretName": "echo-operator-webhook-tls"}}]
+    },
+    "service": {"name": "contract-echo-operator", "selector": {"app.kubernetes.io/instance": "contract", "app.kubernetes.io/name": "echo-operator"}, "ports": [{"name": "metrics", "port": 8080, "targetPort": "metrics"}, {"name": "webhook", "port": 443, "targetPort": "webhook"}]},
+    "configurations": [
+      {"kind": "CustomResourceDefinition", "conversionStrategy": "Webhook", "clientService": {"name": "contract-echo-operator", "namespace": "contract-ns", "path": "/convert", "port": 443}, "caBundleLength": 1508},
+      {"kind": "MutatingWebhookConfiguration", "name": "contract-echo-operator-mutating", "clientService": {"name": "contract-echo-operator", "namespace": "contract-ns", "path": "/mutate/echo.example.com", "port": 443}, "caBundleLength": 1508},
+      {"kind": "ValidatingWebhookConfiguration", "name": "contract-echo-operator-validating", "clientService": {"name": "contract-echo-operator", "namespace": "contract-ns", "path": "/validate/echo.example.com", "port": 443}, "caBundleLength": 1508}
+    ]
+  }
+]

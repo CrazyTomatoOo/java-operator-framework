@@ -1,0 +1,9 @@
+Deploying split Helm release echo-smoke-split-live-split-20260728003000 to namespace echo-smoke-split-live-split-20260728003000...
+Release "echo-smoke-split-live-split-20260728003000" has been upgraded. Happy Helming!
+NAME: echo-smoke-split-live-split-20260728003000
+LAST DEPLOYED: Tue Jul 28 00:06:33 2026
+NAMESPACE: echo-smoke-split-live-split-20260728003000
+STATUS: deployed
+REVISION: 2
+TEST SUITE: None
+Deployment complete.

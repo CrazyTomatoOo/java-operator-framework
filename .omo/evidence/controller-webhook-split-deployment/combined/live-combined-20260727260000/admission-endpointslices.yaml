@@ -1,0 +1,53 @@
+apiVersion: v1
+items:
+- addressType: IPv4
+  apiVersion: discovery.k8s.io/v1
+  endpoints:
+  - addresses:
+    - 10.1.2.53
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    nodeName: docker-desktop
+    targetRef:
+      kind: Pod
+      name: echo-smoke-combined-live-combined-20260727260000-echo-operppfz4
+      namespace: echo-smoke-combined-live-combined-20260727260000
+      uid: d3170f54-b87a-4c40-bde0-3ed9f5594d31
+  kind: EndpointSlice
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2026-07-27T15:47:23Z"
+    creationTimestamp: "2026-07-27T15:46:58Z"
+    generateName: echo-smoke-combined-live-combined-20260727260000-echo-operator-
+    generation: 7
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727260000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+      helm.sh/chart: echo-operator-0.1.0
+      kubernetes.io/service-name: echo-smoke-combined-live-combined-20260727260000-echo-operator
+    name: echo-smoke-combined-live-combined-20260727260000-echo-operrvltd
+    namespace: echo-smoke-combined-live-combined-20260727260000
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: echo-smoke-combined-live-combined-20260727260000-echo-operator
+      uid: 6b1e149c-71ce-44fa-ad2a-3f592f32cee4
+    resourceVersion: "2233632"
+    uid: 2a202787-a77f-4ae5-9bbe-dcc6dea64bc9
+  ports:
+  - name: webhook
+    port: 8443
+    protocol: TCP
+  - name: metrics
+    port: 8080
+    protocol: TCP
+kind: List
+metadata:
+  resourceVersion: ""

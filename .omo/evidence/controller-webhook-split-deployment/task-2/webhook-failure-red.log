@@ -1,0 +1,22 @@
+[INFO] Scanning for projects...
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO] Running com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.754 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] com.example.echooperator.EchoOperatorMainWiringTest.failedTlsStartKeepsWebhookNotReadyAndStopsTheServer -- Time elapsed: 0.746 s <<< FAILURE!
+Wanted but not invoked:
+webhookServer.stop();
+-> at com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer.stop(WebhookServer.java:97)
+
+[INFO] Results:
+[ERROR] Failures: 
+[ERROR]   EchoOperatorMainWiringTest.failedTlsStartKeepsWebhookNotReadyAndStopsTheServer:238 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+[INFO] Total time:  2.969 s
+[INFO] Finished at: 2026-07-27T19:10:15+08:00
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project echo-operator: There are test failures.
+[ERROR] Please refer to /Volumes/work/Project/java-operator-framework/example/echo-operator/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+
+[full output: ~/Library/Application Support/rtk/tee/1785150615_mvn_test.log]

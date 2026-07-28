@@ -1,0 +1,407 @@
+---
+# Source: echo-operator/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: f1-echo-operator
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: echo-operator/templates/crd.yaml
+apiVersion: "apiextensions.k8s.io/v1"
+kind: "CustomResourceDefinition"
+metadata:
+  name: "echoresources.example.com"
+spec:
+  group: "example.com"
+  names:
+    kind: "EchoResource"
+    plural: "echoresources"
+    shortNames:
+    - "echo"
+    singular: "echoresource"
+  scope: "Namespaced"
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1"]
+      clientConfig:
+        service:
+          namespace: "f1-ns"
+          name: "f1-echo-operator"
+          path: "/convert"
+          port: 443
+        caBundle: ""
+  versions:
+  - name: "v1alpha2"
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              logLevel:
+                default: "INFO"
+                type: "string"
+              message:
+                type: "string"
+              replicas:
+                default: 1
+                type: "integer"
+            required:
+            - "message"
+            type: "object"
+          status:
+            properties:
+              message:
+                type: "string"
+              phase:
+                type: "string"
+            type: "object"
+        type: "object"
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - name: "v1alpha1"
+    deprecated: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              message:
+                type: "string"
+              replicas:
+                default: 1
+                type: "integer"
+            required:
+            - "message"
+            type: "object"
+          status:
+            properties:
+              message:
+                type: "string"
+              phase:
+                type: "string"
+            type: "object"
+        type: "object"
+    served: true
+    storage: false
+    subresources:
+      status: {}
+---
+# Source: echo-operator/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: f1-echo-operator-webhook
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    verbs: ["create"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    resourceNames: ["echo-operator.f1-ns.echo.example.com"]
+    verbs: ["get", "update", "patch", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["create"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    resourceNames: ["echo-operator.f1-ns.echo.example.com"]
+    verbs: ["get", "update", "patch", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    resourceNames: ["f1-echo-operator-validating"]
+    verbs: ["get"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    resourceNames: ["f1-echo-operator-mutating"]
+    verbs: ["get"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    resourceNames: ["echoresources.example.com"]
+    verbs: ["get", "update", "patch"]
+---
+# Source: echo-operator/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: f1-echo-operator-webhook
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: f1-echo-operator-webhook
+subjects:
+  - kind: ServiceAccount
+    name: f1-echo-operator
+    namespace: f1-ns
+---
+# Source: echo-operator/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: f1-echo-operator-controller
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: ["example.com"]
+    resources: ["echoresources"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["example.com"]
+    resources: ["echoresources/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["example.com"]
+    resources: ["echoresources/finalizers"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "create", "patch"]
+---
+# Source: echo-operator/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: f1-echo-operator-webhook-secret
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["echo-operator-webhook-ca"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create"]
+---
+# Source: echo-operator/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: f1-echo-operator-controller
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: f1-echo-operator-controller
+subjects:
+  - kind: ServiceAccount
+    name: f1-echo-operator
+    namespace: f1-ns
+---
+# Source: echo-operator/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: f1-echo-operator-webhook-secret
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: f1-echo-operator-webhook-secret
+subjects:
+  - kind: ServiceAccount
+    name: f1-echo-operator
+    namespace: f1-ns
+---
+# Source: echo-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: f1-echo-operator
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    
+    - port: 443
+      targetPort: webhook
+      protocol: TCP
+      name: webhook
+    
+  selector:
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+---
+# Source: echo-operator/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f1-echo-operator
+  namespace: f1-ns
+  labels:
+    helm.sh/chart: echo-operator-0.1.0
+    app.kubernetes.io/name: echo-operator
+    app.kubernetes.io/instance: f1
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/instance: f1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: echo-operator
+        app.kubernetes.io/instance: f1
+    spec:
+      serviceAccountName: f1-echo-operator
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: operator
+          image: "example/echo-operator:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
+            
+            - name: webhook
+              containerPort: 8443
+              protocol: TCP
+            
+          env:
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_PORT
+              value: "8080"
+            - name: CONTROLLER_ENABLED
+              value: "true"
+            - name: WEBHOOK_ENABLED
+              value: "true"
+            - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+              value: "false"
+            - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+              value: "true"
+            - name: WEBHOOK_PREDECESSOR_VALIDATING_NAME
+              value: "f1-echo-operator-validating"
+            - name: WEBHOOK_PREDECESSOR_MUTATING_NAME
+              value: "f1-echo-operator-mutating"
+            
+            - name: WEBHOOK_PORT
+              value: "8443"
+            - name: WEBHOOK_SERVICE_NAME
+              value: "f1-echo-operator"
+            - name: WEBHOOK_SERVICE_NAMESPACE
+              value: "f1-ns"
+            - name: WEBHOOK_SERVICE_PORT
+              value: "443"
+            - name: WEBHOOK_CERT_AUTO_GENERATE
+              value: "true"
+            - name: WEBHOOK_CERT_DIRECTORY
+              value: /tmp/echo-operator/certs
+            - name: WEBHOOK_CERT_SECRET_NAME
+              value: "echo-operator-webhook-ca"
+            - name: WEBHOOK_CA_BUNDLE_PATH
+              value: /tmp/echo-operator/certs/ca.crt
+            
+            - name: LEADER_ELECTION_ENABLED
+              value: "false"
+            - name: LEADER_ELECTION_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            
+            - name: webhook-certs
+              mountPath: /tmp/echo-operator/certs
+            
+      volumes:
+        
+        - name: webhook-certs
+          emptyDir: {}

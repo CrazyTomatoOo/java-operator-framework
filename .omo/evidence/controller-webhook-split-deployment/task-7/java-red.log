@@ -1,0 +1,23 @@
+[INFO] Scanning for projects...
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO] Running com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] Tests run: 15, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.152 s <<< FAILURE! -- in com.example.echooperator.EchoOperatorMainWiringTest
+[ERROR] com.example.echooperator.EchoOperatorMainWiringTest.helmOwnedWebhookDoesNotWaitForOrDeleteHelmPredecessorNames -- Time elapsed: 0.017 s <<< ERROR!
+java.lang.NullPointerException: Cannot invoke "io.fabric8.kubernetes.client.dsl.Resource.get()" because the return value of "io.fabric8.kubernetes.client.dsl.NonNamespaceOperation.withName(String)" is null
+	at com.example.echooperator.EchoOperatorMain.awaitPredecessorRemoval(EchoOperatorMain.java:324)
+	at com.example.echooperator.EchoOperatorMain.start(EchoOperatorMain.java:267)
+	at com.example.echooperator.EchoOperatorMainWiringTest.helmOwnedWebhookDoesNotWaitForOrDeleteHelmPredecessorNames(EchoOperatorMainWiringTest.java:199)
+
+[INFO] Results:
+[ERROR] Errors: 
+[ERROR]   EchoOperatorMainWiringTest.helmOwnedWebhookDoesNotWaitForOrDeleteHelmPredecessorNames:199 » NullPointer Cannot invoke "io.fabric8.kubernetes.client.dsl.Resource.get()" because the return value of "io.fabric8.kubernetes.client.dsl.NonNamespaceOperation.withName(String)" is null
+[ERROR] Tests run: 15, Failures: 0, Errors: 1, Skipped: 0
+[INFO] BUILD FAILURE
+[INFO] Total time:  4.368 s
+[INFO] Finished at: 2026-07-27T19:35:16+08:00
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.2.5:test (default-test) on project echo-operator: 
+[ERROR] Please refer to /Volumes/work/Project/java-operator-framework/example/echo-operator/target/surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+
+[full output: ~/Library/Application Support/rtk/tee/1785152116_mvn_test.log]

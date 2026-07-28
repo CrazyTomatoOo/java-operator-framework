@@ -1,0 +1,6 @@
+Task 3 cleanup receipt
+
+- `helm-contract-test.sh` creates its render workspace with `mktemp -d` and removes it through an EXIT trap.
+- The script retains no rendered manifests or negative-render logs outside that temporary workspace.
+- Retained task evidence is limited to RED/GREEN/lint/adversarial logs, manual-render-observables, dirty-worktree-integrity, and cleanup-receipt in this directory.
+- Temporary poison-values YAML, CA PEM, and malformed PEM fixtures are generated inside the temp workspace and removed on exit.

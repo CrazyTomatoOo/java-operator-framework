@@ -1,0 +1,9 @@
+[INFO] Scanning for projects...
+[INFO] ---------------------< com.example:echo-operator >----------------------
+[INFO] Building echo-operator 0.1.0-SNAPSHOT
+[INFO] Results:
+[INFO] Tests run: 69, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  6.800 s
+[INFO] Finished at: 2026-07-28T01:04:53+08:00
+

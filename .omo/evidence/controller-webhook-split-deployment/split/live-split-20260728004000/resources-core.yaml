@@ -1,0 +1,1470 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239218"
+    uid: 904510fa-b3c8-4b37-bfd1-c4543e835234
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+        app.kubernetes.io/name: echo-operator
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+          app.kubernetes.io/name: echo-operator
+      spec:
+        containers:
+        - env:
+          - name: OPERATOR_NAMESPACE
+            value: echo-smoke-split-live-split-20260728004000
+          - name: OPERATOR_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: METRICS_PORT
+            value: "8080"
+          - name: CONTROLLER_ENABLED
+            value: "true"
+          - name: WEBHOOK_ENABLED
+            value: "false"
+          - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+            value: "false"
+          - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+            value: "false"
+          - name: LEADER_ELECTION_ENABLED
+            value: "false"
+          - name: LEADER_ELECTION_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: example/echo-operator:smoke-live-split-20260728004000
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: operator
+          ports:
+          - containerPort: 8080
+            name: metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          runAsGroup: 1001
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+        serviceAccountName: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-07-27T16:12:01Z"
+      lastUpdateTime: "2026-07-27T16:12:01Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-07-27T16:11:49Z"
+      lastUpdateTime: "2026-07-27T16:12:01Z"
+      message: ReplicaSet "echo-smoke-split-live-split-20260728004000-echo-oper-controller-6c86b7bdfb"
+        has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239214"
+    uid: 2b1047a5-5433-40c0-87ff-8423adc17b9b
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app.kubernetes.io/component: webhook
+        app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+        app.kubernetes.io/name: echo-operator
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app.kubernetes.io/component: webhook
+          app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+          app.kubernetes.io/name: echo-operator
+      spec:
+        containers:
+        - env:
+          - name: OPERATOR_NAMESPACE
+            value: echo-smoke-split-live-split-20260728004000
+          - name: OPERATOR_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: METRICS_PORT
+            value: "8080"
+          - name: CONTROLLER_ENABLED
+            value: "false"
+          - name: WEBHOOK_ENABLED
+            value: "true"
+          - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+            value: "false"
+          - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+            value: "true"
+          - name: WEBHOOK_PREDECESSOR_VALIDATING_NAME
+            value: echo-smoke-split-live-split-20260728004000-echo-operator-validating
+          - name: WEBHOOK_PREDECESSOR_MUTATING_NAME
+            value: echo-smoke-split-live-split-20260728004000-echo-operator-mutating
+          - name: WEBHOOK_PORT
+            value: "8443"
+          - name: WEBHOOK_SERVICE_NAME
+            value: echo-smoke-split-live-split-20260728004000-echo-operator
+          - name: WEBHOOK_SERVICE_NAMESPACE
+            value: echo-smoke-split-live-split-20260728004000
+          - name: WEBHOOK_SERVICE_PORT
+            value: "443"
+          - name: WEBHOOK_CERT_AUTO_GENERATE
+            value: "false"
+          - name: WEBHOOK_CA_BUNDLE_PATH
+            value: /etc/echo-operator/certs/ca.crt
+          image: example/echo-operator:smoke-live-split-20260728004000
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: operator
+          ports:
+          - containerPort: 8080
+            name: metrics
+            protocol: TCP
+          - containerPort: 8443
+            name: webhook
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: metrics
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/echo-operator/certs
+            name: webhook-tls
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext:
+          runAsGroup: 1001
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+        serviceAccount: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+        serviceAccountName: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: webhook-tls
+          secret:
+            defaultMode: 420
+            secretName: echo-smoke-split-live-split-20260728004000-webhook-tls
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-07-27T16:12:01Z"
+      lastUpdateTime: "2026-07-27T16:12:01Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-07-27T16:11:49Z"
+      lastUpdateTime: "2026-07-27T16:12:01Z"
+      message: ReplicaSet "echo-smoke-split-live-split-20260728004000-echo-oper-webhook-665df76fc7"
+        has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239142"
+    uid: 5433f254-7c7b-4cb2-bcca-a7f8cb54e5cc
+  spec:
+    clusterIP: 10.106.233.10
+    clusterIPs:
+    - 10.106.233.10
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: metrics
+      port: 8080
+      protocol: TCP
+      targetPort: metrics
+    selector:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/name: echo-operator
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-operator
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239140"
+    uid: a1d0e487-9387-4cc2-ab94-f2fbc5e7f406
+  spec:
+    clusterIP: 10.103.207.131
+    clusterIPs:
+    - 10.103.207.131
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: webhook
+      port: 443
+      protocol: TCP
+      targetPort: webhook
+    selector:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/name: echo-operator
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:12:13Z"
+    deletionGracePeriodSeconds: 30
+    deletionTimestamp: "2026-07-27T16:12:53Z"
+    generateName: alpha-two-live-split-20260728004000-5d76db74d7-
+    generation: 2
+    labels:
+      app: echo
+      managed-by: echo-operator
+      pod-template-hash: 5d76db74d7
+    name: alpha-two-live-split-20260728004000-5d76db74d7-hwftc
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: alpha-two-live-split-20260728004000-5d76db74d7
+      uid: 9dd1ca9f-b269-4d1e-8763-fb7571a28ce4
+    resourceVersion: "2239425"
+    uid: 8c972005-2869-4a2e-920e-d4e4968587e3
+  spec:
+    containers:
+    - image: nginx:alpine
+      imagePullPolicy: IfNotPresent
+      name: echo
+      ports:
+      - containerPort: 80
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-2zgbc
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-2zgbc
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      status: "False"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://3adaa1461c48702bf9d9cc4ff0759e604dcb8d915990d358b9e1360e38e191d9
+      image: nginx:alpine
+      imageID: docker-pullable://nginx@sha256:582c496ccf79d8aa6f8203a79d32aaf7ffd8b13362c60a701a2f9ac64886c93d
+      lastState: {}
+      name: echo
+      ready: false
+      resources: {}
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: docker://3adaa1461c48702bf9d9cc4ff0759e604dcb8d915990d358b9e1360e38e191d9
+          exitCode: 0
+          finishedAt: "2026-07-27T16:12:23Z"
+          reason: Completed
+          startedAt: "2026-07-27T16:12:13Z"
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-2zgbc
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 2
+    phase: Succeeded
+    podIP: 10.1.2.101
+    podIPs:
+    - ip: 10.1.2.101
+    qosClass: BestEffort
+    startTime: "2026-07-27T16:12:13Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:12:13Z"
+    deletionGracePeriodSeconds: 30
+    deletionTimestamp: "2026-07-27T16:12:53Z"
+    generateName: alpha-two-live-split-20260728004000-5d76db74d7-
+    generation: 2
+    labels:
+      app: echo
+      managed-by: echo-operator
+      pod-template-hash: 5d76db74d7
+    name: alpha-two-live-split-20260728004000-5d76db74d7-lt7wq
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: alpha-two-live-split-20260728004000-5d76db74d7
+      uid: 9dd1ca9f-b269-4d1e-8763-fb7571a28ce4
+    resourceVersion: "2239423"
+    uid: 5d46762d-6d09-481b-aeae-edee8c12e1fa
+  spec:
+    containers:
+    - image: nginx:alpine
+      imagePullPolicy: IfNotPresent
+      name: echo
+      ports:
+      - containerPort: 80
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-k969q
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-k969q
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      status: "False"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://e6daf724ef91453e5d0472e8251fe40861d58cc92be6ae7d677c46788aaa2a4f
+      image: nginx:alpine
+      imageID: docker-pullable://nginx@sha256:582c496ccf79d8aa6f8203a79d32aaf7ffd8b13362c60a701a2f9ac64886c93d
+      lastState: {}
+      name: echo
+      ready: false
+      resources: {}
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: docker://e6daf724ef91453e5d0472e8251fe40861d58cc92be6ae7d677c46788aaa2a4f
+          exitCode: 0
+          finishedAt: "2026-07-27T16:12:23Z"
+          reason: Completed
+          startedAt: "2026-07-27T16:12:13Z"
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-k969q
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 2
+    phase: Succeeded
+    podIP: 10.1.2.102
+    podIPs:
+    - ip: 10.1.2.102
+    qosClass: BestEffort
+    startTime: "2026-07-27T16:12:13Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generateName: echo-smoke-split-live-split-20260728004000-echo-oper-controller-6c86b7bdfb-
+    generation: 1
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/name: echo-operator
+      pod-template-hash: 6c86b7bdfb
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-contrlbgkq
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: echo-smoke-split-live-split-20260728004000-echo-oper-controller-6c86b7bdfb
+      uid: cd485c8e-64c3-4980-931b-f39d58a3800d
+    resourceVersion: "2239213"
+    uid: 6eeb94a5-95c0-420a-a4f6-25718afd0bfa
+  spec:
+    containers:
+    - env:
+      - name: OPERATOR_NAMESPACE
+        value: echo-smoke-split-live-split-20260728004000
+      - name: OPERATOR_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: METRICS_PORT
+        value: "8080"
+      - name: CONTROLLER_ENABLED
+        value: "true"
+      - name: WEBHOOK_ENABLED
+        value: "false"
+      - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+        value: "false"
+      - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+        value: "false"
+      - name: LEADER_ELECTION_ENABLED
+        value: "false"
+      - name: LEADER_ELECTION_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      image: example/echo-operator:smoke-live-split-20260728004000
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: operator
+      ports:
+      - containerPort: 8080
+        name: metrics
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-lq82h
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccount: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    serviceAccountName: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-lq82h
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:50Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:49Z"
+      observedGeneration: 1
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:01Z"
+      observedGeneration: 1
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:01Z"
+      observedGeneration: 1
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:49Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - allocatedResources:
+        cpu: 100m
+        memory: 128Mi
+      containerID: docker://f6dc4ca7887397d4952777583c238a9a94659cb173e886f38e379f869b8ed8b9
+      image: example/echo-operator:smoke-live-split-20260728004000
+      imageID: docker://sha256:36c42ee1f75952f8578865d5298906103c436f1af01e1c8adb91c92e110fbd6f
+      lastState: {}
+      name: operator
+      ready: true
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-07-27T16:11:49Z"
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-lq82h
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 1
+    phase: Running
+    podIP: 10.1.2.98
+    podIPs:
+    - ip: 10.1.2.98
+    qosClass: Burstable
+    startTime: "2026-07-27T16:11:49Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generateName: echo-smoke-split-live-split-20260728004000-echo-oper-webhook-665df76fc7-
+    generation: 1
+    labels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/name: echo-operator
+      pod-template-hash: 665df76fc7
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-webhocdg7k
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: echo-smoke-split-live-split-20260728004000-echo-oper-webhook-665df76fc7
+      uid: 5fd90608-198a-4c53-a859-91489f6056e8
+    resourceVersion: "2239209"
+    uid: d108ddf2-bdf7-4278-931e-dfc1b8fe00c6
+  spec:
+    containers:
+    - env:
+      - name: OPERATOR_NAMESPACE
+        value: echo-smoke-split-live-split-20260728004000
+      - name: OPERATOR_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.namespace
+      - name: METRICS_PORT
+        value: "8080"
+      - name: CONTROLLER_ENABLED
+        value: "false"
+      - name: WEBHOOK_ENABLED
+        value: "true"
+      - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+        value: "false"
+      - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+        value: "true"
+      - name: WEBHOOK_PREDECESSOR_VALIDATING_NAME
+        value: echo-smoke-split-live-split-20260728004000-echo-operator-validating
+      - name: WEBHOOK_PREDECESSOR_MUTATING_NAME
+        value: echo-smoke-split-live-split-20260728004000-echo-operator-mutating
+      - name: WEBHOOK_PORT
+        value: "8443"
+      - name: WEBHOOK_SERVICE_NAME
+        value: echo-smoke-split-live-split-20260728004000-echo-operator
+      - name: WEBHOOK_SERVICE_NAMESPACE
+        value: echo-smoke-split-live-split-20260728004000
+      - name: WEBHOOK_SERVICE_PORT
+        value: "443"
+      - name: WEBHOOK_CERT_AUTO_GENERATE
+        value: "false"
+      - name: WEBHOOK_CA_BUNDLE_PATH
+        value: /etc/echo-operator/certs/ca.crt
+      image: example/echo-operator:smoke-live-split-20260728004000
+      imagePullPolicy: IfNotPresent
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /healthz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: operator
+      ports:
+      - containerPort: 8080
+        name: metrics
+        protocol: TCP
+      - containerPort: 8443
+        name: webhook
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /readyz
+          port: metrics
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        readOnlyRootFilesystem: true
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/echo-operator/certs
+        name: webhook-tls
+        readOnly: true
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-7g4bh
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      runAsGroup: 1001
+      runAsNonRoot: true
+      runAsUser: 1001
+      seccompProfile:
+        type: RuntimeDefault
+    serviceAccount: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+    serviceAccountName: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: webhook-tls
+      secret:
+        defaultMode: 420
+        secretName: echo-smoke-split-live-split-20260728004000-webhook-tls
+    - name: kube-api-access-7g4bh
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:50Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:49Z"
+      observedGeneration: 1
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:01Z"
+      observedGeneration: 1
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:01Z"
+      observedGeneration: 1
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:11:49Z"
+      observedGeneration: 1
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - allocatedResources:
+        cpu: 100m
+        memory: 128Mi
+      containerID: docker://fe557f586a409b8c87a71b07d752af46339d3f23a051e8732bdb156ec104d706
+      image: example/echo-operator:smoke-live-split-20260728004000
+      imageID: docker://sha256:36c42ee1f75952f8578865d5298906103c436f1af01e1c8adb91c92e110fbd6f
+      lastState: {}
+      name: operator
+      ready: true
+      resources:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2026-07-27T16:11:49Z"
+      volumeMounts:
+      - mountPath: /etc/echo-operator/certs
+        name: webhook-tls
+        readOnly: true
+        recursiveReadOnly: Disabled
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-7g4bh
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 1
+    phase: Running
+    podIP: 10.1.2.99
+    podIPs:
+    - ip: 10.1.2.99
+    qosClass: Burstable
+    startTime: "2026-07-27T16:11:49Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: "2026-07-27T16:12:13Z"
+    deletionGracePeriodSeconds: 30
+    deletionTimestamp: "2026-07-27T16:12:54Z"
+    generateName: reconcile-live-split-20260728004000-5d76db74d7-
+    generation: 2
+    labels:
+      app: echo
+      managed-by: echo-operator
+      pod-template-hash: 5d76db74d7
+    name: reconcile-live-split-20260728004000-5d76db74d7-df62m
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: reconcile-live-split-20260728004000-5d76db74d7
+      uid: 6785907c-561f-4f94-ba74-25836f6a341e
+    resourceVersion: "2239438"
+    uid: f0e89863-f1f6-4a24-8d67-31d03dc18e7a
+  spec:
+    containers:
+    - image: nginx:alpine
+      imagePullPolicy: IfNotPresent
+      name: echo
+      ports:
+      - containerPort: 80
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-r8bpv
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: docker-desktop
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-r8bpv
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      status: "False"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:24Z"
+      observedGeneration: 2
+      reason: PodCompleted
+      status: "False"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2026-07-27T16:12:13Z"
+      observedGeneration: 2
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://5cf77b626e63b33f61a1dd0a632075e8006d61769402e2642afc02f76a06dc2a
+      image: nginx:alpine
+      imageID: docker-pullable://nginx@sha256:582c496ccf79d8aa6f8203a79d32aaf7ffd8b13362c60a701a2f9ac64886c93d
+      lastState: {}
+      name: echo
+      ready: false
+      resources: {}
+      restartCount: 0
+      started: false
+      state:
+        terminated:
+          containerID: docker://5cf77b626e63b33f61a1dd0a632075e8006d61769402e2642afc02f76a06dc2a
+          exitCode: 0
+          finishedAt: "2026-07-27T16:12:24Z"
+          reason: Completed
+          startedAt: "2026-07-27T16:12:13Z"
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-r8bpv
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 192.168.65.3
+    hostIPs:
+    - ip: 192.168.65.3
+    observedGeneration: 2
+    phase: Succeeded
+    podIP: 10.1.2.103
+    podIPs:
+    - ip: 10.1.2.103
+    qosClass: BestEffort
+    startTime: "2026-07-27T16:12:13Z"
+- addressType: IPv4
+  apiVersion: discovery.k8s.io/v1
+  endpoints:
+  - addresses:
+    - 10.1.2.98
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    nodeName: docker-desktop
+    targetRef:
+      kind: Pod
+      name: echo-smoke-split-live-split-20260728004000-echo-oper-contrlbgkq
+      namespace: echo-smoke-split-live-split-20260728004000
+      uid: 6eeb94a5-95c0-420a-a4f6-25718afd0bfa
+  kind: EndpointSlice
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2026-07-27T16:12:01Z"
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generateName: echo-smoke-split-live-split-20260728004000-echo-oper-controller-
+    generation: 3
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+      helm.sh/chart: echo-operator-0.1.0
+      kubernetes.io/service-name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-contr54g55
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+      uid: 5433f254-7c7b-4cb2-bcca-a7f8cb54e5cc
+    resourceVersion: "2239217"
+    uid: 7770f900-9a0b-423c-a719-d11eeda97cde
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+- addressType: IPv4
+  apiVersion: discovery.k8s.io/v1
+  endpoints:
+  - addresses:
+    - 10.1.2.99
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    nodeName: docker-desktop
+    targetRef:
+      kind: Pod
+      name: echo-smoke-split-live-split-20260728004000-echo-oper-webhocdg7k
+      namespace: echo-smoke-split-live-split-20260728004000
+      uid: d108ddf2-bdf7-4278-931e-dfc1b8fe00c6
+  kind: EndpointSlice
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2026-07-27T16:12:01Z"
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    generateName: echo-smoke-split-live-split-20260728004000-echo-operator-
+    generation: 3
+    labels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+      helm.sh/chart: echo-operator-0.1.0
+      kubernetes.io/service-name: echo-smoke-split-live-split-20260728004000-echo-operator
+    name: echo-smoke-split-live-split-20260728004000-echo-operator-srmhr
+    namespace: echo-smoke-split-live-split-20260728004000
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: echo-smoke-split-live-split-20260728004000-echo-operator
+      uid: a1d0e487-9387-4cc2-ab94-f2fbc5e7f406
+    resourceVersion: "2239210"
+    uid: 913470ee-5759-4fe2-8f00-dbdf1ce2921f
+  ports:
+  - name: webhook
+    port: 8443
+    protocol: TCP
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    creationTimestamp: "2026-07-27T16:11:34Z"
+    name: default
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239091"
+    uid: cd635860-9b20-48e9-95a7-76152c41a3e1
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239133"
+    uid: e25212d3-2fd5-4308-b473-418b7b92d7e5
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/component: webhook
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-webhook
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239134"
+    uid: dd5d2014-f4e3-4bfe-8a79-a50951ffba14
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-operator-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239137"
+    uid: 1b6c2493-5a42-4f1d-8e2b-27cdcc184197
+  rules:
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources/status
+    verbs:
+    - get
+    - update
+    - patch
+  - apiGroups:
+    - example.com
+    resources:
+    - echoresources/finalizers
+    verbs:
+    - update
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - services
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - get
+    - create
+    - patch
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-split-live-split-20260728004000
+      meta.helm.sh/release-namespace: echo-smoke-split-live-split-20260728004000
+    creationTimestamp: "2026-07-27T16:11:49Z"
+    labels:
+      app.kubernetes.io/instance: echo-smoke-split-live-split-20260728004000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-split-live-split-20260728004000-echo-operator-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+    resourceVersion: "2239138"
+    uid: fa4466cd-e60f-4cc6-a322-1eee5628a422
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: echo-smoke-split-live-split-20260728004000-echo-operator-controller
+  subjects:
+  - kind: ServiceAccount
+    name: echo-smoke-split-live-split-20260728004000-echo-oper-controller
+    namespace: echo-smoke-split-live-split-20260728004000
+kind: List
+metadata:
+  resourceVersion: ""

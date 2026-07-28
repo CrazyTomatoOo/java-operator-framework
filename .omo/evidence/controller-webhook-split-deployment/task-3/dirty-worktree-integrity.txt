@@ -1,0 +1,11 @@
+pre-existing dirty product files unchanged:
+example/echo-operator/README.md
+example/echo-operator/src/main/java/com/example/echooperator/EchoOperatorMain.java
+example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainConfigTest.java
+example/echo-operator/src/test/java/com/example/echooperator/EchoOperatorMainWiringTest.java
+operator/framework/README.md
+operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandler.java
+operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandler.java
+operator/framework/src/main/java/com/huawei/dcs/modelengine/operator/framework/webhook/registration/WebhookSelfRegistration.java
+operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/admission/AdmissionHandlerTest.java
+operator/framework/src/test/java/com/huawei/dcs/modelengine/operator/framework/webhook/conversion/ConversionHandlerTest.java

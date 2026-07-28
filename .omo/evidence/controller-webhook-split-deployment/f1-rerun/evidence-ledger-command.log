@@ -1,0 +1,2 @@
+COMMAND: python3 evidence ledger (inline source captured by invoking session)
+EXIT_CODE=1

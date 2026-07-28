@@ -1,0 +1,2 @@
+error: unknown flag: --resource-name
+See 'kubectl auth can-i --help' for usage.

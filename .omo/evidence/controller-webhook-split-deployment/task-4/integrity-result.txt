@@ -1,0 +1,3 @@
+Protected pre-existing Java, framework, and documentation SHA-256 inventories are identical in protected-preexisting-sha256.before and protected-preexisting-sha256.after.
+
+Git read-only scope check: `GIT_MASTER=1 git status --short && GIT_MASTER=1 git diff --check && GIT_MASTER=1 git diff --name-only` exited 0. `git diff --check` produced no output.

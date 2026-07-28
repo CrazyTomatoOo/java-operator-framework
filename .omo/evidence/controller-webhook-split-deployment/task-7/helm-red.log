@@ -1,0 +1,19 @@
+combined contract passed
+combined identity/RBAC characterization passed
+RBAC matrix passed: combined-auto
+webhook-disabled combined contract passed
+RBAC matrix passed: combined-controller-only
+combined shared workload values passed
+split skeleton characterization passed
+split contract passed
+split Task 5 auto-generated TLS contract passed
+RBAC matrix passed: split-auto
+RBAC matrix passed: split-watched-lease
+RBAC matrix passed: split-release-watched-lease
+poison isolation passed
+RBAC matrix passed: combined-custom-no-rbac
+RBAC matrix passed: split-custom-no-rbac
+fullnameOverride contract passed
+Traceback (most recent call last):
+  File "<stdin>", line 61, in <module>
+AssertionError: runtime-owned render must wait for the exact validating predecessor name

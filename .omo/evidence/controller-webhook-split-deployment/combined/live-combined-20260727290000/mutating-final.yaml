@@ -1,0 +1,90 @@
+apiVersion: v1
+items:
+- apiVersion: admissionregistration.k8s.io/v1
+  kind: MutatingWebhookConfiguration
+  metadata:
+    creationTimestamp: "2026-07-23T07:36:15Z"
+    generation: 1
+    name: echo-operator.default.echo.example.com
+    resourceVersion: "2185997"
+    uid: 501f930e-aff7-4eb4-83a6-be757bf9752b
+  webhooks:
+  - admissionReviewVersions:
+    - v1
+    clientConfig:
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURHVENDQWdHZ0F3SUJBZ0lVQnMzYmVsTmtpbWE3ZG1iT3IyYitsQWdHekEwd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0l6RWhNQjhHQTFVRUF3d1laV05vYnkxdmNHVnlZWFJ2Y2lCM1pXSm9iMjlySUVOQk1CNFhEVEkyTURjeQpNekEzTVRjeE0xb1hEVEkzTURjeU16QTNNVGN4TTFvd0l6RWhNQjhHQTFVRUF3d1laV05vYnkxdmNHVnlZWFJ2CmNpQjNaV0pvYjI5cklFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQW5pQVYKUlBobVBRZjRERjBYaXJhMkErWGp4VDBubVBIY091OURycWZHbWErelY4MHdlbmFXMWtBK1F0OUdsYmVKYWFRdQpBb0FHYjdaUk5XY3JzQllhQ2o4eEtvdWI3dWRac2FSN0ZkdlZzTDVSL3RRSVh4elp2SFUxMEpnaHdQbjVPNW5wCmNpc0tPSGFyMXpDYXZWSHdmSTV5NHpIWTBmWFRCaFAvRGE3MmtxOWNSTGplU2JMUHRtN3g0SmtkMmphbC9kYjIKQlYycVdCSEJ1Rndlem5qTWJHVXVtaXFFRzZvb0ZJNHZTM3pnN3doVE1sQmhOK2h2eS9UMXVGcisvVzdaQ3VIYQpyM2ZXa1JDbGlGSVRuclJVRTY0MWZoQ05kemo0QldUQVYrZk1aaCtnVXNpd2o4ZFFvc2Z2VFhJNk92OHJRck1FClpyLzQ3UlZsQmV4UXZ0UjQ3d0lEQVFBQm8wVXdRekFTQmdOVkhSTUJBZjhFQ0RBR0FRSC9BZ0VBTUE0R0ExVWQKRHdFQi93UUVBd0lCQmpBZEJnTlZIUTRFRmdRVUVLVTc1bTJMNFlYOTk4djNna3BNdlJMejkzd3dEUVlKS29aSQpodmNOQVFFTEJRQURnZ0VCQUk1SWlQQlhNbHUrS2I2MkhRd01KTWFsMXJzbWxzTUptS0FGSmJMVWpVNHE5bFNzCjdwbWo2SS9ZZUZQOE1yRmlhT0F3dlZJZ1p4a0dnYkEwQ3lva2JXTXp5Vk9iS1E5UjhpbG5KOVdySzluNEdacmkKMmxnaFhlSWZ2ZXhDTmRsOCtKbFpTVzFsUmxKaCtyMDNIUExreHpsUTZ4UnZTNE1RbjRNd3djYTgwTkhxZ1c4TgpSWEYxbWNINEhzTnBhNUExQWZWWUZGQ1B1WTRoL05WRnQwVnozMDhXQ2xPZUpWRVVha09TMnpwZ0VQcGhOUUhGCkZoaTVnRkNzQWkwZkY5OXQwYzNqU1N2L3kzRXlHUjNTSFhPd0ZkMlhnTjh4VDFNMXhsdVhQOUkzeFhMdG5mT0MKTzhhcDBzY212aE9DZGNCeWhRekN5Tlo1dUFQQWRyeWVXaE1kSGNjPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+      service:
+        name: echo-operator
+        namespace: default
+        path: /mutate/echo.example.com
+        port: 443
+    failurePolicy: Fail
+    matchPolicy: Equivalent
+    name: echo-operator.default.echo.example.com
+    namespaceSelector: {}
+    objectSelector: {}
+    reinvocationPolicy: Never
+    rules:
+    - apiGroups:
+      - example.com
+      apiVersions:
+      - v1alpha1
+      - v1alpha2
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - echoresources
+      scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+- apiVersion: admissionregistration.k8s.io/v1
+  kind: MutatingWebhookConfiguration
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: echo-smoke-combined-live-combined-20260727290000
+      meta.helm.sh/release-namespace: echo-smoke-combined-live-combined-20260727290000
+    creationTimestamp: "2026-07-27T16:02:02Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/instance: echo-smoke-combined-live-combined-20260727290000
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: echo-operator
+      app.kubernetes.io/version: 0.1.0
+      helm.sh/chart: echo-operator-0.1.0
+    name: echo-smoke-combined-live-combined-20260727290000-echo-operator-mutating
+    resourceVersion: "2236902"
+    uid: 5a8ae306-8f3c-42de-a7c1-ac45cdec3354
+  webhooks:
+  - admissionReviewVersions:
+    - v1
+    clientConfig:
+      caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIVENDQWdXZ0F3SUJBZ0lVSWNJejljZGUwbUY5V1hNOCsrcG5UM3FSQTNzd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0hqRWNNQm9HQTFVRUF3d1RkM0p2Ym1jdFpXTm9ieTF6Ylc5clpTMWpZVEFlRncweU5qQTNNamN4TmpBeQpNREphRncweU5qQTNNamd4TmpBeU1ESmFNQjR4SERBYUJnTlZCQU1NRTNkeWIyNW5MV1ZqYUc4dGMyMXZhMlV0ClkyRXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDRUo2VmlGSGw2SnRvc0Q2UDAKbmRLY01UWUw0UEtnaDNNcHBoZlRYZ3N4NlVDZlJjZTJCMHM5MHhoQ09UbGc2VVhPb2s0Z1E3UC9kd0NPTDNidAp3L3paNUJVMnYyMUZNM2JmY0RJVHdnYjBmVEYxbnIyNGdMaDdFcHdmNlREK2dNMkswOEdlMC84ZXljaUE0MExnCkJGdTdJdWgvb2crM1phSy9Wbkc2aWR4NnBWTXpmSlRzMVZwTFludEF2aDI1S1BXMzAxMkpEbVdrako5ODhkWmgKUXEyQklWVHdKWHAwdGlVcStYdTNYS2J4UHQzZzNOZVdkS3BacG1JZU04ZjQra3NlYnB2bEFvcWkyVWNuK1RMbApmcnZQM3NORExIUG1UWkZreWY5dUw5dC9GY0FiOGpCSHJDQUswdXZQN2JlanJIbzJ1V1ZFQzhLTXN5QmZVYUU0CkhtNUJBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlFOT1FTZGM5WFI5a25nLzRlZTh2QWozV1dXY0RBZkJnTlYKSFNNRUdEQVdnQlFOT1FTZGM5WFI5a25nLzRlZTh2QWozV1dXY0RBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUEwRwpDU3FHU0liM0RRRUJDd1VBQTRJQkFRQXpxeWp3Z1dEOEVVWGF0L1JSdmZDSVhEb2ZjWkY2WEUyV2g1akU4Rk55Cko2NEM5NmhBU2VMaE9McXdKbVlWS2s1eUxIV2RCS1lDRklLRElzdUlqdmgxN285WGkxVTJUMlAvYUJDR3M0eW8KaGVCSU43VmdqeGMyNVI1V0hnRXBFRktYcEhvbFB3TkJvYlNSNDI4N3dTZlRkTm5Sc0ordHhQOTVjTmowNVBBdApXMmxiRlNtV3JlTTl3akhRUXRkd1F2R3duV0MxYi8wcGt2ZzdnN1BtcXorRkxRK2ZvSTVjZFM1NXJiYWo5cklYClZPQkFDcm5PdVFaNkRiMmZHbjM1ZVhBR0t1UG1sdjhzb0R1bDR0aTI5WnoyWGJhZUZiOUlZcHBDQzFyaUk3RTUKaGVYSjNEOU4rOHNTUWRjRjRKQXlhV1JnRkhoMUN4Q1JCRklUbTFYWUZLMi8KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+      service:
+        name: echo-smoke-combined-live-combined-20260727290000-echo-operator
+        namespace: echo-smoke-combined-live-combined-20260727290000
+        path: /mutate/echo.example.com
+        port: 443
+    failurePolicy: Fail
+    matchPolicy: Equivalent
+    name: mutating.echo.example.com
+    namespaceSelector: {}
+    objectSelector: {}
+    reinvocationPolicy: Never
+    rules:
+    - apiGroups:
+      - example.com
+      apiVersions:
+      - v1alpha1
+      - v1alpha2
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - echoresources
+      scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+kind: List
+metadata:
+  resourceVersion: ""

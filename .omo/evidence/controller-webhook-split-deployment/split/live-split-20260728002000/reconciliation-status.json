@@ -1,0 +1,28 @@
+{
+    "apiVersion": "example.com/v1alpha2",
+    "kind": "EchoResource",
+    "metadata": {
+        "annotations": {
+            "echo.example.com/mutated": "true",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"example.com/v1alpha2\",\"kind\":\"EchoResource\",\"metadata\":{\"annotations\":{},\"name\":\"reconcile-live-split-20260728002000\",\"namespace\":\"echo-smoke-split-live-split-20260728002000\"},\"spec\":{\"logLevel\":\"INFO\",\"message\":\"reconciliation\",\"replicas\":1}}\n"
+        },
+        "creationTimestamp": "2026-07-27T16:04:12Z",
+        "finalizers": [
+            "echo.example.com/finalizer"
+        ],
+        "generation": 1,
+        "name": "reconcile-live-split-20260728002000",
+        "namespace": "echo-smoke-split-live-split-20260728002000",
+        "resourceVersion": "2237590",
+        "uid": "182407e6-26e4-4919-879d-f4934025ed32"
+    },
+    "spec": {
+        "logLevel": "INFO",
+        "message": "reconciliation",
+        "replicas": 1
+    },
+    "status": {
+        "message": "reconciliation",
+        "phase": "READY"
+    }
+}

@@ -1,0 +1,25 @@
+original_status=1
+stopping port-forward pid=1533
+killed port-forward pid=1533
+waited port-forward pid=1533
+stopping port-forward pid=1551
+killed port-forward pid=1551
+waited port-forward pid=1551
+stopping port-forward pid=2032
+kill-not-needed port-forward pid=2032
+waited port-forward pid=2032
+delete echoresources namespace=echo-smoke-combined-live-combined-20260727280000
+No resources found
+release Helm validating=echo-smoke-combined-live-combined-20260727280000-echo-operator-validating
+validatingwebhookconfiguration.admissionregistration.k8s.io/echo-smoke-combined-live-combined-20260727280000-echo-operator-validating patched
+release Helm mutating=echo-smoke-combined-live-combined-20260727280000-echo-operator-mutating
+mutatingwebhookconfiguration.admissionregistration.k8s.io/echo-smoke-combined-live-combined-20260727280000-echo-operator-mutating patched
+delete runtime validating=echo-operator.echo-smoke-combined-live-combined-20260727280000.echo.example.com
+delete runtime mutating=echo-operator.echo-smoke-combined-live-combined-20260727280000.echo.example.com
+uninstall release=echo-smoke-combined-live-combined-20260727280000 namespace=echo-smoke-combined-live-combined-20260727280000
+Uninstalling Helm release echo-smoke-combined-live-combined-20260727280000 from namespace echo-smoke-combined-live-combined-20260727280000...
+release "echo-smoke-combined-live-combined-20260727280000" uninstalled
+Uninstall complete.
+delete namespace=echo-smoke-combined-live-combined-20260727280000
+namespace "echo-smoke-combined-live-combined-20260727280000" deleted
+cleanup_status=0

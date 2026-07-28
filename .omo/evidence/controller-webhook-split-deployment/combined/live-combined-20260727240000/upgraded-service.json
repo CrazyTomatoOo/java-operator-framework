@@ -1,0 +1,56 @@
+{
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+        "annotations": {
+            "meta.helm.sh/release-name": "echo-smoke-combined-live-combined-20260727240000",
+            "meta.helm.sh/release-namespace": "echo-smoke-combined-live-combined-20260727240000"
+        },
+        "creationTimestamp": "2026-07-27T15:09:54Z",
+        "labels": {
+            "app.kubernetes.io/instance": "echo-smoke-combined-live-combined-20260727240000",
+            "app.kubernetes.io/managed-by": "Helm",
+            "app.kubernetes.io/name": "echo-operator",
+            "app.kubernetes.io/version": "0.1.0",
+            "helm.sh/chart": "echo-operator-0.1.0"
+        },
+        "name": "echo-smoke-combined-live-combined-20260727240000-echo-operator",
+        "namespace": "echo-smoke-combined-live-combined-20260727240000",
+        "resourceVersion": "2226941",
+        "uid": "e834a806-d98e-42ea-a96b-00b52813d95d"
+    },
+    "spec": {
+        "clusterIP": "10.103.100.178",
+        "clusterIPs": [
+            "10.103.100.178"
+        ],
+        "internalTrafficPolicy": "Cluster",
+        "ipFamilies": [
+            "IPv4"
+        ],
+        "ipFamilyPolicy": "SingleStack",
+        "ports": [
+            {
+                "name": "metrics",
+                "port": 8080,
+                "protocol": "TCP",
+                "targetPort": "metrics"
+            },
+            {
+                "name": "webhook",
+                "port": 443,
+                "protocol": "TCP",
+                "targetPort": "webhook"
+            }
+        ],
+        "selector": {
+            "app.kubernetes.io/instance": "echo-smoke-combined-live-combined-20260727240000",
+            "app.kubernetes.io/name": "echo-operator"
+        },
+        "sessionAffinity": "None",
+        "type": "ClusterIP"
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}

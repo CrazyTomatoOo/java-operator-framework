@@ -1,0 +1,21 @@
+{
+    "apiVersion": "example.com/v1alpha2",
+    "kind": "EchoResource",
+    "metadata": {
+        "annotations": {
+            "echo.example.com/mutated": "true",
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"example.com/v1alpha1\",\"kind\":\"EchoResource\",\"metadata\":{\"annotations\":{},\"name\":\"mutation-live-combined-20260727252000\",\"namespace\":\"echo-smoke-combined-live-combined-20260727252000\"},\"spec\":{\"message\":\"mutation\",\"replicas\":0}}\n"
+        },
+        "creationTimestamp": "2026-07-27T15:34:40Z",
+        "generation": 1,
+        "name": "mutation-live-combined-20260727252000",
+        "namespace": "echo-smoke-combined-live-combined-20260727252000",
+        "resourceVersion": "2231594",
+        "uid": "0a0d8b2b-163e-4360-8db4-9ec20c14c095"
+    },
+    "spec": {
+        "logLevel": "INFO",
+        "message": "mutation",
+        "replicas": 1
+    }
+}

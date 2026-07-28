@@ -1,0 +1,1 @@
+{"apiVersion":"admission.k8s.io/v1","kind":"AdmissionReview","response":{"allowed":true,"patch":"W3sib3AiOiJhZGQiLCJwYXRoIjoiL21ldGFkYXRhL2Fubm90YXRpb25zIiwidmFsdWUiOnsiZWNoby5leGFtcGxlLmNvbS9tdXRhdGVkIjoidHJ1ZSJ9fV0=","patchType":"JSONPatch","uid":"echo-smoke-direct-probe"}}
