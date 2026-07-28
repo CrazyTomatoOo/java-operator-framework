@@ -32,6 +32,8 @@ public final class AdmissionHandler {
     private final KubernetesSerialization serialization;
     private final Map<String, ValidatorRegistration<?>> validators = new ConcurrentHashMap<>();
     private final Map<String, MutatorRegistration<?>> mutators = new ConcurrentHashMap<>();
+    private final Set<String> disabledValidators = ConcurrentHashMap.newKeySet();
+    private final Set<String> disabledMutators = ConcurrentHashMap.newKeySet();
 
     public AdmissionHandler(KubernetesClient client) {
         this(Objects.requireNonNull(client, "client must not be null").getKubernetesSerialization());
@@ -62,6 +64,42 @@ public final class AdmissionHandler {
 
     public Set<String> mutatorNames() {
         return Set.copyOf(mutators.keySet());
+    }
+
+    public void enableValidator(String name) {
+        disabledValidators.remove(normalize(name));
+    }
+
+    public void disableValidator(String name) {
+        disabledValidators.add(normalize(name));
+    }
+
+    public boolean isValidatorEnabled(String name) {
+        return !disabledValidators.contains(normalize(name));
+    }
+
+    public Set<String> enabledValidatorNames() {
+        return Set.copyOf(validators.keySet().stream()
+                .filter(name -> !disabledValidators.contains(name))
+                .toList());
+    }
+
+    public void enableMutator(String name) {
+        disabledMutators.remove(normalize(name));
+    }
+
+    public void disableMutator(String name) {
+        disabledMutators.add(normalize(name));
+    }
+
+    public boolean isMutatorEnabled(String name) {
+        return !disabledMutators.contains(normalize(name));
+    }
+
+    public Set<String> enabledMutatorNames() {
+        return Set.copyOf(mutators.keySet().stream()
+                .filter(name -> !disabledMutators.contains(name))
+                .toList());
     }
 
     public HttpHandler validatingHandler(String name) {
@@ -106,11 +144,17 @@ public final class AdmissionHandler {
             if (registration == null) {
                 return deny(request.getUid(), "No admission validator registered for path '" + name + "'");
             }
+            if (disabledValidators.contains(name)) {
+                return deny(request.getUid(), "Admission validator '" + name + "' is disabled");
+            }
             return withUid(request, registration.validate(request, resource(request, registration.resourceType())));
         }
         MutatorRegistration<?> registration = mutators.get(name);
         if (registration == null) {
             return deny(request.getUid(), "No admission mutator registered for path '" + name + "'");
+        }
+        if (disabledMutators.contains(name)) {
+            return deny(request.getUid(), "Admission mutator '" + name + "' is disabled");
         }
         return withEncodedPatch(request, registration.mutate(request, resource(request, registration.resourceType())));
     }

@@ -48,7 +48,7 @@ public final class WebhookSelfRegistration {
 
     public void register(AdmissionHandler handler) {
         Objects.requireNonNull(handler, "handler must not be null");
-        register(handler.validatorNames(), handler.mutatorNames());
+        register(handler.enabledValidatorNames(), handler.enabledMutatorNames());
     }
 
     public void register(Collection<String> validatorNames, Collection<String> mutatorNames) {

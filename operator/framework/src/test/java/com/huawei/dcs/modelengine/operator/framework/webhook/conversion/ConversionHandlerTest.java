@@ -19,6 +19,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConversionHandlerTest {
     private static final String V1ALPHA1 = "example.com/v1alpha1";
@@ -175,6 +177,47 @@ class ConversionHandlerTest {
         assertEquals(true, result.successful());
         assertEquals(V1ALPHA2, result.convertedObject().getApiVersion());
         assertEquals("functional", result.convertedObject().getMetadata().getName());
+    }
+
+    @Test
+    void disabledHandlerReturnsFailureStatus() throws Exception {
+        ConversionHandler handler = new ConversionHandler(serialization);
+        handler.register(V1ALPHA1, V1ALPHA2, (desiredVersion, resource) -> ConversionResult.converted(
+                resource(desiredVersion, resource.getMetadata().getName(), "INFO")));
+        handler.disable();
+
+        ConversionReview response = post(handler, review("disabled-uid", V1ALPHA2,
+                resource(V1ALPHA1, "echo-disabled", null)));
+
+        assertEquals("disabled-uid", response.getResponse().getUid());
+        assertEquals("Failure", response.getResponse().getResult().getStatus());
+        assertEquals("Conversion webhook is disabled", response.getResponse().getResult().getMessage());
+    }
+
+    @Test
+    void reEnablingHandlerResumesConversions() throws Exception {
+        ConversionHandler handler = new ConversionHandler(serialization);
+        handler.register(V1ALPHA1, V1ALPHA2, (desiredVersion, resource) -> ConversionResult.converted(
+                resource(desiredVersion, resource.getMetadata().getName(), "INFO")));
+        handler.disable();
+
+        handler.enable();
+        ConversionReview response = post(handler, review("re-enabled-uid", V1ALPHA2,
+                resource(V1ALPHA1, "echo-re-enabled", null)));
+
+        assertEquals("re-enabled-uid", response.getResponse().getUid());
+        assertEquals("Success", response.getResponse().getResult().getStatus());
+    }
+
+    @Test
+    void isEnabledReflectsCurrentState() {
+        ConversionHandler handler = new ConversionHandler(serialization);
+
+        assertTrue(handler.isEnabled());
+        handler.disable();
+        assertFalse(handler.isEnabled());
+        handler.enable();
+        assertTrue(handler.isEnabled());
     }
 
     private ConversionReview post(ConversionHandler handler, ConversionReview review) throws Exception {

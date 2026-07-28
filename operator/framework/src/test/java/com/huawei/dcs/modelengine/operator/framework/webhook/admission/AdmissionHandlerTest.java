@@ -21,6 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -79,6 +80,92 @@ class AdmissionHandlerTest {
         assertEquals("unknown-uid", response.getResponse().getUid());
         assertFalse(response.getResponse().getAllowed());
         assertEquals("No admission validator registered for path 'missing'", response.getResponse().getStatus().getMessage());
+    }
+
+    @Test
+    void disabledValidatorReturnsDenyResponse() throws Exception {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerValidator("pods", Pod.class, (request, pod) -> AdmissionResult.allowed());
+        handler.disableValidator("pods");
+
+        Pod pod = new PodBuilder().withNewMetadata().withName("test").endMetadata().build();
+        TestExchange exchange = TestExchange.post("/validate/pods", admissionReview("disabled-uid", pod));
+        handler.validatingHandler("pods").handle(exchange);
+
+        AdmissionReview response = response(exchange);
+        assertEquals("disabled-uid", response.getResponse().getUid());
+        assertFalse(response.getResponse().getAllowed());
+        assertEquals("Admission validator 'pods' is disabled", response.getResponse().getStatus().getMessage());
+    }
+
+    @Test
+    void reEnablingValidatorAllowsRequestsAgain() throws Exception {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerValidator("pods", Pod.class, (request, pod) -> AdmissionResult.allowed());
+        handler.disableValidator("pods");
+
+        Pod pod = new PodBuilder().withNewMetadata().withName("test").endMetadata().build();
+        handler.enableValidator("pods");
+        TestExchange exchange = TestExchange.post("/validate/pods", admissionReview("enabled-uid", pod));
+        handler.validatingHandler("pods").handle(exchange);
+
+        AdmissionReview response = response(exchange);
+        assertEquals("enabled-uid", response.getResponse().getUid());
+        assertTrue(response.getResponse().getAllowed());
+    }
+
+    @Test
+    void disabledMutatorReturnsDenyResponse() throws Exception {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerMutator("pods", Pod.class, (request, pod) -> AdmissionResult.jsonPatch("[]"));
+        handler.disableMutator("pods");
+
+        Pod pod = new PodBuilder().withNewMetadata().withName("test").endMetadata().build();
+        TestExchange exchange = TestExchange.post("/mutate/pods", admissionReview("disabled-mut-uid", pod));
+        handler.mutatingHandler("pods").handle(exchange);
+
+        AdmissionReview response = response(exchange);
+        assertEquals("disabled-mut-uid", response.getResponse().getUid());
+        assertFalse(response.getResponse().getAllowed());
+        assertEquals("Admission mutator 'pods' is disabled", response.getResponse().getStatus().getMessage());
+    }
+
+    @Test
+    void enabledValidatorNamesExcludesDisabledValidators() {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerValidator("pods", Pod.class, (request, pod) -> AdmissionResult.allowed());
+        handler.registerValidator("pods-v2", Pod.class, (request, pod) -> AdmissionResult.allowed());
+        handler.disableValidator("pods");
+
+        Set<String> enabled = handler.enabledValidatorNames();
+        assertTrue(enabled.contains("pods-v2"));
+        assertFalse(enabled.contains("pods"));
+        assertEquals(1, enabled.size());
+    }
+
+    @Test
+    void enabledMutatorNamesExcludesDisabledMutators() {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerMutator("pods", Pod.class, (request, pod) -> AdmissionResult.jsonPatch("[]"));
+        handler.registerMutator("pods-v2", Pod.class, (request, pod) -> AdmissionResult.jsonPatch("[]"));
+        handler.disableMutator("pods-v2");
+
+        Set<String> enabled = handler.enabledMutatorNames();
+        assertTrue(enabled.contains("pods"));
+        assertFalse(enabled.contains("pods-v2"));
+        assertEquals(1, enabled.size());
+    }
+
+    @Test
+    void isValidatorEnabledReflectsCurrentState() {
+        AdmissionHandler handler = new AdmissionHandler(serialization);
+        handler.registerValidator("pods", Pod.class, (request, pod) -> AdmissionResult.allowed());
+
+        assertTrue(handler.isValidatorEnabled("pods"));
+        handler.disableValidator("pods");
+        assertFalse(handler.isValidatorEnabled("pods"));
+        handler.enableValidator("pods");
+        assertTrue(handler.isValidatorEnabled("pods"));
     }
 
     private String admissionReview(String uid, Pod pod) {

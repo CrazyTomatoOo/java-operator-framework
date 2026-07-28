@@ -37,6 +37,7 @@ public final class ConversionHandler implements HttpHandler {
 
     private final KubernetesSerialization serialization;
     private final Map<VersionPair, ConversionWebhookHandler> converters = new ConcurrentHashMap<>();
+    private volatile boolean enabled = true;
 
     public ConversionHandler(KubernetesClient client) {
         this(Objects.requireNonNull(client, "client must not be null").getKubernetesSerialization());
@@ -55,6 +56,18 @@ public final class ConversionHandler implements HttpHandler {
         Objects.requireNonNull(server, "server must not be null").register("/convert", this);
     }
 
+    public void enable() {
+        enabled = true;
+    }
+
+    public void disable() {
+        enabled = false;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
@@ -71,6 +84,9 @@ public final class ConversionHandler implements HttpHandler {
     }
 
     private ConversionResponse dispatch(ConversionRequest request) {
+        if (!enabled) {
+            return failure(request == null ? null : request.getUid(), "Conversion webhook is disabled");
+        }
         if (request == null) {
             return failure(null, "ConversionReview request is missing");
         }

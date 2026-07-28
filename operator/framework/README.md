@@ -204,6 +204,15 @@ webhookServer.start();
 
 `AdmissionHandler.register(WebhookServer)` exposes `/validate/{name}` and `/mutate/{name}` for every registered validator/mutator. Mutators return a raw JSON Patch string from `AdmissionResult.jsonPatch(...)`; the handler base64-encodes it and sets `patchType` to `JSONPatch`.
 
+Each validator and mutator can be individually enabled or disabled at runtime. Disabled webhooks are excluded from Kubernetes registration (`enabledValidatorNames()` / `enabledMutatorNames()`) and return a deny response if the HTTP endpoint is called:
+
+```java
+admissionHandler.disableValidator("my.example.com"); // returns deny if called
+admissionHandler.enableValidator("my.example.com");  // re-enables
+admissionHandler.isValidatorEnabled("my.example.com"); // check state
+admissionHandler.enabledValidatorNames(); // only enabled, for K8s registration
+```
+
 To register webhook configurations in Kubernetes at startup, use `WebhookSelfRegistration` with `WebhookRegistrationConfig`:
 
 ```java
@@ -246,6 +255,14 @@ conversionHandler.register(webhookServer);
 ```
 
 `ConversionWebhookHandler.convert(desiredVersion, HasMetadata)` returns a `ConversionResult` from `ConversionResult.converted(...)` or `ConversionResult.failed(...)`. The handler unmarshals `apiextensions.k8s.io/v1 ConversionReview`, dispatches by `(source apiVersion, desired apiVersion)`, and returns a review response. Same-version requests pass through unchanged; unregistered pairs return a failure status in the conversion response.
+
+The conversion handler can be enabled or disabled at runtime. When disabled, `dispatch` returns a failure response:
+
+```java
+conversionHandler.disable();   // returns failure if called
+conversionHandler.enable();    // re-enables
+conversionHandler.isEnabled(); // check state
+```
 
 Mark versions in the resource class with fabric8 `@Version`:
 
