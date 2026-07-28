@@ -6,6 +6,10 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+# Combined keeps the existing single workload. Split is opt-in and its workloads use the explicit blocks below.
+deploymentMode: combined
+
+# Combined-mode workload values. Split workloads never inherit these values.
 replicas: 1
 
 resources:
@@ -37,7 +41,7 @@ webhook:
   certAutoGenerate: true
   # Port the operator listens on for HTTPS admission and conversion webhooks.
   port: 8443
-  # CA bundle for conversion/admission webhook client configs. Helm base64-encodes this value.
+  # Literal PEM CA bundle for conversion/admission webhook client configs. Helm base64-encodes it once.
   caBundle: ""
   # Conversion webhook path used by the CRD template.
   path: /convert
@@ -55,6 +59,24 @@ webhook:
     name: ""
     # Service port used by CRD conversion and admission webhook client configs.
     port: 443
+  # Split-mode webhook workload values. These do not inherit combined-mode workload values.
+  workload:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    podAnnotations: {}
+    podLabels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    serviceAccount:
+      create: true
+      name: ""
 
 operator:
   # Namespace the operator watches. Empty string means use the pod namespace
@@ -77,3 +99,23 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# Split-mode controller workload values. These do not inherit combined-mode workload values.
+controller:
+  workload:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    podAnnotations: {}
+    podLabels: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    serviceAccount:
+      create: true
+      name: ""

@@ -1,4 +1,3 @@
-{{- if and .Values.webhook.createWebhookConfigurations .Values.webhook.certAutoGenerate }}{{ fail "webhook.createWebhookConfigurations requires webhook.certAutoGenerate=false and a supplied webhook.caBundle" }}{{- end }}
 {{- if and .Values.webhook.enabled .Values.webhook.createWebhookConfigurations -}}
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -15,7 +14,7 @@ webhooks:
     clientConfig:
       service:
         namespace: {{ .Release.Namespace | quote }}
-        name: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
+        name: {{ include "echo-operator.webhookServiceName" . | quote }}
         path: {{ printf "/validate/%s" .Values.webhook.admissionName | quote }}
         port: {{ .Values.webhook.service.port }}
       caBundle: {{ .Values.webhook.caBundle | b64enc | quote }}

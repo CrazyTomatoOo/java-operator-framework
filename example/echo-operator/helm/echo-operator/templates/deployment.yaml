@@ -1,3 +1,5 @@
+{{- $mode := include "echo-operator.deploymentMode" . -}}
+{{- if eq $mode "combined" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -62,13 +64,25 @@ spec:
                   fieldPath: metadata.namespace
             - name: METRICS_PORT
               value: {{ .Values.metrics.port | quote }}
+            - name: CONTROLLER_ENABLED
+              value: "true"
             - name: WEBHOOK_ENABLED
               value: {{ .Values.webhook.enabled | quote }}
+            - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+              value: {{ or (not .Values.webhook.enabled) .Values.webhook.createWebhookConfigurations | quote }}
+            - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+              value: {{ and .Values.webhook.enabled (not .Values.webhook.createWebhookConfigurations) | quote }}
+            {{- if and .Values.webhook.enabled (not .Values.webhook.createWebhookConfigurations) }}
+            - name: WEBHOOK_PREDECESSOR_VALIDATING_NAME
+              value: {{ printf "%s-validating" (include "echo-operator.fullname" .) | quote }}
+            - name: WEBHOOK_PREDECESSOR_MUTATING_NAME
+              value: {{ printf "%s-mutating" (include "echo-operator.fullname" .) | quote }}
+            {{- end }}
             {{ if .Values.webhook.enabled }}
             - name: WEBHOOK_PORT
               value: {{ .Values.webhook.port | quote }}
             - name: WEBHOOK_SERVICE_NAME
-              value: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
+              value: {{ include "echo-operator.webhookServiceName" . | quote }}
             - name: WEBHOOK_SERVICE_NAMESPACE
               value: {{ .Release.Namespace | quote }}
             - name: WEBHOOK_SERVICE_PORT
@@ -149,3 +163,260 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- else }}
+{{- $controllerSelector := include "echo-operator.componentSelectorLabels" (dict "root" . "component" "controller") -}}
+{{- $webhookSelector := include "echo-operator.componentSelectorLabels" (dict "root" . "component" "webhook") -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "echo-operator.controllerName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "echo-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+spec:
+  replicas: {{ .Values.controller.workload.replicas }}
+  selector:
+    matchLabels:
+      {{- $controllerSelector | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.controller.workload.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- $controllerSelector | nindent 8 }}
+        {{- with .Values.controller.workload.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "echo-operator.controllerServiceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+          env:
+            {{- if .Values.operator.namespace }}
+            - name: OPERATOR_NAMESPACE
+              value: {{ .Values.operator.namespace | quote }}
+            {{- else }}
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- end }}
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_PORT
+              value: {{ .Values.metrics.port | quote }}
+            - name: CONTROLLER_ENABLED
+              value: "true"
+            - name: WEBHOOK_ENABLED
+              value: "false"
+            - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+              value: "false"
+            - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+              value: "false"
+            - name: LEADER_ELECTION_ENABLED
+              value: {{ .Values.leaderElection.enabled | quote }}
+            - name: LEADER_ELECTION_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.controller.workload.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      {{- with .Values.controller.workload.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.workload.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.controller.workload.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "echo-operator.webhookName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "echo-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+spec:
+  replicas: {{ .Values.webhook.workload.replicas }}
+  selector:
+    matchLabels:
+      {{- $webhookSelector | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.webhook.workload.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- $webhookSelector | nindent 8 }}
+        {{- with .Values.webhook.workload.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "echo-operator.webhookServiceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        {{- if .Values.webhook.certAutoGenerate }}
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+        {{- end }}
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+            - name: webhook
+              containerPort: {{ .Values.webhook.port }}
+              protocol: TCP
+          env:
+            {{- if .Values.operator.namespace }}
+            - name: OPERATOR_NAMESPACE
+              value: {{ .Values.operator.namespace | quote }}
+            {{- else }}
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- end }}
+            - name: OPERATOR_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_PORT
+              value: {{ .Values.metrics.port | quote }}
+            - name: CONTROLLER_ENABLED
+              value: "false"
+            - name: WEBHOOK_ENABLED
+              value: "true"
+            - name: WEBHOOK_REGISTRATION_CLEANUP_ENABLED
+              value: {{ .Values.webhook.createWebhookConfigurations | quote }}
+            - name: WEBHOOK_SELF_REGISTRATION_ENABLED
+              value: {{ not .Values.webhook.createWebhookConfigurations | quote }}
+            {{- if not .Values.webhook.createWebhookConfigurations }}
+            - name: WEBHOOK_PREDECESSOR_VALIDATING_NAME
+              value: {{ printf "%s-validating" (include "echo-operator.fullname" .) | quote }}
+            - name: WEBHOOK_PREDECESSOR_MUTATING_NAME
+              value: {{ printf "%s-mutating" (include "echo-operator.fullname" .) | quote }}
+            {{- end }}
+            - name: WEBHOOK_PORT
+              value: {{ .Values.webhook.port | quote }}
+            - name: WEBHOOK_SERVICE_NAME
+              value: {{ include "echo-operator.webhookServiceName" . | quote }}
+            - name: WEBHOOK_SERVICE_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: WEBHOOK_SERVICE_PORT
+              value: {{ .Values.webhook.service.port | quote }}
+            {{- if .Values.webhook.certAutoGenerate }}
+            - name: WEBHOOK_CERT_AUTO_GENERATE
+              value: "true"
+            - name: WEBHOOK_CERT_DIRECTORY
+              value: /tmp/echo-operator/certs
+            - name: WEBHOOK_CERT_SECRET_NAME
+              value: {{ .Values.webhook.certSecretName | quote }}
+            - name: WEBHOOK_CA_BUNDLE_PATH
+              value: /tmp/echo-operator/certs/ca.crt
+            {{- else }}
+            - name: WEBHOOK_CERT_AUTO_GENERATE
+              value: "false"
+            - name: WEBHOOK_CA_BUNDLE_PATH
+              value: /etc/echo-operator/certs/ca.crt
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.webhook.workload.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            {{- if .Values.webhook.certAutoGenerate }}
+            - name: webhook-certs
+              mountPath: /tmp/echo-operator/certs
+            {{- else }}
+            - name: webhook-tls
+              mountPath: /etc/echo-operator/certs
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if .Values.webhook.certAutoGenerate }}
+        - name: webhook-certs
+          emptyDir: {}
+        {{- else }}
+        - name: webhook-tls
+          secret:
+            secretName: {{ .Values.webhook.tls.secretName }}
+        {{- end }}
+      {{- with .Values.webhook.workload.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webhook.workload.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webhook.workload.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

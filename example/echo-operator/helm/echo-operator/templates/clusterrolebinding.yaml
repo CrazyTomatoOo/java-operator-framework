@@ -1,16 +1,21 @@
 {{- if .Values.rbac.create -}}
+{{- $mode := include "echo-operator.deploymentMode" . -}}
+{{- $webhookServiceAccountName := include "echo-operator.serviceAccountName" . -}}
+{{- if eq $mode "split" -}}
+{{- $webhookServiceAccountName = include "echo-operator.webhookServiceAccountName" . -}}
+{{- end -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "echo-operator.fullname" . }}
+  name: {{ printf "%s-webhook" (include "echo-operator.fullname" .) }}
   labels:
     {{- include "echo-operator.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "echo-operator.fullname" . }}
+  name: {{ printf "%s-webhook" (include "echo-operator.fullname" .) }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "echo-operator.serviceAccountName" . }}
+    name: {{ $webhookServiceAccountName }}
     namespace: {{ .Release.Namespace }}
 {{- end }}

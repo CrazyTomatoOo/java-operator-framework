@@ -1,22 +1,52 @@
 {{- if .Values.rbac.create -}}
+{{- $mode := include "echo-operator.deploymentMode" . -}}
+{{- $watchedNamespace := include "echo-operator.watchedNamespace" . -}}
+{{- $runtimeAdmissionName := printf "echo-operator.%s.echo.example.com" $watchedNamespace -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "echo-operator.fullname" . }}
+  name: {{ printf "%s-webhook" (include "echo-operator.fullname" .) }}
   labels:
     {{- include "echo-operator.labels" . | nindent 4 }}
 rules:
-{{- if .Values.webhook.enabled }}
+{{- if and .Values.webhook.enabled (not .Values.webhook.createWebhookConfigurations) }}
   - apiGroups: ["admissionregistration.k8s.io"]
-    resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+    resources: ["validatingwebhookconfigurations"]
+    verbs: ["create"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    resourceNames: [{{ $runtimeAdmissionName | quote }}]
+    verbs: ["get", "update", "patch", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["create"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    resourceNames: [{{ $runtimeAdmissionName | quote }}]
+    verbs: ["get", "update", "patch", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    resourceNames: [{{ printf "%s-validating" (include "echo-operator.fullname" .) | quote }}]
+    verbs: ["get"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    resourceNames: [{{ printf "%s-mutating" (include "echo-operator.fullname" .) | quote }}]
+    verbs: ["get"]
+{{- end }}
+{{- if or (and .Values.webhook.enabled .Values.webhook.createWebhookConfigurations) (and (eq $mode "combined") (not .Values.webhook.enabled)) }}
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    resourceNames: [{{ $runtimeAdmissionName | quote }}]
+    verbs: ["get", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    resourceNames: [{{ $runtimeAdmissionName | quote }}]
+    verbs: ["get", "delete"]
+{{- end }}
+{{- if and .Values.webhook.enabled .Values.webhook.certAutoGenerate }}
   - apiGroups: ["apiextensions.k8s.io"]
     resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch", "update", "patch"]
-{{- else }}
-  - apiGroups: ["admissionregistration.k8s.io"]
-    resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
-    resourceNames: [{{ printf "echo-operator.%s.echo.example.com" .Release.Namespace | quote }}]
-    verbs: ["get", "delete"]
+    resourceNames: ["echoresources.example.com"]
+    verbs: ["get", "update", "patch"]
 {{- end }}
 {{- end }}

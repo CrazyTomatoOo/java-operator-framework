@@ -1,3 +1,4 @@
+{{- include "echo-operator.validate" . -}}
 {{- $existingCaBundle := "" -}}
 {{- if .Values.webhook.certAutoGenerate -}}
 {{- $existingCRD := lookup "apiextensions.k8s.io/v1" "CustomResourceDefinition" "" "echoresources.example.com" -}}
@@ -26,7 +27,7 @@ spec:
       clientConfig:
         service:
           namespace: {{ .Release.Namespace | quote }}
-          name: {{ default (include "echo-operator.fullname" .) .Values.webhook.service.name | quote }}
+          name: {{ include "echo-operator.webhookServiceName" . | quote }}
           path: {{ .Values.webhook.path | quote }}
           port: {{ .Values.webhook.service.port }}
         caBundle: {{ if .Values.webhook.certAutoGenerate }}{{ $existingCaBundle | quote }}{{ else }}{{ .Values.webhook.caBundle | b64enc | quote }}{{ end }}
