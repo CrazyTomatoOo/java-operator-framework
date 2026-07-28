@@ -11,6 +11,8 @@
 - 组合的 `MetricsHealthServer`，同时暴露 `/metrics`、`/healthz`、`/readyz`
 - `RetryPolicy` / `ExponentialBackoffRetryPolicy` 与 `RateLimiter`
 - `OwnerReferenceHelper` 和 `FinalizerHelper` 工具类
+- `EventRecorder`：发布预聚合的 Kubernetes Event；`EventSubscriber`：响应涉及主资源的 Event
+- Webhook TLS 工具：`WebhookCertificateGenerator` 与 `WebhookCertificateSecretManager`，支持将 CA 持久化到 Secret
 - 基于 Java 21 与 Maven
 
 ## Maven 坐标
@@ -38,6 +40,25 @@ operator.start();
 ```
 
 调用 `operator.stop()` 或使用 try-with-resources 即可关闭 Informer 和 Worker 线程。
+
+### ControllerBuilder
+使用 `ControllerBuilder` 注册带有 secondary 资源监听的控制器。下面的示例监听通过 `my-resource-name` label 关联到 `MyResource` 的 `ConfigMap`：
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.ControllerBuilder;
+import com.huawei.dcs.modelengine.operator.framework.ControllerRegistration;
+import com.huawei.dcs.modelengine.operator.framework.source.Mappers;
+import io.fabric8.kubernetes.api.model.ConfigMap;
+
+ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+    .withReconciler(new MyReconciler())
+    .watches("configmaps", ConfigMap.class, Mappers.byLabel("my-resource-name"))
+    .build();
+
+operator.register(registration);
+```
+
+当 secondary `ConfigMap` 变化时，Operator 会以 `SECONDARY` 触发类型将匹配的 `MyResource` 入队。如果只需要主资源，`operator.register(MyResource.class, new MyReconciler())` 依然可用。
 
 ### Generation 变更过滤
 
@@ -124,6 +145,33 @@ server.start();
 - `OwnerReferenceHelper.createControllerOwnerReference(owner)` 返回 `controller=true`、`blockOwnerDeletion=true` 的 `OwnerReference`。
 - `FinalizerHelper.hasFinalizer(resource, finalizer)`、`addFinalizer(...)`、`removeFinalizer(...)`。
 
+### Kubernetes 事件
+`EventRecorder` 为涉及的资源对象发布 `core/v1` Event，并在写入前对重复事件做预聚合：抑制间隔（默认 5 分钟）内相同的事件会被计数，合并为一条 Event 并更新其 `count` 与 `lastTimestamp`，而不是每次出现都写一次 API。内存缓存最多容纳 1000 条；缓存满时最旧的条目会被冲刷并逐出。
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventRecorder;
+
+try (EventRecorder recorder = new EventRecorder(client, "my-operator")) {
+    recorder.normal(resource, "Created", "created the child Deployment");
+    recorder.warning(resource, "InvalidSpec", "spec.replicas must not be negative");
+}
+```
+
+Recorder 需要在其发布的每个命名空间上拥有 `events` 的 `create`、`get`、`patch` 权限。关闭时调用 `close()`（或使用 try-with-resources）以冲刷未落盘的计数。
+
+`EventSubscriber` 让控制器订阅涉及其主资源的 Event，Event 变化会为涉及对象入队一次 reconcile：
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventSubscriber;
+
+ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+    .withReconciler(new MyReconciler())
+    .withEventSubscriber(EventSubscriber.forInvolvedObject(MyResource.class))
+    .build();
+```
+
+Kubernetes Event 是尽力而为的，可能被 API Server 丢弃或因 TTL 过期，因此不要将其用于正确性关键的状态。注意自我触发循环：一个既为主资源记录 Event 又订阅这些 Event 的控制器可能无限 reconcile。如果两者同时使用，请按 source、reason 或 type 过滤 Event，避免控制器自身的 Event 再次触发它。
+
 ## 构建
 
 将 SDK 安装到本地 Maven 仓库：
@@ -184,6 +232,15 @@ webhookServer.start();
 
 `AdmissionHandler.register(WebhookServer)` 会为每个已注册的校验器/变更器暴露 `/validate/{name}` 和 `/mutate/{name}`。变更器通过 `AdmissionResult.jsonPatch(...)` 返回原始 JSON Patch 字符串，由 Handler 自动 base64 编码并设置 `patchType` 为 `JSONPatch`。
 
+每个校验器和变更器都可以在运行时单独启用或禁用。被禁用的 Webhook 不会注册到 Kubernetes（`enabledValidatorNames()` / `enabledMutatorNames()`），若其 HTTP 端点被调用则直接返回拒绝响应：
+
+```java
+admissionHandler.disableValidator("my.example.com"); // 被调用时返回拒绝
+admissionHandler.enableValidator("my.example.com");  // 重新启用
+admissionHandler.isValidatorEnabled("my.example.com"); // 查询状态
+admissionHandler.enabledValidatorNames(); // 仅包含已启用项，用于 K8s 注册
+```
+
 若要在 Operator 启动时向 Kubernetes 注册 Webhook 配置，可组合使用 `WebhookSelfRegistration` 与 `WebhookRegistrationConfig`：
 
 ```java
@@ -207,6 +264,19 @@ registration.register(handler);
 
 你也可以使用 `WebhookCertificateGenerator`（`com.huawei.dcs.modelengine.operator.framework.webhook.cert`）自动生成 CA 证书包和服务端证书。它会生成包含 `ca.crt`、`tls.crt` 和 `tls.key` 的文件，SAN 覆盖服务名及其命名空间 FQDN 变体，并为服务端证书设置 `serverAuth` 扩展密钥用途。`EchoOperatorMain` 默认使用此生成器，将证书写入 `WEBHOOK_CERT_DIRECTORY`。当 `WEBHOOK_CERT_AUTO_GENERATE` 设为 `false` 时，仍可使用上文基于文件的降级示例。
 
+如果需要 CA 在 Pod 重启后依然存活，可以使用同包下的 `WebhookCertificateSecretManager`。它将 CA 私钥和证书持久化在 Kubernetes Secret 中（首次启动时创建 Secret，之后复用该 CA），只在本地目录写入服务端证书材料（`ca.crt`、`tls.crt`、`tls.key`），CA 私钥从不落盘。
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateSecretManager;
+
+WebhookCertificateSecretManager certManager = new WebhookCertificateSecretManager(
+    client, "my-operator-webhook-ca", "my-namespace",
+    "my-operator", "my-namespace", Path.of("/tmp/my-operator/certs"));
+GeneratedCertificate certificate = certManager.resolve();
+```
+
+Operator 需要在 Secret 所在命名空间拥有 Secrets 的 `get` 和 `create` 权限。
+
 ## Conversion Webhook
 
 针对多版本 CRD，SDK 提供了 Conversion Webhook Handler，可挂载在同一个 `WebhookServer` 上。
@@ -226,6 +296,14 @@ conversionHandler.register(webhookServer);
 ```
 
 `ConversionWebhookHandler.convert(desiredVersion, HasMetadata)` 返回 `ConversionResult.converted(...)` 或 `ConversionResult.failed(...)`。Handler 负责解析 `apiextensions.k8s.io/v1 ConversionReview`，按 `(源 apiVersion, 目标 apiVersion)` 路由。同版本请求直接透传，未注册版本对返回转换失败状态。
+
+Conversion Handler 同样支持运行时启停。禁用后，`dispatch` 直接返回失败响应：
+
+```java
+conversionHandler.disable();   // 被调用时返回失败
+conversionHandler.enable();    // 重新启用
+conversionHandler.isEnabled(); // 查询状态
+```
 
 在资源类中用 fabric8 `@Version` 标记多版本：
 

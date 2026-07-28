@@ -175,6 +175,21 @@ public Result reconcile(Request request, MyResource resource) {
 
 A `Trigger` exposes the event type, resource kind, namespace, name, UID, and role (`TriggerRole.PRIMARY` or `TriggerRole.SECONDARY`).
 
+
+### Filtering update events by generation change
+By default every update event on the primary resource enqueues a reconcile, including status writebacks. For controllers that write status, this causes self-triggered "echo" reconciles. Enable the generation-change filter to enqueue an update only when the `generation` changed, deletion was requested, or the `finalizers` changed:
+
+```java
+ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+    .withReconciler(new MyReconciler())
+    .withGenerationChangeFilter()
+    .withResyncPeriod(Duration.ZERO) // optional: disable the default 60-second resync
+    .build();
+```
+
+Add and delete events always enqueue, and secondary source events are never filtered. The filter is off by default, and for CRDs without the status subresource it has no effect because status writes still bump `generation`.
+
+
 ### Migration note
 
 The existing `Operator.register(Class, Reconciler)` API is unchanged and still works:
@@ -384,6 +399,11 @@ registration.register(admissionHandler);
 
 By default, `WebhookCertificateGenerator` creates the CA bundle and server certificate for the webhook server. It writes `ca.crt`, `tls.crt`, and `tls.key` to `WEBHOOK_CERT_DIRECTORY` (`/tmp/echo-operator/certs` by default). The certificate SANs cover the service name and its FQDN variants, and the server certificate sets the `serverAuth` extended key usage. Set `WEBHOOK_CERT_AUTO_GENERATE=false` to use the file-based fallback and load the CA bundle and sibling `tls.crt`/`tls.key` files from `WEBHOOK_CA_BUNDLE_PATH`.
 
+
+### Persisting the CA in a Secret
+For a CA that survives pod restarts, use `WebhookCertificateSecretManager` instead of writing the CA to disk. It stores the CA private key and certificate in a Kubernetes Secret — creating the Secret on first startup and reusing the CA afterwards — and writes only the server certificate material (`ca.crt`, `tls.crt`, `tls.key`) to the local certificate directory. The CA private key never touches the filesystem. The operator needs `get` and `create` permissions on Secrets in the Secret's namespace.
+
+
 ## 13. Add conversion webhooks
 
 For CRDs with multiple versions, implement a `ConversionWebhookHandler` and mount it on the same TLS server.
@@ -436,3 +456,28 @@ client.close();
 ```
 
 The webhook server and the metrics/health server are separate. Metrics stay on port 8080 by default, while admission and conversion webhooks share the TLS server on port 8443.
+
+## 15. Record and subscribe to Kubernetes events
+Use `EventRecorder` to publish `core/v1` Events for the resources your reconciler manages. Identical events within the suppression interval (5 minutes by default) are aggregated into a single Event with an updated `count`, and the cache is bounded at 1000 entries. The recorder needs `create`, `get`, and `patch` permissions on `events`.
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventRecorder;
+
+try (EventRecorder recorder = new EventRecorder(client, "my-operator")) {
+    recorder.normal(resource, "Created", "created the child Deployment");
+    recorder.warning(resource, "InvalidSpec", "spec.replicas must not be negative");
+}
+```
+
+Use `EventSubscriber` to enqueue a reconcile when an Event involving your primary resource changes:
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventSubscriber;
+
+ControllerBuilder.forResource(MyResource.class)
+    .withReconciler(new MyReconciler())
+    .withEventSubscriber(EventSubscriber.forInvolvedObject(MyResource.class))
+    .build();
+```
+
+Kubernetes Events are best-effort and may be dropped or TTL-expired, so never rely on them for correctness-critical state. If a controller both records Events for its primary resource and subscribes to them, filter the Events by source, reason, or type — otherwise each emitted Event re-triggers reconciliation and can loop forever.

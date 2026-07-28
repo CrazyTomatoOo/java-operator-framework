@@ -11,6 +11,8 @@ A minimal, fabric8-based Java SDK for building Kubernetes operators. It gives yo
 - Combined `MetricsHealthServer` exposing `/metrics`, `/healthz`, and `/readyz`
 - `RetryPolicy` / `ExponentialBackoffRetryPolicy` and `RateLimiter`
 - `OwnerReferenceHelper` and `FinalizerHelper` utilities
+- `EventRecorder` publishing pre-aggregated Kubernetes Events, plus `EventSubscriber` for reacting to Events involving the primary resource
+- Webhook TLS tooling: `WebhookCertificateGenerator` and `WebhookCertificateSecretManager` with CA persistence in a Secret
 - Java 21, Maven-based
 
 ## Maven coordinates
@@ -144,6 +146,33 @@ server.start();
 - `OwnerReferenceHelper.createControllerOwnerReference(owner)` returns an `OwnerReference` with `controller=true` and `blockOwnerDeletion=true`.
 - `FinalizerHelper.hasFinalizer(resource, finalizer)`, `addFinalizer(...)`, `removeFinalizer(...)`.
 
+### Kubernetes events
+`EventRecorder` publishes `core/v1` Events for involved objects and pre-aggregates duplicates before writing: identical events within the suppression interval (5 minutes by default) are counted and flushed as one Event with an updated `count` and `lastTimestamp`, instead of one API write per occurrence. The in-memory cache holds at most 1000 entries; the oldest entry is flushed and evicted when full.
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventRecorder;
+
+try (EventRecorder recorder = new EventRecorder(client, "my-operator")) {
+    recorder.normal(resource, "Created", "created the child Deployment");
+    recorder.warning(resource, "InvalidSpec", "spec.replicas must not be negative");
+}
+```
+
+The recorder requires `create`, `get`, and `patch` permissions on `events` in every namespace it publishes to. Call `close()` (or use try-with-resources) to flush pending counts on shutdown.
+
+`EventSubscriber` subscribes a controller to Events involving its primary resource, so Event changes enqueue a reconcile for the involved object:
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.event.EventSubscriber;
+
+ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
+    .withReconciler(new MyReconciler())
+    .withEventSubscriber(EventSubscriber.forInvolvedObject(MyResource.class))
+    .build();
+```
+
+Kubernetes Events are best-effort and may be dropped or TTL-expired, so never use them for correctness-critical state. Beware the self-triggering loop: a controller that both records Events for its primary resource and subscribes to them can reconcile forever. If you combine both, filter Events by source, reason, or type so the controller's own Events do not re-trigger it.
+
 ## Build
 
 Install the SDK into your local Maven repository:
@@ -235,6 +264,19 @@ registration.register(handler);
 `register(handler)` reads the CA bundle from disk, base64-encodes it, and creates or replaces one `ValidatingWebhookConfiguration` and one `MutatingWebhookConfiguration` per registered webhook name.
 
 You can also generate the CA bundle and server certificate automatically with `WebhookCertificateGenerator` (`com.huawei.dcs.modelengine.operator.framework.webhook.cert`). It creates `ca.crt`, `tls.crt`, and `tls.key` with SANs for the service name and its namespace-scoped FQDN variants, and sets the `serverAuth` extended key usage on the server certificate. `EchoOperatorMain` uses this generator by default, writing certificates to `WEBHOOK_CERT_DIRECTORY`. The file-based example above is still available when `WEBHOOK_CERT_AUTO_GENERATE` is set to `false`.
+
+For a CA that survives pod restarts, use `WebhookCertificateSecretManager` in the same package. It persists the CA private key and certificate in a Kubernetes Secret (creating the Secret on first startup and reusing the CA afterwards), and writes only the server certificate material (`ca.crt`, `tls.crt`, `tls.key`) to a local directory — the CA private key never touches the filesystem.
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.webhook.cert.WebhookCertificateSecretManager;
+
+WebhookCertificateSecretManager certManager = new WebhookCertificateSecretManager(
+    client, "my-operator-webhook-ca", "my-namespace",
+    "my-operator", "my-namespace", Path.of("/tmp/my-operator/certs"));
+GeneratedCertificate certificate = certManager.resolve();
+```
+
+The operator needs `get` and `create` permissions on Secrets in the Secret's namespace.
 
 ## Conversion webhooks
 
