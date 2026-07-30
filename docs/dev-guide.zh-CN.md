@@ -1,476 +1,419 @@
 # 开发指南
 
-本指南介绍如何使用 `operator-framework` 构建一个新的 Kubernetes Operator。
+本指南描述当前 Spring Boot Starter，目标基线为 Java 21、Spring Boot 3.5.15、Fabric8 Kubernetes Client 7.3.0 与 Lombok 1.18.32。
 
-## 1. 安装 SDK
+英文文档：[dev-guide.md](dev-guide.md)
 
-在仓库根目录执行：
+## 1. 添加 Starter
+
+在本地使用快照版本时，先构建本仓库：
 
 ```bash
 mvn -f operator/framework/pom.xml clean install
 ```
 
-该命令将 `com.huawei.dcs.modelengine:operator-framework:0.1.0-SNAPSHOT` 安装到本地 Maven 仓库。
-
-## 2. 创建 Maven 项目
-
-新建一个 Java 21 的 Maven 项目，添加 SDK 依赖：
+在 Spring Boot 3.5.16 应用中添加 Starter：
 
 ```xml
 <dependency>
   <groupId>com.huawei.dcs.modelengine</groupId>
-  <artifactId>operator-framework</artifactId>
+  <artifactId>operator-framework-spring-boot-starter</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
-同时添加 fabric8 `kubernetes-client` 与 `generator-annotations` 依赖，版本为 `7.7.0`。
+使用 Java 21。Starter 已提供 Spring Web、Actuator、Micrometer Prometheus 支持和 Fabric8 Kubernetes Client 7.8.0。只有应用确实需要生成 CRD 或 Java 模型时，才添加 Fabric8 生成器依赖/插件；运行时并不需要它们。
 
-添加 `crd-generator-maven-plugin` 与 `java-generator-maven-plugin`，用于生成 CRD 与 Java 类：
+Starter 使用 Spring Boot 自动配置，不存在启用注解，也不存在由应用持有的框架生命周期对象。
 
-```xml
-<plugin>
-  <groupId>io.fabric8</groupId>
-  <artifactId>crd-generator-maven-plugin</artifactId>
-  <version>${fabric8.version}</version>
-  <executions>
-    <execution>
-      <phase>compile</phase>
-      <goals><goal>generate</goal></goals>
-    </execution>
-  </executions>
-</plugin>
+## 2. 定义资源和 Reconciler Bean
 
-<plugin>
-  <groupId>io.fabric8</groupId>
-  <artifactId>java-generator-maven-plugin</artifactId>
-  <version>${fabric8.version}</version>
-  <executions>
-    <execution><goals><goal>generate</goal></goals></execution>
-  </executions>
-  <configuration>
-    <source>${project.basedir}/src/main/resources/crd</source>
-    <target>${project.build.directory}/generated-sources/java</target>
-  </configuration>
-</plugin>
-```
+可以使用任意具体的 Fabric8 `HasMetadata` 类型，包括 `ConfigMap` 等内置类型或自定义 `CustomResource<Spec, Status>`。
 
-## 3. 定义 CRD Java 类
-
-创建资源类：
+最小控制器是一个带具体类型的组件：
 
 ```java
-package com.example.myoperator.api.v1;
+package com.example.operator;
 
-import io.fabric8.kubernetes.api.model.Namespaced;
-import io.fabric8.kubernetes.client.CustomResource;
-import io.fabric8.kubernetes.model.annotation.Group;
-import io.fabric8.kubernetes.model.annotation.Kind;
-import io.fabric8.kubernetes.model.annotation.Plural;
-import io.fabric8.kubernetes.model.annotation.ShortNames;
-import io.fabric8.kubernetes.model.annotation.Version;
-
-@Group("example.com")
-@Version("v1alpha1")
-@Kind("MyResource")
-@Plural("myresources")
-@ShortNames({"my"})
-public class MyResource extends CustomResource<MySpec, MyStatus> implements Namespaced {
-}
-```
-
-创建普通的 Spec 与 Status 类。使用 `io.fabric8.generator.annotation` 中的 `@Required` 与 `@Default` 控制生成的 OpenAPI Schema。
-
-## 4. 编写 Reconciler
-
-```java
-package com.example.myoperator;
-
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Reconciler;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Request;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Result;
-
-public class MyReconciler implements Reconciler<MyResource> {
-    @Override
-    public Result reconcile(Request request, MyResource resource) {
-        try {
-            // 创建或更新子资源
-            return Result.done();
-        } catch (Exception e) {
-            return Result.error(e);
-        }
-    }
-}
-```
-
-需要再次调和时使用 `Result.requeueNow()` 或 `Result.requeueAfter(Duration)`。当返回 `Result.error(...)` 时，Operator 会自动按配置的重试策略进行重试。
-
-## 5. 主资源与从资源
-*主资源（primary resource）*是注册 Reconciler 时指定的类型。当主资源 `MyResource` 变化时，Operator 为其创建一个 `Request` 并调用你的 Reconciler。
-
-*从资源（secondary resource）*是任意其他 Kubernetes 资源，其变化也应当触发主资源入队。例如，你可能希望在某个 `ConfigMap` 依赖变化时重新调和 `MyResource`。
-
-使用 `ControllerBuilder` 注册一个监听 secondary `ConfigMap` 的控制器：
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.ControllerBuilder;
-import com.huawei.dcs.modelengine.operator.framework.ControllerRegistration;
-import com.huawei.dcs.modelengine.operator.framework.Operator;
-import com.huawei.dcs.modelengine.operator.framework.source.Mappers;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import org.springframework.stereotype.Component;
 
-ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .watches("configmaps", ConfigMap.class, Mappers.byLabel("my-resource-name"))
-    .build();
-
-Operator operator = new Operator().withNamespace("default");
-operator.register(registration);
-operator.start();
-```
-
-`watches` 注册一个 secondary Informer。第三个参数是 `ResourceMapper<S, P>`，负责把 secondary 事件翻译为一个或多个主资源 `Request`。上面的示例使用 `Mappers.byLabel(...)`，将 secondary 资源映射到 label 值所命名的主资源。
-
-### `owns` 与 `watches` 的区别
-当 Reconciler 创建了 secondary 资源并为其设置了 Owner Reference 时，使用 `owns`。框架会通过 Owner Reference 把 secondary 事件映射回主资源：
-
-```java
-ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .owns(Deployment.class)
-    .build();
-```
-
-对于通过 label、注解或其他自定义逻辑关联的任意资源，使用 `watches`。`ResourceMapper` 接口允许你自己提供映射逻辑：
-
-```java
-ResourceMapper<ConfigMap, MyResource> mapper = (configMap, event) -> {
-    // 返回主资源 Request 的集合
-    return List.of(new Request("default", configMap.getMetadata().getLabels().get("my-resource-name")));
-};
-```
-
-### 检查触发来源
-每个 `Request` 携带一个或多个 `Trigger`，描述本次调和的触发原因。Reconciler 可以检查它们来判断发生了什么变化。
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Trigger;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerRole;
-
-public Result reconcile(Request request, MyResource resource) {
-    if (request.triggeredByPrimary()) {
-        // 主资源本身发生了变化
-    } else if (request.trigger().map(Trigger::role).orElse(null) == TriggerRole.SECONDARY) {
-        // 由 secondary 资源触发
-        for (Trigger trigger : request.triggers()) {
-            System.out.println(trigger.kind() + " " + trigger.eventType());
-        }
-    }
-    return Result.done();
-}
-```
-
-`Trigger` 暴露事件类型、资源 Kind、命名空间、名称、UID 以及角色（`TriggerRole.PRIMARY` 或 `TriggerRole.SECONDARY`）。
-
-### 按 Generation 变更过滤 update 事件
-默认情况下，主资源的每次 update 事件（包括 status 回写）都会触发一次 reconcile。对于会写 status 的控制器，这会产生自我触发的"回声" reconcile。启用 Generation 变更过滤后，仅当 `generation` 变化、收到删除请求或 `finalizers` 变化时，update 事件才会入队：
-
-```java
-ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .withGenerationChangeFilter()
-    .withResyncPeriod(Duration.ZERO) // 可选：关闭默认 60 秒的 resync
-    .build();
-```
-
-add 和 delete 事件始终入队，secondary source 的事件不受过滤影响。该过滤默认关闭；对于未启用 status 子资源的 CRD，status 写入仍会提升 `generation`，过滤无效。
-
-### 迁移说明
-现有的 `Operator.register(Class, Reconciler)` API 保持不变，依然可用：
-
-```java
-operator.register(MyResource.class, new MyReconciler());
-```
-
-这会创建一个不含 secondary 监听的注册。只有当你需要添加 secondary 资源监听时，才需要切换到 `ControllerBuilder`。
-
-
-## 6. 配置 Leader Election
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManager;
-
-LeaderElectionManager leader = new LeaderElectionManager(client, "my-lock", namespace)
-    .withLeaseDuration(Duration.ofSeconds(15))
-    .withRenewDeadline(Duration.ofSeconds(10))
-    .withRetryPeriod(Duration.ofSeconds(2));
-leader.run(() -> operator.start());
-```
-
-只有 Leader 才会启动 Operator。当失去 Leader 身份时，Operator 运行线程会被中断。
-
-## 7. 添加 Metrics 与 Health
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.metrics.MetricsHealthServer;
-
-MetricsHealthServer server = new MetricsHealthServer(8080);
-server.start();
-```
-
-暴露端点：
-
-- `GET /healthz` - 存活探测，返回 200
-- `GET /readyz` - 就绪探测，检查通过返回 200，否则返回 503
-- `GET /metrics` - Prometheus 指标
-
-添加自定义就绪检查：
-
-```java
-server.addReadinessCheck(() -> operator.eventSources().stream()
-    .allMatch(s -> s.getInformer().hasSynced()));
-```
-
-`MetricsHealthServer.metricsRegistry()` 返回 Micrometer 的 `MeterRegistry`，可传给 Reconciler 用于自定义 Counter 与 Timer。
-
-## 8. 从 Java 类生成 CRD YAML
-
-编译项目：
-
-```bash
-mvn -f example/echo-operator/pom.xml clean compile
-```
-
-CRD 生成器会将 YAML 写入：
-
-```text
-example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
-```
-
-验证：
-
-```bash
-ls example/echo-operator/target/classes/META-INF/fabric8/
-```
-
-## 9. 从 CRD YAML 生成 Java 类
-
-将 CRD YAML 文件放在：
-
-```text
-src/main/resources/crd/
-```
-
-然后编译：
-
-```bash
-mvn -f example/echo-operator/pom.xml clean compile
-```
-
-java-generator 插件会将生成的类写入：
-
-```text
-example/echo-operator/target/generated-sources/java/
-```
-
-验证：
-
-```bash
-ls example/echo-operator/target/generated-sources/java/
-```
-
-生成的类适用于引入其他团队维护的 CRD，或基于已有 Schema 快速搭建新 Operator。
-
-## 10. 运行 Operator
-
-使用 `exec-maven-plugin` 或打包为可执行 jar。Echo Operator 示例使用：
-
-```bash
-mvn -f example/echo-operator/pom.xml exec:java -Dexec.mainClass=com.example.echooperator.EchoOperatorMain
-```
-
-也可以使用辅助脚本：
-
-```bash
-example/echo-operator/scripts/local-run.sh
-```
-
-## 11. 验证端点
-
-Operator 运行后：
-
-```bash
-curl -s http://localhost:8080/healthz
-curl -s http://localhost:8080/readyz
-curl -s http://localhost:8080/metrics
-```
-
-## 12. 添加 Admission Webhook
-
-Admission Webhook 运行在独立的 TLS 服务器上，供 Kubernetes 通过 HTTPS 调用。
-
-创建 TLS 服务：
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer;
-import com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher;
-import java.nio.file.Path;
-
-WebhookServer webhookServer = WebhookServer.withCertWatcher(
-    WebhookServer.DEFAULT_HOST, 8443,
-    Path.of("/etc/operator/certs/tls.crt"),
-    Path.of("/etc/operator/certs/tls.key"),
-    Path.of("/etc/operator/certs/ca.crt"),
-    CertWatcher.DEFAULT_POLLING_INTERVAL);
-```
-
-实现校验器与变更器：
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionResult;
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionValidator;
-import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
-import io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponse;
-
-public class MyValidator implements AdmissionValidator<MyResource> {
+@Component
+public final class ConfigMapReconciler implements Reconciler<ConfigMap> {
     @Override
-    public AdmissionResponse validate(AdmissionRequest request, MyResource resource) {
-        if (resource.getSpec().replicas < 0) {
-            return AdmissionResult.denied("replicas must not be negative");
-        }
-        return AdmissionResult.allowed();
+    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext context) throws Exception {
+        // 从 resource 读取期望状态，并使 Kubernetes 状态收敛。
+        return ReconcileResult.done();
     }
 }
 ```
 
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionMutator;
+没有 Webhook 回调的应用应选择 controller 模式：
 
-public class MyMutator implements AdmissionMutator<MyResource> {
-    @Override
-    public AdmissionResponse mutate(AdmissionRequest request, MyResource resource) {
-        return AdmissionResult.jsonPatch(
-            "[{\"op\":\"add\",\"path\":\"/metadata/annotations/my.example.com~1defaulted\",\"value\":\"true\"}]");
+```yaml
+operator:
+  framework:
+    mode: controller
+```
+
+Spring 会发现泛型类型、创建控制器、启动 Informer/Worker 并完成关闭。应用代码不得执行框架注册或生命周期调用。
+
+一次调和会收到：
+
+- 当前主资源；
+- 包含命名空间/名称的 `context.resourceKey()`；
+- 包含事件类型、角色与资源引用的 `context.triggers()`。
+
+返回以下结果之一：
+
+```java
+ReconcileResult.done();
+ReconcileResult.requeueNow();
+ReconcileResult.requeueAfter(Duration.ofSeconds(30));
+```
+
+让异常向外抛出。Starter 会按照 `operator.framework.retry.*` 将非终止回调异常转换为延迟重试；达到配置的失败次数后，异常成为终止失败并由指标/日志记录。
+
+### 管理 Finalizer 与 Status
+
+拥有外部资源的 Reconciler 使用 Kubernetes finalizer 模式，并通过 `/status` 子资源持久化进度。Starter 在 `api.reconcile` 包提供静态助手；注入 `KubernetesClient`（缺省时由 Starter 创建并持有）后直接使用：
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Finalizers;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.StatusUpdates;
+
+@Override
+public ReconcileResult reconcile(MyResource resource, ReconciliationContext context) {
+    if (Finalizers.isDeleting(resource)) {
+        cleanupExternal(resource);
+        Finalizers.remove(client, resource, "example.com/cleanup");
+        return ReconcileResult.done();
+    }
+    Finalizers.add(client, resource, "example.com/cleanup");
+    resource.getStatus().setPhase("Ready");
+    StatusUpdates.update(client, resource);
+    return ReconcileResult.done();
+}
+```
+
+`Finalizers.add`/`remove` 执行服务端 JSON patch（幂等，并发调和下安全）。`StatusUpdates.update` 通过 `/status` 子资源写入资源当前 status，要求 CRD 声明 `status` 子资源。
+
+## 3. 配置高级控制器
+
+普通 `Reconciler<T>` Bean 使用控制器默认设置。需要显式事件源或单控制器覆盖项时，定义一个 `ControllerRegistration<T>` Bean。
+
+```java
+package com.example.operator;
+
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
+import com.huawei.dcs.modelengine.operator.framework.api.controller.Mappers;
+import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
+
+@Configuration(proxyBeanMethods = false)
+public class OperatorConfiguration {
+    @Bean
+    ControllerRegistration<MyResource> myResourceController(MyResourceReconciler reconciler) {
+        return ControllerBuilder.forResource(MyResource.class, reconciler)
+                .generationFilter(true)
+                .resyncPeriod(Duration.ofMinutes(2))
+                .owns(Deployment.class)
+                .watches("configuration", ConfigMap.class, Mappers.byLabel("operator.example/primary"))
+                .watchesKubernetesEvents()
+                .build();
     }
 }
 ```
 
-注册到服务：
+被引用的 Reconciler 必须是 Spring Bean，这样 AOP 重试、限流与观测行为才能保持有效。
+
+- `generationFilter(boolean)` 覆盖全局 Generation Filter。
+- `resyncPeriod(Duration)` 覆盖全局 resync；零表示禁用周期性 resync。
+- `owns(Deployment.class)` 监听从属资源，并通过 Owner Reference 映射主资源键。
+- `watches(name, type, mapper)` 监听任意从资源；同一注册内的监听名称必须唯一。
+- `watchesKubernetesEvents()` 监听 `core/v1` Event，并通过 `involvedObject`（服务端按 kind/apiVersion 过滤）映射主资源键。聚合事件的 `count` 递增不会触发 reconcile，只有新 Event、删除和 resync 会触发。
+
+内置 `Mappers` 提供 `ownerReferences()`、`byLabel(key)`、`byAnnotation(key)` 与 `involvedObject()`。自定义 Mapper 接收当前 `ResourceEvent<S>` 并返回 `Collection<ResourceKey>`：
 
 ```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandler;
-
-AdmissionHandler admissionHandler = new AdmissionHandler(client);
-admissionHandler.registerValidator("my.example.com", MyResource.class, new MyValidator());
-admissionHandler.registerMutator("my.example.com", MyResource.class, new MyMutator());
-admissionHandler.register(webhookServer);
-webhookServer.start();
+ResourceMapper<ConfigMap, MyResource> mapper = event -> List.of(
+        new ResourceKey(event.resource().getMetadata().getNamespace(), "primary-name"));
 ```
 
-这会自动暴露 `/validate/my.example.com` 和 `/mutate/my.example.com`。Handler 解析 `AdmissionReview`，将 `request.object` 转换为已注册资源类，并序列化响应。变更器的 JSON Patch 会自动 base64 编码。
+一个主资源类型只能有一个有效注册。显式注册会替代该类型的自动发现；重复的自动/显式资源类型会导致启动失败。Kubernetes Event 可能丢失并受 TTL 限制，因此不能作为正确性边界。如果 Reconciler 为自己的主资源发布 Event，应避免无过滤的订阅循环。
 
-若要在启动时自动注册 Webhook 配置：
+## 4. 配置运行时
 
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookRegistrationConfig;
-import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistration;
+所有框架专用配置和默认值如下。
 
-WebhookRegistrationConfig registrationConfig = WebhookRegistrationConfig.builder(
-    "my-operator", "my-namespace", Path.of("/etc/operator/certs/ca.crt"))
-    .withServicePort(443)
-    .withFailurePolicy("Fail")
-    .withTimeoutSeconds(10)
-    .withSideEffects("None")
-    .build();
+| 配置项 | 默认值 | 语义 |
+| --- | ---: | --- |
+| `operator.framework.enabled` | `true` | 启用自动配置；设为 `false` 时不创建任何框架运行时/配置 Bean。 |
+| `operator.framework.mode` | `combined` | 选择控制器、Webhook 或两侧运行时。 |
+| `operator.framework.controller.namespace` | 未设置 | 监听该命名空间；空值依次回退到 Fabric8 客户端命名空间和 `default`。 |
+| `operator.framework.controller.cluster-scoped` | `false` | 监听所有命名空间；不能同时设置非空 controller namespace。 |
+| `operator.framework.controller.worker-threads` | `1` | 每个控制器注册创建的 Worker 数量。 |
+| `operator.framework.controller.resync-period` | `60s` | 默认 Informer resync；零表示禁用周期性 resync。 |
+| `operator.framework.controller.generation-change-filter` | `true` | 除非 generation、删除时间戳或 finalizer 变化，否则过滤主资源更新；add/delete/resync 与从资源事件仍会入队。 |
+| `operator.framework.controller.startup-retry-delay` | `5s` | 启动或 Informer 就绪失败后的监督器重试/检查周期。 |
+| `operator.framework.leader-election.enabled` | `false` | 为控制器运行时启用 Fabric8 Lease 选主。 |
+| `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease 名称；应用名称回退值会按 Kubernetes 规则清理。 |
+| `operator.framework.leader-election.namespace` | 继承 | 依次使用 controller namespace、Fabric8 客户端命名空间和 `default`。 |
+| `operator.framework.leader-election.lease-duration` | `15s` | Lease 持有时间。 |
+| `operator.framework.leader-election.renew-deadline` | `10s` | 续租截止时间。 |
+| `operator.framework.leader-election.retry-period` | `2s` | 选主重试周期。 |
+| `operator.framework.retry.initial-delay` | `500ms` | Reconciler 异常后的首次延迟。 |
+| `operator.framework.retry.max-delay` | `30s` | 指数退避最大延迟。 |
+| `operator.framework.retry.max-attempts` | `5` | 异常成为终止异常时的失败调用次数。 |
+| `operator.framework.rate-limit.minimum-interval` | `5s` | 每个控制器/资源的最小调用间隔；零表示禁用限流。 |
+| `operator.framework.events.enabled` | `true` | 在 controller/combined 模式创建公共 Event 发布器。 |
+| `operator.framework.events.component` | `spring.application.name` | Kubernetes Event 的 reporting/source component。 |
+| `operator.framework.events.aggregation-window` | `5m` | 等价 Event 确定性标识使用的时间窗口。 |
+| `operator.framework.events.max-cache-entries` | `1000` | LRU 聚合缓存上限。 |
 
-WebhookSelfRegistration registration = new WebhookSelfRegistration(client, registrationConfig);
-registration.register(admissionHandler);
+支持 `500ms`、`5s`、`2m` 等 Spring Boot Duration 值。Worker 数、重试次数和 Event 缓存条目必须为正数；resync 和限流间隔可以为零；启动重试、Event 聚合、重试延迟及选主时长必须为正数。重试须满足 `initial-delay <= max-delay`，选主须满足 `retry-period < renew-deadline < lease-duration`。
+
+模式行为：
+
+| 模式 | 应用必须提供的 Bean | 自动配置的基础设施 |
+| --- | --- | --- |
+| `controller` | 带具体类型的 `Reconciler` 或 `ControllerRegistration` | Kubernetes 客户端（缺失时）、Informer/Worker、事件发布器（启用时）、生命周期、健康/指标 |
+| `webhook` | 带具体类型的 `AdmissionValidator`、`AdmissionMutator` 或 `ResourceConverter` | MVC Webhook 路由、回调注册表、健康/指标；不自动创建 Kubernetes 客户端 |
+| `combined` | 控制器与 Webhook 两组 Bean | 两侧能力 |
+
+默认 `combined` 模式有意采用严格校验：只提供一组 Bean 的应用必须选择匹配的模式。原始/无法解析的回调泛型与重复注册都是配置错误，不会被静默忽略。
+
+完整控制器配置示例：
+
+```yaml
+spring:
+  application:
+    name: inventory-operator
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+operator:
+  framework:
+    mode: controller
+    controller:
+      namespace: operators
+      cluster-scoped: false
+      worker-threads: 2
+      resync-period: 60s
+      generation-change-filter: true
+      startup-retry-delay: 5s
+    retry:
+      initial-delay: 500ms
+      max-delay: 30s
+      max-attempts: 5
+    rate-limit:
+      minimum-interval: 5s
+    events:
+      enabled: true
+      component: inventory-operator
+      aggregation-window: 5m
+      max-cache-entries: 1000
 ```
 
-`WebhookSelfRegistration` 读取 CA 证书并 base64 编码，然后为每个已注册的 Webhook 名称创建或更新一个 `ValidatingWebhookConfiguration` 和一个 `MutatingWebhookConfiguration`。Operator 需要 `admissionregistration.k8s.io` 的 RBAC 权限。
+## 5. 启用 Leader Election
 
-
-### 证书生成
-
-默认情况下，`WebhookCertificateGenerator` 会自动为 Webhook 服务生成 CA 证书包和服务端证书，并将 `ca.crt`、`tls.crt`、`tls.key` 写入 `WEBHOOK_CERT_DIRECTORY`（默认 `/tmp/echo-operator/certs`）。证书 SAN 覆盖服务名及其 FQDN 变体，服务端证书设置 `serverAuth` 扩展密钥用途。将 `WEBHOOK_CERT_AUTO_GENERATE` 设为 `false` 可回退到基于文件的方式，从 `WEBHOOK_CA_BUNDLE_PATH` 及其同目录下的 `tls.crt`/`tls.key` 加载证书和私钥。
-
-### 将 CA 持久化到 Secret
-如果需要 CA 在 Pod 重启后依然存活，可以使用 `WebhookCertificateSecretManager`，而不是把 CA 写入磁盘。它将 CA 私钥和证书存储在 Kubernetes Secret 中（首次启动时创建 Secret，之后复用该 CA），只在本地证书目录写入服务端证书材料（`ca.crt`、`tls.crt`、`tls.key`），CA 私钥从不落盘。Operator 需要在 Secret 所在命名空间拥有 Secrets 的 `get` 和 `create` 权限。
-
-## 13. 添加 Conversion Webhook
-
-对于多版本 CRD，实现 `ConversionWebhookHandler` 并挂载到同一个 TLS 服务。
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandler;
-import com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResult;
-import io.fabric8.kubernetes.api.model.HasMetadata;
-
-ConversionHandler conversionHandler = new ConversionHandler(client);
-conversionHandler.register("example.com/v1alpha1", "example.com/v1alpha2",
-    (desiredVersion, resource) -> ConversionResult.converted(toV2(resource)));
-conversionHandler.register("example.com/v1alpha2", "example.com/v1alpha1",
-    (desiredVersion, resource) -> ConversionResult.converted(toV1(resource)));
-conversionHandler.register(webhookServer);
+```yaml
+spring:
+  application:
+    name: inventory-operator
+operator:
+  framework:
+    mode: controller
+    leader-election:
+      enabled: true
+      lease-duration: 15s
+      renew-deadline: 10s
+      retry-period: 2s
 ```
 
-在资源类中标记版本：
+Lease 命名空间依次继承 controller namespace、Fabric8 客户端命名空间和 `default`，`leader-election.namespace` 可覆盖。Lease 名称默认为小写、DNS 安全的 `spring.application.name` 加 `-leader`，`leader-election.lease-name` 可覆盖。身份使用 Pod 的 `HOSTNAME`，在 Kubernetes 外则使用 JVM 运行时身份。关闭时 Elector 会释放 Lease。
+
+只有 Leader 运行控制器 Informer/Worker。备用副本保持存活并就绪；获得 Leader 身份后，在全部 Informer 同步前处于未就绪状态。失去 Leader 身份时会拒绝新任务、排空/停止活动运行时并回到备用就绪状态。RBAC 必须允许 Fabric8 所需的 Lease 操作。
+
+## 6. 发布 Kubernetes Event
+
+在启用事件的 controller/combined 模式中注入公共接口：
 
 ```java
-@Version(value = "v1alpha1", storage = false, served = true, deprecated = true)
-public class MyResourceV1 extends CustomResource<MySpecV1, MyStatusV1> implements Namespaced {
+import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
+import org.springframework.stereotype.Component;
+
+@Component
+final class EventReporter {
+    private final KubernetesEventPublisher publisher;
+
+    EventReporter(KubernetesEventPublisher publisher) {
+        this.publisher = publisher;
+    }
+
+    void reconciled(MyResource resource) {
+        publisher.normal(resource, "Reconciled", "Desired state applied");
+    }
+
+    void invalid(MyResource resource) {
+        publisher.warning(resource, "InvalidSpec", "spec is invalid");
+    }
 }
+```
 
-@Version(value = "v1alpha2", storage = true, served = true)
-public class MyResourceV2 extends CustomResource<MySpecV2, MyStatusV2> implements Namespaced {
+一个聚合窗口内的等价 Event 会更新已有 `core/v1` Event 的 count。有界缓存在关闭时刷新。上报组件名为 `spring.application.name`，缺失时回退到 `operator-framework`。需要授予 `events` 的 `create`、`get`、`update` 权限。发布失败会被日志/指标记录，但不会让 Kubernetes Event 成为可靠状态存储。
+
+## 7. 实现 Webhook 回调
+
+选择 `webhook` 或 `combined` 模式，并声明带具体类型的 Spring 回调 Bean。Bean 名称是固定路由键，必须匹配 `[a-z0-9][a-z0-9._-]*`——Kubernetes 会拒绝 `clientConfig.service.path` 中含大写字母的段，因此框架在启动时强制小写 RFC 1123 名称。
+
+### 校验
+
+```java
+@Bean("myresourcevalidator")
+AdmissionValidator<MyResource> myresourcevalidator() {
+    return (current, context) -> current.getSpec().isValid()
+            ? AdmissionDecision.allow()
+            : AdmissionDecision.deny("spec is invalid");
 }
 ```
 
-Conversion Handler 接收 `apiextensions.k8s.io/v1 ConversionReview` 请求，按 `(源 apiVersion, 目标 apiVersion)` 路由并返回 review 响应。成功时返回 `ConversionResult.converted(...)`，失败时返回 `ConversionResult.failed(...)`。同版本请求直接透传。
+精确 API 为 `AdmissionDecision validate(T current, AdmissionContext context) throws Exception`。`AdmissionContext` 包含请求 UID、操作、稳定的 `ResourceReference`、dry-run 标记和用户身份。
 
-## 14. 同时启动 Webhook、Metrics 与 Operator
+路由：`POST /operator-framework/webhooks/validate/myresourcevalidator`
 
-典型的启动顺序：
-
-```java
-webhookServer.start();
-webhookSelfRegistration.register(admissionHandler);
-metricsHealthServer.start();
-operator.start();
-```
-
-关闭顺序相反：
+### 变更
 
 ```java
-webhookServer.stop();
-operator.stop();
-metricsHealthServer.close();
-client.close();
-```
-
-Webhook 服务与 Metrics/Health 服务相互独立。Metrics 默认在 8080 端口，Admission 与 Conversion Webhook 共享 8443 端口的 TLS 服务。
-
-## 15. 记录与订阅 Kubernetes 事件
-使用 `EventRecorder` 为 Reconciler 管理的资源发布 `core/v1` Event。抑制间隔（默认 5 分钟）内相同的事件会聚合为一条 Event 并更新其 `count`，缓存上限为 1000 条。Recorder 需要 `events` 的 `create`、`get`、`patch` 权限。
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.event.EventRecorder;
-
-try (EventRecorder recorder = new EventRecorder(client, "my-operator")) {
-    recorder.normal(resource, "Created", "created the child Deployment");
-    recorder.warning(resource, "InvalidSpec", "spec.replicas must not be negative");
+@Bean("myresourcemutator")
+AdmissionMutator<MyResource> myresourcemutator() {
+    return (current, context) -> MutationResult.unchanged();
 }
 ```
 
-使用 `EventSubscriber`，在涉及主资源的 Event 变化时触发一次 reconcile：
+精确 API 为 `MutationResult<T> mutate(T current, AdmissionContext context) throws Exception`。返回 `unchanged()`、`mutated(resource)` 或 `denied(message)`。对于变更后的资源，框架会根据输入计算 JSON Patch，并在 `AdmissionResponse` 中进行 Base64 编码。
+
+路由：`POST /operator-framework/webhooks/mutate/myresourcemutator`
+
+### 转换
 
 ```java
-import com.huawei.dcs.modelengine.operator.framework.event.EventSubscriber;
-
-ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .withEventSubscriber(EventSubscriber.forInvolvedObject(MyResource.class))
-    .build();
+@Bean("myresourceconverter")
+ResourceConverter<MyResource> myresourceconverter() {
+    return (resource, context) -> {
+        MyResource converted = convert(resource, context.desiredVersion());
+        return ConversionResult.converted(converted);
+    };
+}
 ```
 
-Kubernetes Event 是尽力而为的，可能被丢弃或因 TTL 过期，因此不要将其用于正确性关键的状态。如果控制器既为主资源记录 Event 又订阅这些 Event，请按 source、reason 或 type 过滤——否则每条发出的 Event 都会再次触发调和，可能无限循环。
+精确 API 为 `ConversionResult<T> convert(T resource, ConversionContext context) throws Exception`。`ConversionContext` 包含源 API 版本与目标 API 版本。返回 `converted(resource)` 或 `failed(message)`。同版本资源会直接透传，不调用回调。
+
+路由：`POST /operator-framework/webhooks/convert/myresourceconverter`
+
+传输层接收 Kubernetes `admission.k8s.io/v1` 与 `apiextensions.k8s.io/v1` Review 对象，保留响应 UID，并在回调失败时返回安全失败响应。无效或未知路由返回 HTTP 400。
+
+## 8. 提供外部 Webhook TLS
+
+Webhook 路由运行在应用的 Spring Web 服务器上。配置标准 Spring Boot HTTPS 属性，并挂载平台管理的 PEM 材料：
+
+```yaml
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    certificate: file:/etc/operator/tls/tls.crt
+    certificate-private-key: file:/etc/operator/tls/tls.key
+operator:
+  framework:
+    mode: webhook
+```
+
+Starter 有意不提供证书生成器、CA 持久化、证书重载子系统或 Kubernetes Webhook 自注册。部署工具必须提供并轮换证书/Secret、Service、`ValidatingWebhookConfiguration`、`MutatingWebhookConfiguration` 与 CRD Conversion Webhook 配置。把每个 Kubernetes Webhook 的 service path 配置为对应 Bean 名路由，并将签发 CA 写入其 `caBundle`。
+
+如果更适合平台，也可以使用标准 Spring Boot SSL Bundle 配置代替直接 PEM 配置。
+
+## 9. 暴露存活、就绪与 Prometheus
+
+Starter 使用 Spring Boot Actuator 与应用的 Micrometer Registry。启用并暴露标准端点：
+
+```yaml
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+```
+
+探针/指标 URL：
+
+```text
+/actuator/health/liveness
+/actuator/health/readiness
+/actuator/prometheus
+```
+
+`operatorFramework` 健康贡献会报告模式、存活/就绪、控制器运行/Informer/Leader 状态以及 Webhook 回调数量/最后失败。`show-details` 是可选项，只控制响应可见性。不存在框架专用的 HTTP 健康/指标服务器或端口。
+
+## 10. 理解生命周期与客户端所有权
+
+运行时是 Spring `SmartLifecycle`，会自动启动。控制器启动不会阻塞应用线程，并按照 `operator.framework.controller.startup-retry-delay` 重试暂时性启动/就绪失败。
+
+关闭顺序：
+
+1. 将就绪状态设为 false 并停止选主；
+2. 拒绝新队列任务，停止 Informer/Scheduler；
+3. 排空进行中的 Worker；
+4. 在 `spring.lifecycle.timeout-per-shutdown-phase` 后中断剩余 Worker。
+
+支持控制器的模式中，如果应用不存在 `KubernetesClient` Bean，Starter 会构建一个客户端并记录所有权，从而在框架关闭后关闭它。如果应用提供客户端，Starter 会复用它，其所有权组件不会关闭该客户端；应用自行控制该 Bean 的销毁策略。仅 Webhook 模式既不需要也不会创建客户端。
+
+## 11. 遵守公共包边界
+
+应用代码只可以依赖：
+
+```text
+com.huawei.dcs.modelengine.operator.framework.api.*
+```
+
+`autoconfigure` 根包用于 Spring Boot 加载与配置元数据；`internal` 根包不是兼容性契约。生产 JAR 在 framework 包下有意只包含 `api`、`autoconfigure` 与 `internal`。
+
+## 12. 构建与验证
+
+在仓库根目录执行完整门禁：
+
+```bash
+mvn -f operator/framework/pom.xml clean verify
+```
+
+门禁会执行测试、打包后集成检查、配置元数据/资源检查、JAR/包边界检查、源码 JAR 生成与 Checkstyle。Checkstyle 仅检查生产源码，并强制每行最多 120 字符、方法/构造参数最多 5 个、每个方法最多 50 个非空行、圈复杂度不大于 5。
+
+更快的仅测试循环：
+
+```bash
+mvn -f operator/framework/pom.xml test
+```
+
+旧 `example/` 与 `stress-test/` 模块已被有意删除，`stress-test/` 保持不存在。当前示例为 `example/echo-operator`——基于该 Starter 的 Spring Boot 应用，包含单元测试、MockMvc admission 端点测试，以及真实集群端到端脚本：
+
+```bash
+example/echo-operator/scripts/e2e-test.sh
+```
+
+该脚本部署到临时命名空间（含 RBAC/TLS），注册真实 admission webhook 配置，并对活跃 API server 验证 mutation、validation、reconcile、事件发布、垃圾回收、健康检查与指标。

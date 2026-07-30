@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Log4j2 configuration for the echo-operator example. Spring Boot auto-detects
+     log4j2-spring.xml on the classpath; the SLF4J facade (used by Lombok @Slf4j)
+     routes through log4j-slf4j2-impl to this engine. -->
+<Configuration status="WARN">
+  <Properties>
+    <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+  </Properties>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="${LOG_PATTERN}"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Logger name="com.example.echooperator" level="DEBUG"/>
+    <Logger name="com.huawei.dcs.modelengine.operator.framework" level="INFO"/>
+    <Logger name="io.fabric8" level="WARN"/>
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+</Configuration>

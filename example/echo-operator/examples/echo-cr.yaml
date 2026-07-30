@@ -1,7 +1,0 @@
-apiVersion: example.com/v1alpha1
-kind: EchoResource
-metadata:
-  name: echo-sample
-spec:
-  message: "Hello from Echo Operator"
-  replicas: 1

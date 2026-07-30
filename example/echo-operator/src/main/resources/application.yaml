@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: echo-operator
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+operator:
+  framework:
+    mode: combined
+    controller:
+      namespace: default
+    events:
+      component: echo-operator

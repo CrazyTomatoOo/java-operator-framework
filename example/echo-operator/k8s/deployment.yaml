@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-operator
+  template:
+    metadata:
+      labels:
+        app: echo-operator
+    spec:
+      serviceAccountName: echo-operator
+      containers:
+        - name: operator
+          image: echo-operator:e2e
+          imagePullPolicy: Never
+          env:
+            - name: OPERATOR_FRAMEWORK_CONTROLLER_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVER_SSL_CERTIFICATE
+              value: /tls/tls.crt
+            - name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+              value: /tls/tls.key
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+              scheme: HTTPS
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+              scheme: HTTPS
+          volumeMounts:
+            - name: tls
+              mountPath: /tls
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: echo-operator-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-operator
+spec:
+  selector:
+    app: echo-operator
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8080

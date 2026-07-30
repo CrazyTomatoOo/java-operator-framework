@@ -1,483 +1,419 @@
 # Developer Guide
 
-This guide shows how to build a new Kubernetes operator using `operator-framework`.
+This guide describes the current Spring Boot starter. It targets Java 21, Spring Boot 3.5.15, Fabric8 Kubernetes Client 7.3.0, and Lombok 1.18.32.
 
-## 1. Install the SDK
+Chinese documentation: [dev-guide.zh-CN.md](dev-guide.zh-CN.md)
 
-From the repository root:
+## 1. Add the starter
+
+Build this repository when using the snapshot locally:
 
 ```bash
 mvn -f operator/framework/pom.xml clean install
 ```
 
-This installs `com.huawei.dcs.modelengine:operator-framework:0.1.0-SNAPSHOT` into your local Maven repository.
-
-## 2. Create a Maven project
-
-Create a new Maven project with Java 21. Add the SDK dependency:
+Add the starter to a Spring Boot 3.5.16 application:
 
 ```xml
 <dependency>
   <groupId>com.huawei.dcs.modelengine</groupId>
-  <artifactId>operator-framework</artifactId>
+  <artifactId>operator-framework-spring-boot-starter</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
-Also add the fabric8 `kubernetes-client` and `generator-annotations` dependencies at version `7.7.0`.
+Use Java 21. The starter already supplies Spring Web, Actuator, Micrometer Prometheus support, and Fabric8 Kubernetes Client 7.8.0. Add Fabric8 generator dependencies/plugins only if your application actually generates CRDs or Java models; they are not required by the runtime.
 
-Add the `crd-generator-maven-plugin` and `java-generator-maven-plugin` to generate CRDs and Java classes:
+The starter uses Spring Boot auto-configuration. There is no enable annotation and no application-owned framework lifecycle object.
 
-```xml
-<plugin>
-  <groupId>io.fabric8</groupId>
-  <artifactId>crd-generator-maven-plugin</artifactId>
-  <version>${fabric8.version}</version>
-  <executions>
-    <execution>
-      <phase>compile</phase>
-      <goals><goal>generate</goal></goals>
-    </execution>
-  </executions>
-</plugin>
+## 2. Define a resource and Reconciler bean
 
-<plugin>
-  <groupId>io.fabric8</groupId>
-  <artifactId>java-generator-maven-plugin</artifactId>
-  <version>${fabric8.version}</version>
-  <executions>
-    <execution><goals><goal>generate</goal></goals></execution>
-  </executions>
-  <configuration>
-    <source>${project.basedir}/src/main/resources/crd</source>
-    <target>${project.build.directory}/generated-sources/java</target>
-  </configuration>
-</plugin>
-```
+Use any concrete Fabric8 `HasMetadata` type. This can be a built-in type such as `ConfigMap` or your own `CustomResource<Spec, Status>`.
 
-## 3. Define CRD Java classes
-
-Create a resource class:
+The smallest controller is a typed component:
 
 ```java
-package com.example.myoperator.api.v1;
+package com.example.operator;
 
-import io.fabric8.kubernetes.api.model.Namespaced;
-import io.fabric8.kubernetes.client.CustomResource;
-import io.fabric8.kubernetes.model.annotation.Group;
-import io.fabric8.kubernetes.model.annotation.Kind;
-import io.fabric8.kubernetes.model.annotation.Plural;
-import io.fabric8.kubernetes.model.annotation.ShortNames;
-import io.fabric8.kubernetes.model.annotation.Version;
-
-@Group("example.com")
-@Version("v1alpha1")
-@Kind("MyResource")
-@Plural("myresources")
-@ShortNames({"my"})
-public class MyResource extends CustomResource<MySpec, MyStatus> implements Namespaced {
-}
-```
-
-Create plain spec and status classes. Use `@Required` and `@Default` from `io.fabric8.generator.annotation` to control the generated OpenAPI schema.
-
-## 4. Write a Reconciler
-
-```java
-package com.example.myoperator;
-
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Reconciler;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Request;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Result;
-
-public class MyReconciler implements Reconciler<MyResource> {
-    @Override
-    public Result reconcile(Request request, MyResource resource) {
-        try {
-            // create or update child resources
-            return Result.done();
-        } catch (Exception e) {
-            return Result.error(e);
-        }
-    }
-}
-```
-
-Use `Result.requeueNow()` or `Result.requeueAfter(Duration)` when you need another pass. The operator applies the configured retry policy automatically for `Result.error(...)`.
-
-## 5. Primary and Secondary Resources
-
-The *primary resource* is the type you registered the reconciler for. When a primary `MyResource` changes, the operator creates a `Request` for it and calls your reconciler.
-
-A *secondary resource* is any other Kubernetes resource whose changes should also enqueue a primary resource. For example, you might want to reconcile a `MyResource` when one of its `ConfigMap` dependencies changes.
-
-Register a controller with a secondary `ConfigMap` watch using `ControllerBuilder`:
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.ControllerBuilder;
-import com.huawei.dcs.modelengine.operator.framework.ControllerRegistration;
-import com.huawei.dcs.modelengine.operator.framework.Operator;
-import com.huawei.dcs.modelengine.operator.framework.source.Mappers;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import org.springframework.stereotype.Component;
 
-ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .watches("configmaps", ConfigMap.class, Mappers.byLabel("my-resource-name"))
-    .build();
-
-Operator operator = new Operator().withNamespace("default");
-operator.register(registration);
-operator.start();
-```
-
-`watches` registers a secondary informer. The third argument is a `ResourceMapper<S, P>` that translates a secondary event into one or more primary `Request`s. The example above uses `Mappers.byLabel(...)`, which maps the secondary resource to the primary resource named by the label value.
-
-### `owns` vs `watches`
-
-Use `owns` when the reconciler creates secondary resources and sets an owner reference on them. The framework then uses owner references to map the secondary event back to the primary resource:
-
-```java
-ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .owns(Deployment.class)
-    .build();
-```
-
-Use `watches` for arbitrary resources that are linked by labels, annotations, or any other custom logic. The `ResourceMapper` interface lets you provide the mapping yourself:
-
-```java
-ResourceMapper<ConfigMap, MyResource> mapper = (configMap, event) -> {
-    // return a collection of primary Request objects
-    return List.of(new Request("default", configMap.getMetadata().getLabels().get("my-resource-name")));
-};
-```
-
-### Inspecting the trigger
-
-Each `Request` carries one or more `Trigger` objects describing what caused the reconciliation. The reconciler can inspect them to decide what changed.
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.reconciler.Trigger;
-import com.huawei.dcs.modelengine.operator.framework.reconciler.TriggerRole;
-
-public Result reconcile(Request request, MyResource resource) {
-    if (request.triggeredByPrimary()) {
-        // the primary resource itself changed
-    } else if (request.trigger().map(Trigger::role).orElse(null) == TriggerRole.SECONDARY) {
-        // triggered by a secondary resource
-        for (Trigger trigger : request.triggers()) {
-            System.out.println(trigger.kind() + " " + trigger.eventType());
-        }
-    }
-    return Result.done();
-}
-```
-
-A `Trigger` exposes the event type, resource kind, namespace, name, UID, and role (`TriggerRole.PRIMARY` or `TriggerRole.SECONDARY`).
-
-
-### Filtering update events by generation change
-By default every update event on the primary resource enqueues a reconcile, including status writebacks. For controllers that write status, this causes self-triggered "echo" reconciles. Enable the generation-change filter to enqueue an update only when the `generation` changed, deletion was requested, or the `finalizers` changed:
-
-```java
-ControllerRegistration<MyResource> registration = ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .withGenerationChangeFilter()
-    .withResyncPeriod(Duration.ZERO) // optional: disable the default 60-second resync
-    .build();
-```
-
-Add and delete events always enqueue, and secondary source events are never filtered. The filter is off by default, and for CRDs without the status subresource it has no effect because status writes still bump `generation`.
-
-
-### Migration note
-
-The existing `Operator.register(Class, Reconciler)` API is unchanged and still works:
-
-```java
-operator.register(MyResource.class, new MyReconciler());
-```
-
-This creates a registration with no secondary watches. You only need to switch to `ControllerBuilder` when you want to add secondary resource watches.
-
-## 6. Configure leader election
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.leader.LeaderElectionManager;
-
-LeaderElectionManager leader = new LeaderElectionManager(client, "my-lock", namespace)
-    .withLeaseDuration(Duration.ofSeconds(15))
-    .withRenewDeadline(Duration.ofSeconds(10))
-    .withRetryPeriod(Duration.ofSeconds(2));
-leader.run(() -> operator.start());
-```
-
-Only the leader starts the operator. When leadership is lost, the operator runnable is interrupted.
-
-## 7. Add metrics and health
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.metrics.MetricsHealthServer;
-
-MetricsHealthServer server = new MetricsHealthServer(8080);
-server.start();
-```
-
-Endpoints:
-
-- `GET /healthz` - liveness, returns 200
-- `GET /readyz` - readiness, returns 200 or 503
-- `GET /metrics` - Prometheus metrics
-
-Add custom readiness checks:
-
-```java
-server.addReadinessCheck(() -> operator.eventSources().stream()
-    .allMatch(s -> s.getInformer().hasSynced()));
-```
-
-The `MetricsHealthServer.metricsRegistry()` is a Micrometer `MeterRegistry` you can pass to reconcilers for custom counters and timers.
-
-## 8. Generate CRD YAML from Java classes
-
-Compile the project:
-
-```bash
-mvn -f example/echo-operator/pom.xml clean compile
-```
-
-The CRD generator writes the YAML to:
-
-```text
-example/echo-operator/target/classes/META-INF/fabric8/echoresources.example.com-v1.yml
-```
-
-Verify:
-
-```bash
-ls example/echo-operator/target/classes/META-INF/fabric8/
-```
-
-## 9. Generate Java classes from CRD YAML
-
-Place a CRD YAML file under:
-
-```text
-src/main/resources/crd/
-```
-
-Then compile:
-
-```bash
-mvn -f example/echo-operator/pom.xml clean compile
-```
-
-The java-generator plugin writes generated classes to:
-
-```text
-example/echo-operator/target/generated-sources/java/
-```
-
-Verify:
-
-```bash
-ls example/echo-operator/target/generated-sources/java/
-```
-
-These generated classes are useful for importing CRDs authored by another team or for bootstrapping a new operator from an existing schema.
-
-## 10. Run the operator
-
-Use the `exec-maven-plugin` or package a runnable jar. The Echo Operator example uses:
-
-```bash
-mvn -f example/echo-operator/pom.xml exec:java -Dexec.mainClass=com.example.echooperator.EchoOperatorMain
-```
-
-Or use the helper script:
-
-```bash
-example/echo-operator/scripts/local-run.sh
-```
-
-## 11. Verify endpoints
-
-When the operator is running:
-
-```bash
-curl -s http://localhost:8080/healthz
-curl -s http://localhost:8080/readyz
-curl -s http://localhost:8080/metrics
-```
-
-## 12. Add admission webhooks
-
-Admission webhooks run on a separate TLS server so Kubernetes can call them over HTTPS.
-
-Create the TLS server:
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.WebhookServer;
-import com.huawei.dcs.modelengine.operator.framework.webhook.cert.CertWatcher;
-import java.nio.file.Path;
-
-WebhookServer webhookServer = WebhookServer.withCertWatcher(
-    WebhookServer.DEFAULT_HOST, 8443,
-    Path.of("/etc/operator/certs/tls.crt"),
-    Path.of("/etc/operator/certs/tls.key"),
-    Path.of("/etc/operator/certs/ca.crt"),
-    CertWatcher.DEFAULT_POLLING_INTERVAL);
-```
-
-Implement a validator and a mutator:
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionResult;
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionValidator;
-import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
-import io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponse;
-
-public class MyValidator implements AdmissionValidator<MyResource> {
+@Component
+public final class ConfigMapReconciler implements Reconciler<ConfigMap> {
     @Override
-    public AdmissionResponse validate(AdmissionRequest request, MyResource resource) {
-        if (resource.getSpec().replicas < 0) {
-            return AdmissionResult.denied("replicas must not be negative");
-        }
-        return AdmissionResult.allowed();
+    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext context) throws Exception {
+        // Read desired state from resource and converge Kubernetes state.
+        return ReconcileResult.done();
     }
 }
 ```
 
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionMutator;
+Choose controller mode for an application with no webhook callbacks:
 
-public class MyMutator implements AdmissionMutator<MyResource> {
-    @Override
-    public AdmissionResponse mutate(AdmissionRequest request, MyResource resource) {
-        return AdmissionResult.jsonPatch(
-            "[{\"op\":\"add\",\"path\":\"/metadata/annotations/my.example.com~1defaulted\",\"value\":\"true\"}]");
+```yaml
+operator:
+  framework:
+    mode: controller
+```
+
+Spring discovers the generic type, creates the controller, starts informers/workers, and shuts them down. Do not perform framework registration or lifecycle calls from application code.
+
+A reconciliation receives:
+
+- the current primary resource;
+- `context.resourceKey()` with namespace/name;
+- `context.triggers()` with event type, role, and resource reference.
+
+Return one of:
+
+```java
+ReconcileResult.done();
+ReconcileResult.requeueNow();
+ReconcileResult.requeueAfter(Duration.ofSeconds(30));
+```
+
+Let exceptions propagate. The starter converts non-terminal callback exceptions into delayed retries according to `operator.framework.retry.*`; after the configured failed-attempt limit, the failure is terminal and is recorded by metrics/logging.
+
+### Manage finalizers and status
+
+Reconcilers that own external resources use the Kubernetes finalizer pattern and persist progress through the `/status` subresource. The starter ships static helpers in the `api.reconcile` package; inject the `KubernetesClient` (the starter creates and owns one when absent) and use them directly:
+
+```java
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Finalizers;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.StatusUpdates;
+
+@Override
+public ReconcileResult reconcile(MyResource resource, ReconciliationContext context) {
+    if (Finalizers.isDeleting(resource)) {
+        cleanupExternal(resource);
+        Finalizers.remove(client, resource, "example.com/cleanup");
+        return ReconcileResult.done();
+    }
+    Finalizers.add(client, resource, "example.com/cleanup");
+    resource.getStatus().setPhase("Ready");
+    StatusUpdates.update(client, resource);
+    return ReconcileResult.done();
+}
+```
+
+`Finalizers.add`/`remove` apply a server-side JSON patch (idempotent and safe under concurrent reconciles). `StatusUpdates.update` writes the resource's current status through the `/status` subresource, which requires the CRD to declare a `status` subresource.
+
+## 3. Configure an advanced controller
+
+A plain `Reconciler<T>` bean gets default controller settings. Define one `ControllerRegistration<T>` Bean when the controller needs explicit sources or per-controller overrides.
+
+```java
+package com.example.operator;
+
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
+import com.huawei.dcs.modelengine.operator.framework.api.controller.Mappers;
+import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
+
+@Configuration(proxyBeanMethods = false)
+public class OperatorConfiguration {
+    @Bean
+    ControllerRegistration<MyResource> myResourceController(MyResourceReconciler reconciler) {
+        return ControllerBuilder.forResource(MyResource.class, reconciler)
+                .generationFilter(true)
+                .resyncPeriod(Duration.ofMinutes(2))
+                .owns(Deployment.class)
+                .watches("configuration", ConfigMap.class, Mappers.byLabel("operator.example/primary"))
+                .watchesKubernetesEvents()
+                .build();
     }
 }
 ```
 
-Register them on the server:
+The referenced reconciler must be a Spring Bean so AOP retry/rate-limit/observation behavior remains active.
+
+- `generationFilter(boolean)` overrides the global generation filter.
+- `resyncPeriod(Duration)` overrides global resync; zero disables periodic resync.
+- `owns(Deployment.class)` watches owned resources and maps Owner References to primary keys.
+- `watches(name, type, mapper)` watches arbitrary secondary resources. Watch names must be unique in one registration.
+- `watchesKubernetesEvents()` watches `core/v1` Events and maps `involvedObject` (filtered server-side by kind/apiVersion) to a primary key. Aggregated Event `count` increments do not trigger reconciliation; only new Events, deletions, and resyncs do.
+
+Built-in `Mappers` provide `ownerReferences()`, `byLabel(key)`, `byAnnotation(key)`, and `involvedObject()`. A custom mapper receives the current `ResourceEvent<S>` and returns `Collection<ResourceKey>`:
 
 ```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.admission.AdmissionHandler;
-
-AdmissionHandler admissionHandler = new AdmissionHandler(client);
-admissionHandler.registerValidator("my.example.com", MyResource.class, new MyValidator());
-admissionHandler.registerMutator("my.example.com", MyResource.class, new MyMutator());
-admissionHandler.register(webhookServer);
-webhookServer.start();
+ResourceMapper<ConfigMap, MyResource> mapper = event -> List.of(
+        new ResourceKey(event.resource().getMetadata().getNamespace(), "primary-name"));
 ```
 
-This exposes `/validate/my.example.com` and `/mutate/my.example.com`. The handler deserializes the `AdmissionReview`, converts `request.object` to the registered resource class, and serializes the response. Mutating responses are base64-encoded automatically.
+One primary resource type may have only one effective registration. An explicit registration replaces automatic discovery for that type; duplicate automatic/explicit resource types fail startup. Kubernetes Events are lossy and TTL-bound, so never use Event subscription as a correctness boundary. If a reconciler publishes Events for its own primary resource, avoid an unfiltered subscription loop.
 
-To self-register webhook configurations at startup:
+## 4. Configure the runtime
 
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookRegistrationConfig;
-import com.huawei.dcs.modelengine.operator.framework.webhook.registration.WebhookSelfRegistration;
+Every framework-specific property and default is listed below.
 
-WebhookRegistrationConfig registrationConfig = WebhookRegistrationConfig.builder(
-    "my-operator", "my-namespace", Path.of("/etc/operator/certs/ca.crt"))
-    .withServicePort(443)
-    .withFailurePolicy("Fail")
-    .withTimeoutSeconds(10)
-    .withSideEffects("None")
-    .build();
+| Property | Default | Semantics |
+| --- | ---: | --- |
+| `operator.framework.enabled` | `true` | Enables auto-configuration. `false` creates no framework runtime/configuration beans. |
+| `operator.framework.mode` | `combined` | Selects controller, webhook, or both runtime sides. |
+| `operator.framework.controller.namespace` | unset | Watches this namespace; blank falls back to the Fabric8 client namespace, then `default`. |
+| `operator.framework.controller.cluster-scoped` | `false` | Watches every namespace; conflicts with a nonblank controller namespace. |
+| `operator.framework.controller.worker-threads` | `1` | Worker count created for each controller registration. |
+| `operator.framework.controller.resync-period` | `60s` | Default informer resync; zero disables periodic resync. |
+| `operator.framework.controller.generation-change-filter` | `true` | Filters primary updates unless generation, deletion timestamp, or finalizers changed; add/delete/resync and secondary events still enqueue. |
+| `operator.framework.controller.startup-retry-delay` | `5s` | Supervisor retry/check interval after startup or informer readiness failure. |
+| `operator.framework.leader-election.enabled` | `false` | Enables Fabric8 Lease leader election for the controller runtime. |
+| `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease name; the application-name fallback is sanitized for Kubernetes. |
+| `operator.framework.leader-election.namespace` | inherited | Uses the controller namespace, then Fabric8 client namespace, then `default`. |
+| `operator.framework.leader-election.lease-duration` | `15s` | Lease duration. |
+| `operator.framework.leader-election.renew-deadline` | `10s` | Renew deadline. |
+| `operator.framework.leader-election.retry-period` | `2s` | Election retry period. |
+| `operator.framework.retry.initial-delay` | `500ms` | First delay after a reconciler exception. |
+| `operator.framework.retry.max-delay` | `30s` | Maximum exponential retry delay. |
+| `operator.framework.retry.max-attempts` | `5` | Number of failed invocations at which the exception becomes terminal. |
+| `operator.framework.rate-limit.minimum-interval` | `5s` | Minimum per-controller/per-resource interval; zero disables throttling. |
+| `operator.framework.events.enabled` | `true` | Creates the public Event publisher in controller/combined mode. |
+| `operator.framework.events.component` | `spring.application.name` | Kubernetes Event reporting/source component. |
+| `operator.framework.events.aggregation-window` | `5m` | Time window used in the deterministic identity of equivalent Events. |
+| `operator.framework.events.max-cache-entries` | `1000` | LRU aggregation cache bound. |
 
-WebhookSelfRegistration registration = new WebhookSelfRegistration(client, registrationConfig);
-registration.register(admissionHandler);
+Spring Boot duration values such as `500ms`, `5s`, and `2m` are accepted. Worker threads, retry attempts, and event cache entries must be positive. Resync and the rate-limit interval may be zero; startup retry, event aggregation, retry delays, and leader-election durations must be positive. Retry `initial-delay` must not exceed `max-delay`, and leader timings must satisfy `retry-period < renew-deadline < lease-duration`.
+
+Mode behavior:
+
+| Mode | Required application Beans | Auto-configured infrastructure |
+| --- | --- | --- |
+| `controller` | A typed `Reconciler` or `ControllerRegistration` | Kubernetes client (if missing), informers/workers, event publisher (if enabled), lifecycle, health/metrics |
+| `webhook` | A typed `AdmissionValidator`, `AdmissionMutator`, or `ResourceConverter` | MVC webhook routes, callback registry, health/metrics; no automatic Kubernetes client |
+| `combined` | Both controller and webhook groups | Both sides |
+
+The default `combined` mode is intentionally strict: an application that supplies only one group must select its matching mode. Raw/unresolved callback generics and duplicate registrations are configuration errors, not silently ignored features.
+
+Example complete controller configuration:
+
+```yaml
+spring:
+  application:
+    name: inventory-operator
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+operator:
+  framework:
+    mode: controller
+    controller:
+      namespace: operators
+      cluster-scoped: false
+      worker-threads: 2
+      resync-period: 60s
+      generation-change-filter: true
+      startup-retry-delay: 5s
+    retry:
+      initial-delay: 500ms
+      max-delay: 30s
+      max-attempts: 5
+    rate-limit:
+      minimum-interval: 5s
+    events:
+      enabled: true
+      component: inventory-operator
+      aggregation-window: 5m
+      max-cache-entries: 1000
 ```
 
-`WebhookSelfRegistration` reads the CA bundle, base64-encodes it, and creates or replaces one `ValidatingWebhookConfiguration` and one `MutatingWebhookConfiguration` per registered webhook name. The operator needs RBAC permissions for `admissionregistration.k8s.io`.
+## 5. Enable leader election
 
-
-### Certificate generation
-
-By default, `WebhookCertificateGenerator` creates the CA bundle and server certificate for the webhook server. It writes `ca.crt`, `tls.crt`, and `tls.key` to `WEBHOOK_CERT_DIRECTORY` (`/tmp/echo-operator/certs` by default). The certificate SANs cover the service name and its FQDN variants, and the server certificate sets the `serverAuth` extended key usage. Set `WEBHOOK_CERT_AUTO_GENERATE=false` to use the file-based fallback and load the CA bundle and sibling `tls.crt`/`tls.key` files from `WEBHOOK_CA_BUNDLE_PATH`.
-
-
-### Persisting the CA in a Secret
-For a CA that survives pod restarts, use `WebhookCertificateSecretManager` instead of writing the CA to disk. It stores the CA private key and certificate in a Kubernetes Secret — creating the Secret on first startup and reusing the CA afterwards — and writes only the server certificate material (`ca.crt`, `tls.crt`, `tls.key`) to the local certificate directory. The CA private key never touches the filesystem. The operator needs `get` and `create` permissions on Secrets in the Secret's namespace.
-
-
-## 13. Add conversion webhooks
-
-For CRDs with multiple versions, implement a `ConversionWebhookHandler` and mount it on the same TLS server.
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionHandler;
-import com.huawei.dcs.modelengine.operator.framework.webhook.conversion.ConversionResult;
-import io.fabric8.kubernetes.api.model.HasMetadata;
-
-ConversionHandler conversionHandler = new ConversionHandler(client);
-conversionHandler.register("example.com/v1alpha1", "example.com/v1alpha2",
-    (desiredVersion, resource) -> ConversionResult.converted(toV2(resource)));
-conversionHandler.register("example.com/v1alpha2", "example.com/v1alpha1",
-    (desiredVersion, resource) -> ConversionResult.converted(toV1(resource)));
-conversionHandler.register(webhookServer);
+```yaml
+spring:
+  application:
+    name: inventory-operator
+operator:
+  framework:
+    mode: controller
+    leader-election:
+      enabled: true
+      lease-duration: 15s
+      renew-deadline: 10s
+      retry-period: 2s
 ```
 
-Mark versions in the resource classes:
+The Lease namespace inherits the controller namespace, then the Fabric8 client namespace, then `default`; `leader-election.namespace` overrides it. The Lease name defaults to the lower-case, DNS-safe `spring.application.name` plus `-leader`; `leader-election.lease-name` overrides it. Identity uses the pod `HOSTNAME`, or the JVM runtime identity outside Kubernetes. The elector releases its Lease during shutdown.
+
+Only the leader runs controller informers/workers. A standby is live and ready; after gaining leadership it becomes unready until all informers synchronize. On leadership loss it stops accepting new work, drains/stops the active runtime, and returns to standby readiness. RBAC must allow the Lease operations required by Fabric8.
+
+## 6. Publish Kubernetes Events
+
+In controller/combined mode with events enabled, inject the public interface:
 
 ```java
-@Version(value = "v1alpha1", storage = false, served = true, deprecated = true)
-public class MyResourceV1 extends CustomResource<MySpecV1, MyStatusV1> implements Namespaced {
+import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
+import org.springframework.stereotype.Component;
+
+@Component
+final class EventReporter {
+    private final KubernetesEventPublisher publisher;
+
+    EventReporter(KubernetesEventPublisher publisher) {
+        this.publisher = publisher;
+    }
+
+    void reconciled(MyResource resource) {
+        publisher.normal(resource, "Reconciled", "Desired state applied");
+    }
+
+    void invalid(MyResource resource) {
+        publisher.warning(resource, "InvalidSpec", "spec is invalid");
+    }
 }
+```
 
-@Version(value = "v1alpha2", storage = true, served = true)
-public class MyResourceV2 extends CustomResource<MySpecV2, MyStatusV2> implements Namespaced {
+Equivalent Events in one aggregation window update an existing `core/v1` Event count. The bounded cache is flushed on shutdown. `spring.application.name` is the reporting component, with `operator-framework` as fallback. Grant `create`, `get`, and `update` on `events`. Publication failures are logged/metricized and do not make Kubernetes Events reliable state storage.
+
+## 7. Implement webhook callbacks
+
+Select `webhook` or `combined` mode and declare typed Spring callback Beans. The Bean name is the fixed route key and must match `[a-z0-9][a-z0-9._-]*` — Kubernetes rejects webhook `clientConfig.service.path` segments containing uppercase letters, so the framework enforces lowercase RFC 1123 names at startup.
+
+### Validation
+
+```java
+@Bean("myresourcevalidator")
+AdmissionValidator<MyResource> myresourcevalidator() {
+    return (current, context) -> current.getSpec().isValid()
+            ? AdmissionDecision.allow()
+            : AdmissionDecision.deny("spec is invalid");
 }
 ```
 
-The conversion handler receives `apiextensions.k8s.io/v1 ConversionReview` requests, dispatches by `(source apiVersion, desired apiVersion)`, and returns a review response. Return `ConversionResult.converted(...)` on success or `ConversionResult.failed(...)` on error. Same-version requests pass through unchanged.
+The exact API is `AdmissionDecision validate(T current, AdmissionContext context) throws Exception`. `AdmissionContext` contains request UID, operation, stable `ResourceReference`, dry-run flag, and user identity.
 
-## 14. Run webhooks, metrics, and operator together
+Route: `POST /operator-framework/webhooks/validate/myresourcevalidator`
 
-A typical startup sequence looks like this:
-
-```java
-webhookServer.start();
-webhookSelfRegistration.register(admissionHandler);
-metricsHealthServer.start();
-operator.start();
-```
-
-The shutdown sequence reverses the order:
+### Mutation
 
 ```java
-webhookServer.stop();
-operator.stop();
-metricsHealthServer.close();
-client.close();
-```
-
-The webhook server and the metrics/health server are separate. Metrics stay on port 8080 by default, while admission and conversion webhooks share the TLS server on port 8443.
-
-## 15. Record and subscribe to Kubernetes events
-Use `EventRecorder` to publish `core/v1` Events for the resources your reconciler manages. Identical events within the suppression interval (5 minutes by default) are aggregated into a single Event with an updated `count`, and the cache is bounded at 1000 entries. The recorder needs `create`, `get`, and `patch` permissions on `events`.
-
-```java
-import com.huawei.dcs.modelengine.operator.framework.event.EventRecorder;
-
-try (EventRecorder recorder = new EventRecorder(client, "my-operator")) {
-    recorder.normal(resource, "Created", "created the child Deployment");
-    recorder.warning(resource, "InvalidSpec", "spec.replicas must not be negative");
+@Bean("myresourcemutator")
+AdmissionMutator<MyResource> myresourcemutator() {
+    return (current, context) -> MutationResult.unchanged();
 }
 ```
 
-Use `EventSubscriber` to enqueue a reconcile when an Event involving your primary resource changes:
+The exact API is `MutationResult<T> mutate(T current, AdmissionContext context) throws Exception`. Return `unchanged()`, `mutated(resource)`, or `denied(message)`. For a mutated resource, the framework computes the JSON Patch against the input and Base64-encodes it in the `AdmissionResponse`.
+
+Route: `POST /operator-framework/webhooks/mutate/myresourcemutator`
+
+### Conversion
 
 ```java
-import com.huawei.dcs.modelengine.operator.framework.event.EventSubscriber;
-
-ControllerBuilder.forResource(MyResource.class)
-    .withReconciler(new MyReconciler())
-    .withEventSubscriber(EventSubscriber.forInvolvedObject(MyResource.class))
-    .build();
+@Bean("myresourceconverter")
+ResourceConverter<MyResource> myresourceconverter() {
+    return (resource, context) -> {
+        MyResource converted = convert(resource, context.desiredVersion());
+        return ConversionResult.converted(converted);
+    };
+}
 ```
 
-Kubernetes Events are best-effort and may be dropped or TTL-expired, so never rely on them for correctness-critical state. If a controller both records Events for its primary resource and subscribes to them, filter the Events by source, reason, or type — otherwise each emitted Event re-triggers reconciliation and can loop forever.
+The exact API is `ConversionResult<T> convert(T resource, ConversionContext context) throws Exception`. `ConversionContext` contains source and desired API versions. Return `converted(resource)` or `failed(message)`. Same-version resources pass through without invoking the callback.
+
+Route: `POST /operator-framework/webhooks/convert/myresourceconverter`
+
+The transport accepts Kubernetes `admission.k8s.io/v1` and `apiextensions.k8s.io/v1` review objects, keeps response UIDs, and returns safe callback-failure responses. Invalid/unknown routes receive HTTP 400.
+
+## 8. Supply external webhook TLS
+
+The webhook routes run on the application Spring Web server. Configure standard Spring Boot HTTPS properties and mount platform-managed PEM material:
+
+```yaml
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    certificate: file:/etc/operator/tls/tls.crt
+    certificate-private-key: file:/etc/operator/tls/tls.key
+operator:
+  framework:
+    mode: webhook
+```
+
+The starter intentionally provides no certificate generator, CA persistence, certificate reload subsystem, or Kubernetes webhook self-registration. Deployment tooling must provision and rotate the certificate/Secret, Service, `ValidatingWebhookConfiguration`, `MutatingWebhookConfiguration`, and CRD conversion webhook configuration. Configure each Kubernetes webhook service path to the Bean-name route and put the signing CA in its `caBundle`.
+
+Standard Spring Boot SSL bundle properties may be used instead of the direct PEM properties when that better matches the platform.
+
+## 9. Expose liveness, readiness, and Prometheus
+
+The starter uses Spring Boot Actuator and the application Micrometer registry. Enable and expose the standard endpoints:
+
+```yaml
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+```
+
+Probe/metrics URLs:
+
+```text
+/actuator/health/liveness
+/actuator/health/readiness
+/actuator/prometheus
+```
+
+The `operatorFramework` health contribution reports mode, liveness/readiness, controller running/informer/leadership state, and webhook callback counts/last failure. `show-details` is optional and only controls response visibility. No framework-specific HTTP health/metrics server or port exists.
+
+## 10. Understand lifecycle and client ownership
+
+The runtime is a Spring `SmartLifecycle` and starts automatically. Controller startup is non-blocking and retries transient startup/readiness failures at `operator.framework.controller.startup-retry-delay`.
+
+Shutdown performs this sequence:
+
+1. mark readiness false and stop leader election;
+2. reject new queue work and stop informers/schedulers;
+3. drain in-flight workers;
+4. interrupt workers remaining after `spring.lifecycle.timeout-per-shutdown-phase`.
+
+When no application `KubernetesClient` Bean exists in a controller-capable mode, the starter builds one and records ownership so it is closed after framework shutdown. When the application supplies a client, the starter reuses it and its ownership component does not close it. The application controls that Bean's own destroy policy. Webhook-only mode neither requires nor creates a client.
+
+## 11. Respect the public package boundary
+
+Application code may depend only on:
+
+```text
+com.huawei.dcs.modelengine.operator.framework.api.*
+```
+
+The `autoconfigure` root is for Spring Boot loading and configuration metadata. The `internal` root is not a compatibility contract. The production JAR intentionally contains only `api`, `autoconfigure`, and `internal` under the framework package.
+
+## 12. Build and verify
+
+Run the complete gate from the repository root:
+
+```bash
+mvn -f operator/framework/pom.xml clean verify
+```
+
+The gate runs tests, post-package integration checks, configuration metadata/resource checks, JAR/package-boundary checks, source JAR generation, and Checkstyle. Checkstyle applies to production sources only and enforces 120-column lines, no more than 5 method/constructor parameters, methods no longer than 50 non-empty lines, and cyclomatic complexity no greater than 5.
+
+For a faster test-only cycle:
+
+```bash
+mvn -f operator/framework/pom.xml test
+```
+
+The legacy `example/` and `stress-test/` modules were deleted deliberately; `stress-test/` stays absent. The current sample is `example/echo-operator`, a Spring Boot application built on the starter with unit tests, MockMvc admission endpoint tests, and a real-cluster end-to-end script:
+
+```bash
+example/echo-operator/scripts/e2e-test.sh
+```
+
+It deploys to a throwaway namespace with RBAC/TLS, registers real admission webhook configurations, and verifies mutation, validation, reconcile, event publication, garbage collection, health, and metrics against a live API server.
