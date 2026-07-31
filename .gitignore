@@ -23,6 +23,7 @@ out/
 .classpath
 .project
 .settings/
+.factorypath
 .metadata/
 bin/
 
