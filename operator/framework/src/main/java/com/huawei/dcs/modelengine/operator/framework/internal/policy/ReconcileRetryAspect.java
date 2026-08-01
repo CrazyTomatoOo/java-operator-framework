@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
@@ -10,14 +14,18 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.DoubleSupplier;
 
-/** Converts transient reconciler exceptions into delayed results without blocking worker threads. */
+/**
+ * Converts transient reconciler exceptions into delayed results without blocking worker threads.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 300)
 public final class ReconcileRetryAspect {

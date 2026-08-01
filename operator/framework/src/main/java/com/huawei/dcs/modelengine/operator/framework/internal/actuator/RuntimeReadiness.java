@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
 import org.springframework.boot.availability.AvailabilityChangeEvent;
@@ -6,11 +10,15 @@ import org.springframework.boot.availability.ReadinessState;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** Publishes framework runtime transitions through Spring Boot availability state. */
+/**
+ * Publishes framework runtime transitions through Spring Boot availability state.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class RuntimeReadiness implements ApplicationListener<ApplicationReadyEvent> {
     private final ApplicationEventPublisher publisher;
     private final AtomicBoolean applicationReady = new AtomicBoolean();

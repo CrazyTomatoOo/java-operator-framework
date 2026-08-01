@@ -1,9 +1,18 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.webhook;
 
 import java.util.Objects;
 import java.util.Optional;
 
-/** Result returned by an admission mutator. */
+/**
+ * Result returned by an admission mutator.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class MutationResult<T> {
     private final Status status;
     private final T resource;

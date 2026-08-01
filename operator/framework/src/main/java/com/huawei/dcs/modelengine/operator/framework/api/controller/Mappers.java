@@ -1,10 +1,13 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +15,12 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-/** Common mappings from secondary resources to primary resource keys. */
+/**
+ * Common mappings from secondary resources to primary resource keys.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class Mappers {
     private Mappers() {
     }

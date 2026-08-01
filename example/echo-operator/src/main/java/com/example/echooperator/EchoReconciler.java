@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.example.echooperator;
 
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
@@ -10,7 +14,6 @@ import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
@@ -19,6 +22,9 @@ import java.util.Objects;
 /**
  * Echoes {@code data.message} of labeled ConfigMaps into an owned {@code <name>-echo} child.
  * The child is garbage-collected by Kubernetes when its owner is deleted.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
  */
 @Component
 public class EchoReconciler implements Reconciler<ConfigMap> {

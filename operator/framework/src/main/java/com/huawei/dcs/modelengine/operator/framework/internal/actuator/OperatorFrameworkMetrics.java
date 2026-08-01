@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
 import io.micrometer.core.instrument.Gauge;
@@ -5,11 +9,15 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
-
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleSupplier;
 
-/** Small bounded-tag metrics facade shared by controller, webhook, and event runtime code. */
+/**
+ * Small bounded-tag metrics facade shared by controller, webhook, and event runtime code.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class OperatorFrameworkMetrics {
     private final MeterRegistry registry;
 

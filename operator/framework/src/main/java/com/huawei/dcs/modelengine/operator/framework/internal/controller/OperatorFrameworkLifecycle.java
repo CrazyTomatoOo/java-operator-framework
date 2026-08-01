@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
@@ -5,14 +9,18 @@ import com.huawei.dcs.modelengine.operator.framework.internal.actuator.RuntimeRe
 import com.huawei.dcs.modelengine.operator.framework.internal.leader.LeaderElectionAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.SmartLifecycle;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** Non-blocking supervisor for controller startup, retries, leadership terms, and shutdown. */
+/**
+ * Non-blocking supervisor for controller startup, retries, leadership terms, and shutdown.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Slf4j
 public final class OperatorFrameworkLifecycle implements SmartLifecycle {
 

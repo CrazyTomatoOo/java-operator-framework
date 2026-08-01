@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
@@ -6,9 +10,14 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValida
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * SpringCallbackIdentifier.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 /** Resolves callback type and bean-name tags; cached per target class and callback kind. */
 final class SpringCallbackIdentifier {
     private record CacheKey(Class<?> targetClass, CallbackKind kind) {

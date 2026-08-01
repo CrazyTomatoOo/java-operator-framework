@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
@@ -8,11 +12,15 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Single Actuator health contribution for all enabled operator framework modes. */
+/**
+ * Single Actuator health contribution for all enabled operator framework modes.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @RequiredArgsConstructor
 public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
     private final OperatorFrameworkProperties properties;

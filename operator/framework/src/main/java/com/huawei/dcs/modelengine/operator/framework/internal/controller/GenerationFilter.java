@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-
 import java.util.Objects;
 
-/** Selects primary updates relevant to reconciliation. */
+/**
+ * Selects primary updates relevant to reconciliation.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 final class GenerationFilter {
     private GenerationFilter() {
     }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,11 +40,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-
 import java.time.Clock;
 import java.time.Duration;
 
-/** Spring Boot auto-configuration for the operator framework. */
+/**
+ * Spring Boot auto-configuration for the operator framework.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @AutoConfiguration
 @EnableConfigurationProperties(OperatorFrameworkProperties.class)
 @ConditionalOnProperty(prefix = "operator.framework", name = "enabled", matchIfMissing = true)

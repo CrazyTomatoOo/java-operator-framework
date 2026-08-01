@@ -1,9 +1,18 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.springframework.beans.factory.DisposableBean;
 
-/** Closes only the Kubernetes client constructed by this framework. */
+/**
+ * Closes only the Kubernetes client constructed by this framework.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class FrameworkKubernetesClientOwnership implements DisposableBean {
     private KubernetesClient ownedClient;
 

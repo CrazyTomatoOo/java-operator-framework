@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
@@ -21,7 +25,6 @@ import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.cache.Indexer;
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +40,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** One Fabric8 informer and worker set for a controller registration. */
+/**
+ * One Fabric8 informer and worker set for a controller registration.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Slf4j
 final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntime {
     private static final ReconciliationQueue.DurationMillis POLL_TIMEOUT =

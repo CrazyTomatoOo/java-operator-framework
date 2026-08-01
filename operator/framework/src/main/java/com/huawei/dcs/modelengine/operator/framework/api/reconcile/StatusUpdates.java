@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -5,7 +9,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
 import io.fabric8.kubernetes.client.utils.Serialization;
-
 import java.util.Objects;
 
 /**
@@ -14,6 +17,9 @@ import java.util.Objects;
  * <p>{@link #update} issues a JSON merge patch built from the given status object, so the resource
  * itself is never mutated — safe to pass an informer-cached instance. Requires the CRD to declare
  * a {@code status} subresource.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
  */
 public final class StatusUpdates {
     private StatusUpdates() {

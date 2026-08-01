@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.autoconfigure;
 
 import jakarta.validation.Valid;
@@ -6,10 +10,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
-
 import java.time.Duration;
 
-/** Configuration for the Spring-managed operator runtime. */
+/**
+ * Configuration for the Spring-managed operator runtime.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Validated
 @ConfigurationProperties("operator.framework")
 public class OperatorFrameworkProperties {

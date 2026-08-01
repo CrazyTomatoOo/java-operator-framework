@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +13,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-/** Immutable controller definition consumed by the operator runtime. */
+/**
+ * Immutable controller definition consumed by the operator runtime.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class ControllerRegistration<T extends HasMetadata> {
     private final Class<T> resourceType;
     private final Reconciler<T> reconciler;

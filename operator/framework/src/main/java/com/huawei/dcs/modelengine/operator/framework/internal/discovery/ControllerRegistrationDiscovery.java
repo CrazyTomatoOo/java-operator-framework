@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.discovery;
 
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
@@ -7,14 +11,18 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.ResolvableType;
-
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Discovers explicit registrations and typed reconciler beans without unwrapping proxies for invocation. */
+/**
+ * Discovers explicit registrations and typed reconciler beans without unwrapping proxies for invocation.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class ControllerRegistrationDiscovery {
     private final ConfigurableListableBeanFactory beanFactory;
 

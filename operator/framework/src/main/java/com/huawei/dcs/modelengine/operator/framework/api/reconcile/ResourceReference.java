@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-
 import java.util.Objects;
 
-/** Stable identity details for a Kubernetes resource involved in reconciliation. */
+/**
+ * Stable identity details for a Kubernetes resource involved in reconciliation.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public record ResourceReference(String apiVersion, String kind, String namespace, String name, String uid) {
     public ResourceReference {
         requireText(apiVersion, "apiVersion");

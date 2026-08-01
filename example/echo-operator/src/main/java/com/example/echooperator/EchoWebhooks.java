@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.example.echooperator;
 
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
@@ -12,6 +16,9 @@ import org.springframework.stereotype.Component;
 /**
  * Admission callbacks served by the framework at
  * {@code /operator-framework/webhooks/{validate|mutate}/{beanName}}.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
  */
 final class EchoWebhooks {
     private EchoWebhooks() {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
@@ -9,13 +13,17 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Enforces a minimum interval per controller resource by returning delayed work. */
+/**
+ * Enforces a minimum interval per controller resource by returning delayed work.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 400)
 public final class ReconcileRateLimitAspect {

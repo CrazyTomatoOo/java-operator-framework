@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,13 +25,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Kubernetes v1 admission transport for typed Spring callback beans. */
+/**
+ * Kubernetes v1 admission transport for typed Spring callback beans.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @RestController
 @RequiredArgsConstructor
 public final class AdmissionWebhookController {

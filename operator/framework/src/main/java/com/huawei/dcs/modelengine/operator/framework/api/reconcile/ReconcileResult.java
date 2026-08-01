@@ -1,10 +1,19 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 
-/** The scheduling decision returned by a reconciler. */
+/**
+ * The scheduling decision returned by a reconciler.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class ReconcileResult {
     private static final ReconcileResult DONE = new ReconcileResult(null);
     private static final ReconcileResult REQUEUE_NOW = new ReconcileResult(Duration.ZERO);

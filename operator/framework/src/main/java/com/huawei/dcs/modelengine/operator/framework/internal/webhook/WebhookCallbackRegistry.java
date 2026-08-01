@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
@@ -8,14 +12,18 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.core.ResolvableType;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
-/** Discovers typed webhook callbacks while retaining their original Spring proxies. */
+/**
+ * Discovers typed webhook callbacks while retaining their original Spring proxies.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class WebhookCallbackRegistry {
     private static final Pattern ROUTE_NAME = Pattern.compile("[a-z0-9][a-z0-9._-]*");
 

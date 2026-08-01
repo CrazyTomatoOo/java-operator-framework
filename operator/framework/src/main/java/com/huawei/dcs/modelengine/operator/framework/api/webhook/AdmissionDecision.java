@@ -1,8 +1,17 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.webhook;
 
 import java.util.Optional;
 
-/** Allow or deny decision returned by an admission validator. */
+/**
+ * Allow or deny decision returned by an admission validator.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class AdmissionDecision {
     private static final AdmissionDecision ALLOWED = new AdmissionDecision(true, null);
 

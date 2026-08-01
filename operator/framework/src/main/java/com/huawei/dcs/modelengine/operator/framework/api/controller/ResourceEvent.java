@@ -1,12 +1,20 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-
 import java.util.Objects;
 import java.util.Optional;
 
-/** Immutable description of a Kubernetes resource event. */
+/**
+ * Immutable description of a Kubernetes resource event.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public record ResourceEvent<S extends HasMetadata>(
         ResourceEventType type,
         S resource,

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.example.echooperator;
 
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
@@ -8,6 +12,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * Spring Boot entry point for the echo operator example.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @SpringBootApplication
 public class EchoOperatorApplication {
     public static void main(String[] args) {

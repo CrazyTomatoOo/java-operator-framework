@@ -1,14 +1,22 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.client.KubernetesClient;
-
 import java.time.Duration;
 import java.util.List;
 
-/** Creates a new set of Fabric8 controller resources for every runtime term. */
+/**
+ * Creates a new set of Fabric8 controller resources for every runtime term.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeFactory {
     private final KubernetesClient client;
     private final List<ControllerRegistration<?>> registrations;

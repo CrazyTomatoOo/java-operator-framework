@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.leader;
 
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
@@ -8,14 +12,18 @@ import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElectionConfig
 import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElector;
 import io.fabric8.kubernetes.client.extended.leaderelection.resourcelock.LeaseLock;
 import org.springframework.core.env.Environment;
-
 import java.lang.management.ManagementFactory;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
-/** Fabric8 Lease-backed leader election. */
+/**
+ * Fabric8 Lease-backed leader election.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter {
     private final KubernetesClient client;
     private final OperatorFrameworkProperties.Controller controllerProperties;

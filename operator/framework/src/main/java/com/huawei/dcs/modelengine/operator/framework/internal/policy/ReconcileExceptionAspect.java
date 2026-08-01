@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
@@ -9,7 +13,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-/** Logs callback failures after execution-policy advice and counts terminal reconciler failures. */
+/**
+ * Logs callback failures after execution-policy advice and counts terminal reconciler failures.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 200)
 public final class ReconcileExceptionAspect {

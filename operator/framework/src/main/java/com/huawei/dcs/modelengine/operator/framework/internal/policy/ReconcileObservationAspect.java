@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
@@ -14,7 +18,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-/** Records exactly one observation and metric timing around every user callback invocation. */
+/**
+ * Records exactly one observation and metric timing around every user callback invocation.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public final class ReconcileObservationAspect {

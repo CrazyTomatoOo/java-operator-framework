@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.testing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +22,6 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMixedDispatcher;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import io.fabric8.mockwebserver.Context;
 import io.fabric8.mockwebserver.MockWebServer;
-
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +45,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Operators that watch Kubernetes Events must disable involvedObject field-selector filtering
  * ({@code properties.getController().setFilterEventsByInvolvedObject(false)}), which the in-memory
  * server cannot match.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-08-01
  */
 public final class OperatorTestKit implements AutoCloseable {
     private static final Duration SHUTDOWN_TIMEOUT = Duration.ofSeconds(5);

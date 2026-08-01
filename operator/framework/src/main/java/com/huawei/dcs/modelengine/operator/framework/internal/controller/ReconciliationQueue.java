@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationTrigger;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -13,7 +16,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-/** Coalescing work queue with one in-flight callback per resource key. */
+/**
+ * Coalescing work queue with one in-flight callback per resource key.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 final class ReconciliationQueue {
     private static final int MAX_TRIGGER_HISTORY = 32;
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.internal.event;
 
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
@@ -12,7 +16,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +27,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-/** Publishes and aggregates core/v1 Kubernetes Events within deterministic time windows. */
+/**
+ * Publishes and aggregates core/v1 Kubernetes Events within deterministic time windows.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 @Slf4j
 public final class AggregatingKubernetesEventPublisher implements KubernetesEventPublisher, AutoCloseable {
 

@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.informers.cache.Indexer;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,6 +21,9 @@ import java.util.Objects;
  *
  * <p>{@link #cacheFor} exposes the informer caches of owned/watched secondary types (and the
  * primary type), so reads of related resources stay off the API server too.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
  */
 public record ReconciliationContext<T extends HasMetadata>(
         ResourceKey resourceKey,

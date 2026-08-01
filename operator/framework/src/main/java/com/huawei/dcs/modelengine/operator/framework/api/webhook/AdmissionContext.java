@@ -1,12 +1,20 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2026-2026. All rights reserved.
+ */
+
 package com.huawei.dcs.modelengine.operator.framework.api.webhook;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceReference;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Stable, transport-neutral information for an admission callback. */
+/**
+ * Stable, transport-neutral information for an admission callback.
+ *
+ * @author z00919064 zhangshjie
+ * @since 2026-07-30
+ */
 public record AdmissionContext(
         String uid,
         String operation,
