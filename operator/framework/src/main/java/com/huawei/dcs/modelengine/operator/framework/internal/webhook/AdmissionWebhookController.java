@@ -8,6 +8,7 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecisi
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
+import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.StatusBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
@@ -35,6 +36,7 @@ public final class AdmissionWebhookController {
 
     private final WebhookCallbackRegistry callbacks;
     private final ObjectMapper objectMapper;
+    private final OperatorFrameworkMetrics metrics;
 
 
     @PostMapping(BASE_PATH + "/validate/{name}")
@@ -69,31 +71,44 @@ public final class AdmissionWebhookController {
 
     private AdmissionReview validate(AdmissionReview review, WebhookCallbackRegistry.Callback callback) {
         var invocation = invocation(review, callback);
+        var started = System.nanoTime();
+        var outcome = "error";
         try {
             requireResourceType(invocation.current(), callback);
             var decision = invokeValidator(callback, invocation);
+            outcome = decision.isAllowed() ? "allowed" : "denied";
             return decision.isAllowed()
                     ? response(invocation.request().getUid(), true, null, null)
                     : response(invocation.request().getUid(), false, decision.message().orElse("denied"), null);
         } catch (ResourceTypeMismatchException exception) {
+            outcome = "denied";
             return response(invocation.request().getUid(), false, "resource type does not match callback", null);
         } catch (Exception exception) {
             callbacks.recordFailure("validator", callback.name());
             return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
+        } finally {
+            metrics.callback("validator", callback.name(), outcome, System.nanoTime() - started);
         }
     }
 
     private AdmissionReview mutate(AdmissionReview review, WebhookCallbackRegistry.Callback callback) {
         var invocation = invocation(review, callback);
+        var started = System.nanoTime();
+        var outcome = "error";
         try {
             requireResourceType(invocation.current(), callback);
             var result = invokeMutator(callback, invocation);
+            // ponytail: enum names already match the metric outcomes (MUTATED/DENIED/UNCHANGED)
+            outcome = result.status().name().toLowerCase(java.util.Locale.ROOT);
             return mutationResponse(invocation, result, callback);
         } catch (ResourceTypeMismatchException exception) {
+            outcome = "denied";
             return response(invocation.request().getUid(), false, "resource type does not match callback", null);
         } catch (Exception exception) {
             callbacks.recordFailure("mutator", callback.name());
             return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
+        } finally {
+            metrics.callback("mutator", callback.name(), outcome, System.nanoTime() - started);
         }
     }
 

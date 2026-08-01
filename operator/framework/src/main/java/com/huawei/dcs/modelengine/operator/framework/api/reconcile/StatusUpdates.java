@@ -2,22 +2,29 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.base.PatchContext;
+import io.fabric8.kubernetes.client.dsl.base.PatchType;
+import io.fabric8.kubernetes.client.utils.Serialization;
 
 import java.util.Objects;
 
 /**
  * Helper to persist a resource's status through the {@code /status} subresource.
  *
- * <p>Set the status on the resource (e.g. {@code resource.getStatus().setPhase("Ready")}) then call
- * {@link #update}. Requires the CRD to declare a {@code status} subresource.
+ * <p>{@link #update} issues a JSON merge patch built from the given status object, so the resource
+ * itself is never mutated — safe to pass an informer-cached instance. Requires the CRD to declare
+ * a {@code status} subresource.
  */
 public final class StatusUpdates {
     private StatusUpdates() {
     }
 
-    /** Updates the status subresource with the resource's current status; returns the server result. */
-    public static <T extends HasMetadata> T update(KubernetesClient client, T resource) {
+    /** Patches the status subresource with the given status; returns the server result. */
+    public static <T extends HasMetadata> T update(KubernetesClient client, T resource, Object status) {
         Objects.requireNonNull(resource, "resource");
-        return client.resource(resource).updateStatus();
+        Objects.requireNonNull(status, "status");
+        var body = "{\"status\":" + Serialization.asJson(status) + "}";
+        return client.resource(resource)
+                .subresource("status").patch(PatchContext.of(PatchType.JSON_MERGE), body);
     }
 }

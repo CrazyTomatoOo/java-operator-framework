@@ -1,15 +1,22 @@
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+import io.fabric8.kubernetes.api.model.Secret;
+import io.fabric8.kubernetes.client.informers.cache.Indexer;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class ReconcileApiTest {
     @Test
@@ -44,6 +51,18 @@ class ReconcileApiTest {
         assertEquals(1, context.triggers().size());
         assertThrows(UnsupportedOperationException.class, () -> context.triggers().clear());
         assertFalse(ReconcileResult.requeueNow().isDone());
+    }
+
+    @Test
+    void cacheForResolvesRegisteredTypesAndRejectsUnknownOnes() {
+        @SuppressWarnings("unchecked")
+        var cache = (Indexer<ConfigMap>) mock(Indexer.class);
+        var key = new ResourceKey("operators", "sample");
+        var context = new ReconciliationContext<ConfigMap>(key, List.of(), cache, Map.of(ConfigMap.class, cache));
+        assertSame(cache, context.cacheFor(ConfigMap.class));
+        assertThrows(IllegalStateException.class, () -> context.cacheFor(Secret.class));
+        assertThrows(IllegalStateException.class,
+                () -> ReconciliationContext.<ConfigMap>withoutCache(key, List.of()).cacheFor(ConfigMap.class));
     }
 
     @Test

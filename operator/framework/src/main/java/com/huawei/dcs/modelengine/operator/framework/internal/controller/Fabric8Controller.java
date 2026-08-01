@@ -19,6 +19,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
+import io.fabric8.kubernetes.client.informers.cache.Indexer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -50,13 +51,13 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     private final ReconciliationQueue queue = new ReconciliationQueue();
     private final ConcurrentHashMap<ResourceKey, T> deletedResources = new ConcurrentHashMap<>();
     private final List<SharedIndexInformer<?>> informers = new ArrayList<>();
+    private final ConcurrentHashMap<Class<? extends HasMetadata>, Indexer<?>> caches = new ConcurrentHashMap<>();
     private final ExecutorService workers;
     private final ScheduledExecutorService scheduler;
     private final AtomicBoolean started = new AtomicBoolean();
     private final OperatorFrameworkMetrics.GaugeHandle queueGauge;
     private final OperatorFrameworkMetrics.GaugeHandle informerGauge;
     private volatile boolean stopping;
-    private boolean filterEventsByInvolvedObject = true;
     private CompletableFuture<Void> stopFuture = CompletableFuture.completedFuture(null);
     private SharedIndexInformer<T> primaryInformer;
 
@@ -87,11 +88,6 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             OperatorFrameworkProperties.Controller properties,
             Duration shutdownTimeout) {
         this(client, registration, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
-    }
-
-    /** Test hook: the crud mock server cannot match involvedObject field selectors on watches. */
-    void withoutEventFieldSelector() {
-        filterEventsByInvolvedObject = false;
     }
 
     @Override
@@ -154,6 +150,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         registration.indexFields().forEach((key, fn) ->
                 primaryInformer.addIndexers(
                         Map.of(key, r -> List.of(fn.apply(r)))));
+        caches.put(registration.resourceType(), primaryInformer.getIndexer());
         registration.ownedResources().forEach(this::addOwnedInformer);
         registration.secondaryWatches().forEach(this::addSecondaryInformer);
         if (registration.watchesKubernetesEvents()) {
@@ -186,13 +183,16 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void addOwnedInformer(Class<? extends HasMetadata> type) {
         ResourceMapper mapper = Mappers.ownerReferences(registration.resourceType());
-        informer((Class) type, new SecondaryHandler(mapper, TriggerRole.OWNED), resyncPeriod(), Optional.empty());
+        var informer = informer((Class) type, new SecondaryHandler(mapper, TriggerRole.OWNED),
+                resyncPeriod(), Optional.empty());
+        caches.put(type, informer.getIndexer());
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void addSecondaryInformer(ControllerRegistration.SecondaryWatch<? extends HasMetadata, T> watch) {
-        informer((Class) watch.resourceType(), new SecondaryHandler(watch.mapper(), TriggerRole.WATCHED),
+        var informer = informer((Class) watch.resourceType(), new SecondaryHandler(watch.mapper(), TriggerRole.WATCHED),
                 resyncPeriod(), Optional.empty());
+        caches.put(watch.resourceType(), informer.getIndexer());
     }
 
     private void addEventInformer(Duration resync) {
@@ -202,7 +202,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         var scoped = properties.isClusterScoped()
                 ? events.inAnyNamespace()
                 : events.inNamespace(namespace());
-        if (!filterEventsByInvolvedObject) {
+        if (!properties.isFilterEventsByInvolvedObject()) {
             registerEventInformer(scoped.runnableInformer(resync.toMillis()), mapper);
             return;
         }
@@ -268,7 +268,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             if (resource == null) {
                 return;
             }
-            var context = new ReconciliationContext<T>(work.key(), work.triggers(), primaryInformer.getIndexer());
+            var context = new ReconciliationContext<T>(work.key(), work.triggers(),
+                    primaryInformer.getIndexer(), caches);
             var result = registration.reconciler().reconcile(resource, context);
             schedule(result, resource);
             if (result.isDone()) {

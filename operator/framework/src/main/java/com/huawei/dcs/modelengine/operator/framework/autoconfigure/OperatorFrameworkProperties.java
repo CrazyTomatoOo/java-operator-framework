@@ -79,6 +79,7 @@ public class OperatorFrameworkProperties {
         @NotNull
         private Duration resyncPeriod = Duration.ofSeconds(60);
         private boolean generationChangeFilter = true;
+        private boolean filterEventsByInvolvedObject = true;
         @NotNull
         private Duration startupRetryDelay = Duration.ofSeconds(5);
 
@@ -120,6 +121,18 @@ public class OperatorFrameworkProperties {
 
         public void setGenerationChangeFilter(boolean generationChangeFilter) {
             this.generationChangeFilter = generationChangeFilter;
+        }
+
+        /**
+         * Whether the Kubernetes-Event watch narrows with involvedObject field selectors. Disable
+         * when the API server (or the fabric8 crud mock server) cannot match those selectors.
+         */
+        public boolean isFilterEventsByInvolvedObject() {
+            return filterEventsByInvolvedObject;
+        }
+
+        public void setFilterEventsByInvolvedObject(boolean filterEventsByInvolvedObject) {
+            this.filterEventsByInvolvedObject = filterEventsByInvolvedObject;
         }
 
         public Duration getStartupRetryDelay() {

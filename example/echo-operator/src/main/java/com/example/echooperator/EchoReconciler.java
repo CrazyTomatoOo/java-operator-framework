@@ -50,8 +50,12 @@ public class EchoReconciler implements Reconciler<ConfigMap> {
             return ReconcileResult.requeueAfter(Duration.ofSeconds(1));
         }
         var namespace = resource.getMetadata().getNamespace();
-        var existing = client.configMaps().inNamespace(namespace)
-                .withName(echo.getMetadata().getName()).get();
+        // The child is same-type but unlabeled, so the label-filtered primary cache never holds
+        // it; the owns() informer (cacheFor) is unfiltered and does — no server round-trip.
+        // Live read only for cache-less unit-test contexts.
+        var existing = context.cache() != null
+                ? context.cacheFor(ConfigMap.class).getByKey(namespace + "/" + echoName)
+                : client.configMaps().inNamespace(namespace).withName(echoName).get();
         if (existing != null && Objects.equals(existing.getData(), echo.getData())) {
             return ReconcileResult.done();
         }

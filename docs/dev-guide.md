@@ -93,13 +93,14 @@ public ReconcileResult reconcile(MyResource resource, ReconciliationContext cont
         return ReconcileResult.done();
     }
     Finalizers.add(client, resource, "example.com/cleanup");
-    resource.getStatus().setPhase("Ready");
-    StatusUpdates.update(client, resource);
+    var status = new MyResourceStatus();
+    status.setPhase("Ready");
+    StatusUpdates.update(client, resource, status);
     return ReconcileResult.done();
 }
 ```
 
-`Finalizers.add`/`remove` apply a server-side JSON patch (idempotent and safe under concurrent reconciles). `StatusUpdates.update` writes the resource's current status through the `/status` subresource, which requires the CRD to declare a `status` subresource.
+`Finalizers.add`/`remove` apply a server-side JSON patch (idempotent and safe under concurrent reconciles). `StatusUpdates.update` merges the given status object into the `/status` subresource via JSON merge patch and never mutates the passed (informer-cached) resource; it requires the CRD to declare a `status` subresource.
 
 ## 3. Configure an advanced controller
 
@@ -163,6 +164,7 @@ Every framework-specific property and default is listed below.
 | `operator.framework.controller.worker-threads` | `1` | Worker count created for each controller registration. |
 | `operator.framework.controller.resync-period` | `60s` | Default informer resync; zero disables periodic resync. |
 | `operator.framework.controller.generation-change-filter` | `true` | Filters primary updates unless generation, deletion timestamp, or finalizers changed; add/delete/resync and secondary events still enqueue. |
+| `operator.framework.controller.filter-events-by-involved-object` | `true` | Narrows the Kubernetes-Event watch with involvedObject field selectors; disable when the API server (or in-memory test server) cannot match them. |
 | `operator.framework.controller.startup-retry-delay` | `5s` | Supervisor retry/check interval after startup or informer readiness failure. |
 | `operator.framework.leader-election.enabled` | `false` | Enables Fabric8 Lease leader election for the controller runtime. |
 | `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease name; the application-name fallback is sanitized for Kubernetes. |
@@ -394,7 +396,33 @@ com.huawei.dcs.modelengine.operator.framework.api.*
 
 The `autoconfigure` root is for Spring Boot loading and configuration metadata. The `internal` root is not a compatibility contract. The production JAR intentionally contains only `api`, `autoconfigure`, and `internal` under the framework package.
 
-## 12. Build and verify
+## 12. Test with the testing kit
+
+The `operator-framework-testing` module ships an in-memory CRUD API server and a small kit, so operator tests need neither a cluster nor mock-server plumbing:
+
+```xml
+<dependency>
+    <groupId>com.huawei.dcs.modelengine</groupId>
+    <artifactId>operator-framework-testing</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
+```
+
+Drive the real controller runtime — informers, workers, queue, and secondary caches — against the in-memory server:
+
+```java
+try (var kit = OperatorTestKit.create()) {
+    var runtime = kit.controller(registration);
+    runtime.start();
+    kit.client().configMaps().inNamespace(kit.client().getNamespace()).resource(configMap).create();
+    // await effects through kit.client()
+}
+```
+
+For direct reconciler invocations, `OperatorTestKit.context(primary)` returns a `ReconciliationContext` with the primary cache seeded, so by-index/get-by-key paths work without a runtime. The in-memory server's client namespace is `test` — use `kit.client().getNamespace()` instead of hard-coding one. Operators that watch Kubernetes Events must disable involvedObject field-selector filtering (`operator.framework.controller.filter-events-by-involved-object: false`), which the in-memory server cannot match. `example/echo-operator` contains a complete kit test (`EchoOperatorKitTest`).
+
+## 13. Build and verify
 
 Run the complete gate from the repository root:
 

@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
+import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionReview;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ConversionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
+    private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
     private GenericApplicationContext context;
     private MockMvc mvc;
 
@@ -40,7 +43,8 @@ class ConversionWebhookControllerTest {
         context.registerBean("changedidentity", IdentityChangingConverter.class, IdentityChangingConverter::new);
         context.refresh();
         var registry = new WebhookCallbackRegistry(context.getBeanFactory());
-        mvc = MockMvcBuilders.standaloneSetup(new ConversionWebhookController(registry, mapper)).build();
+        mvc = MockMvcBuilders.standaloneSetup(
+                new ConversionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
     }
 
     @AfterEach
@@ -119,6 +123,23 @@ class ConversionWebhookControllerTest {
         mvc.perform(post("/operator-framework/webhooks/convert/converter")
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void recordsCallbackMetricsPerOutcome() throws Exception {
+        mvc.perform(conversion("converter", review("v2", resources()))).andExpect(status().isOk());
+        mvc.perform(conversion("failure", review("v2", resources()))).andExpect(status().isOk());
+
+        assertThat(callbackCount("converter", "converted")).isEqualTo(1.0);
+        assertThat(callbackCount("failure", "error")).isEqualTo(1.0);
+        assertThat(meters.get("operator.framework.callback.duration")
+                .tags("callback.type", "converter", "bean", "converter", "outcome", "converted")
+                .timer().count()).isEqualTo(1);
+    }
+
+    private double callbackCount(String bean, String outcome) {
+        return meters.get("operator.framework.callback.total")
+                .tags("callback.type", "converter", "bean", bean, "outcome", outcome).counter().count();
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder conversion(

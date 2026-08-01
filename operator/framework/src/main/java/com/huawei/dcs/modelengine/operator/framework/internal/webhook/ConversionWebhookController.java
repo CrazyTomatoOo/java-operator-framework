@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
+import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionResponse;
@@ -29,6 +30,7 @@ public final class ConversionWebhookController {
 
     private final WebhookCallbackRegistry callbacks;
     private final ObjectMapper objectMapper;
+    private final OperatorFrameworkMetrics metrics;
 
 
     @PostMapping("/operator-framework/webhooks/convert/{name}")
@@ -49,15 +51,20 @@ public final class ConversionWebhookController {
     }
 
     private ConversionReview convert(ConversionRequest request, WebhookCallbackRegistry.Callback callback) {
+        var started = System.nanoTime();
+        var outcome = "error";
         try {
             var converted = new ArrayList<Object>(request.getObjects().size());
             for (var resource : request.getObjects()) {
                 converted.add(convertOne(resource, request.getDesiredAPIVersion(), callback));
             }
+            outcome = "converted";
             return response(request.getUid(), converted, null);
         } catch (Exception exception) {
             callbacks.recordFailure("converter", callback.name());
             return response(request.getUid(), List.of(), CALLBACK_FAILED);
+        } finally {
+            metrics.callback("converter", callback.name(), outcome, System.nanoTime() - started);
         }
     }
 

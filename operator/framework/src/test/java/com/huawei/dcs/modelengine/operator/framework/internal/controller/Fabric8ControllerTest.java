@@ -43,8 +43,9 @@ class Fabric8ControllerTest {
                 .build();
         var primary = primary();
         client.configMaps().inNamespace("operators").resource(primary).create();
-        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
-        runtime.withoutEventFieldSelector();
+        var properties = properties();
+        properties.getController().setFilterEventsByInvolvedObject(false);
+        var runtime = new Fabric8Controller<>(client, registration, properties.getController(), Duration.ofSeconds(1));
 
         try {
             runtime.start();
@@ -84,8 +85,9 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).watchesKubernetesEvents().build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
-        runtime.withoutEventFieldSelector();
+        var properties = properties();
+        properties.getController().setFilterEventsByInvolvedObject(false);
+        var runtime = new Fabric8Controller<>(client, registration, properties.getController(), Duration.ofSeconds(1));
 
         try {
             runtime.start();
@@ -315,6 +317,28 @@ class Fabric8ControllerTest {
             var hit = resolved.getFirst();
             assertThat(hit).hasSize(1);
             assertThat(((ConfigMap) hit.getFirst()).getMetadata().getName()).isEqualTo("sample");
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void secondaryCachesExposeWatchedAndPrimaryResources() throws Exception {
+        var found = new CopyOnWriteArrayList<Boolean>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            var secret = context.cacheFor(Secret.class).getByKey("operators/secondary");
+            var primaryHit = context.cacheFor(ConfigMap.class).getByKey("operators/sample");
+            found.add(secret != null && primaryHit != null);
+            return ReconcileResult.done();
+        }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                .withNewMetadata().withName("secondary").withNamespace("operators")
+                .addToLabels("primary", "sample").endMetadata().build()).create();
+        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(found).contains(true));
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }

@@ -93,13 +93,14 @@ public ReconcileResult reconcile(MyResource resource, ReconciliationContext cont
         return ReconcileResult.done();
     }
     Finalizers.add(client, resource, "example.com/cleanup");
-    resource.getStatus().setPhase("Ready");
-    StatusUpdates.update(client, resource);
+    var status = new MyResourceStatus();
+    status.setPhase("Ready");
+    StatusUpdates.update(client, resource, status);
     return ReconcileResult.done();
 }
 ```
 
-`Finalizers.add`/`remove` 执行服务端 JSON patch（幂等，并发调和下安全）。`StatusUpdates.update` 通过 `/status` 子资源写入资源当前 status，要求 CRD 声明 `status` 子资源。
+`Finalizers.add`/`remove` 执行服务端 JSON patch（幂等，并发调和下安全）。`StatusUpdates.update` 将给定 status 对象以 JSON merge patch 合并进 `/status` 子资源，绝不修改传入的（informer 缓存的）资源实例；要求 CRD 声明 `status` 子资源。
 
 ## 3. 配置高级控制器
 
@@ -163,6 +164,7 @@ ResourceMapper<ConfigMap, MyResource> mapper = event -> List.of(
 | `operator.framework.controller.worker-threads` | `1` | 每个控制器注册创建的 Worker 数量。 |
 | `operator.framework.controller.resync-period` | `60s` | 默认 Informer resync；零表示禁用周期性 resync。 |
 | `operator.framework.controller.generation-change-filter` | `true` | 除非 generation、删除时间戳或 finalizer 变化，否则过滤主资源更新；add/delete/resync 与从资源事件仍会入队。 |
+| `operator.framework.controller.filter-events-by-involved-object` | `true` | 用 involvedObject 字段选择器收窄 Kubernetes Event 监听；当 API server（或内存测试 server）无法匹配该选择器时关闭。 |
 | `operator.framework.controller.startup-retry-delay` | `5s` | 启动或 Informer 就绪失败后的监督器重试/检查周期。 |
 | `operator.framework.leader-election.enabled` | `false` | 为控制器运行时启用 Fabric8 Lease 选主。 |
 | `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease 名称；应用名称回退值会按 Kubernetes 规则清理。 |
@@ -394,7 +396,33 @@ com.huawei.dcs.modelengine.operator.framework.api.*
 
 `autoconfigure` 根包用于 Spring Boot 加载与配置元数据；`internal` 根包不是兼容性契约。生产 JAR 在 framework 包下有意只包含 `api`、`autoconfigure` 与 `internal`。
 
-## 12. 构建与验证
+## 12. 使用测试套件
+
+`operator-framework-testing` 模块提供内存 CRUD API server 和一个小测试套件，Operator 测试不再需要真实集群，也不用自己拼装 mock server：
+
+```xml
+<dependency>
+    <groupId>com.huawei.dcs.modelengine</groupId>
+    <artifactId>operator-framework-testing</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <scope>test</scope>
+</dependency>
+```
+
+针对内存 server 驱动真实的控制器运行时——informer、worker、队列以及二级缓存：
+
+```java
+try (var kit = OperatorTestKit.create()) {
+    var runtime = kit.controller(registration);
+    runtime.start();
+    kit.client().configMaps().inNamespace(kit.client().getNamespace()).resource(configMap).create();
+    // 通过 kit.client() 等待副作用
+}
+```
+
+直接调用 reconciler 时，`OperatorTestKit.context(primary)` 返回已预置主缓存的 `ReconciliationContext`，无需运行时即可走 by-index/get-by-key 路径。内存 server 的 client 命名空间是 `test`——请使用 `kit.client().getNamespace()` 而不是硬编码。监听 Kubernetes Event 的 Operator 必须关闭 involvedObject 字段选择器过滤（`operator.framework.controller.filter-events-by-involved-object: false`），内存 server 无法匹配该选择器。`example/echo-operator` 中有完整的套件测试（`EchoOperatorKitTest`）。
+
+## 13. 构建与验证
 
 在仓库根目录执行完整门禁：
 

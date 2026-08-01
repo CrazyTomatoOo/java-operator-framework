@@ -198,15 +198,17 @@ public class OperatorFrameworkAutoConfiguration {
         @Bean
         AdmissionWebhookController admissionWebhookController(
                 WebhookCallbackRegistry registry,
-                ObjectMapper objectMapper) {
-            return new AdmissionWebhookController(registry, objectMapper);
+                ObjectMapper objectMapper,
+                OperatorFrameworkMetrics metrics) {
+            return new AdmissionWebhookController(registry, objectMapper, metrics);
         }
 
         @Bean
         ConversionWebhookController conversionWebhookController(
                 WebhookCallbackRegistry registry,
-                ObjectMapper objectMapper) {
-            return new ConversionWebhookController(registry, objectMapper);
+                ObjectMapper objectMapper,
+                OperatorFrameworkMetrics metrics) {
+            return new ConversionWebhookController(registry, objectMapper, metrics);
         }
     }
 }

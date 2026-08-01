@@ -6,12 +6,14 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecisi
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
+import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.authentication.UserInfoBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class AdmissionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
+    private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
     private GenericApplicationContext context;
     private WebhookCallbackRegistry registry;
     private MockMvc mvc;
@@ -46,7 +49,8 @@ class AdmissionWebhookControllerTest {
         context.registerBean("nullmutator", NullMutator.class, NullMutator::new);
         context.refresh();
         registry = new WebhookCallbackRegistry(context.getBeanFactory());
-        mvc = MockMvcBuilders.standaloneSetup(new AdmissionWebhookController(registry, mapper)).build();
+        mvc = MockMvcBuilders.standaloneSetup(
+                new AdmissionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
     }
 
     @AfterEach
@@ -145,6 +149,31 @@ class AdmissionWebhookControllerTest {
         mvc.perform(admission("/operator-framework/webhooks/mutate/nullmutator"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.response.status.message").value("webhook callback failed"));
+    }
+
+    @Test
+    void recordsCallbackMetricsPerOutcome() throws Exception {
+        mvc.perform(admission("/operator-framework/webhooks/validate/allow")).andExpect(status().isOk());
+        mvc.perform(admission("/operator-framework/webhooks/validate/deny")).andExpect(status().isOk());
+        mvc.perform(admission("/operator-framework/webhooks/validate/throwing")).andExpect(status().isOk());
+        mvc.perform(admission("/operator-framework/webhooks/mutate/mutate")).andExpect(status().isOk());
+        mvc.perform(admission("/operator-framework/webhooks/mutate/changeidentity")).andExpect(status().isOk());
+        mvc.perform(admission("/operator-framework/webhooks/mutate/nullmutator")).andExpect(status().isOk());
+
+        assertThat(callbackCount("validator", "allow", "allowed")).isEqualTo(1.0);
+        assertThat(callbackCount("validator", "deny", "denied")).isEqualTo(1.0);
+        assertThat(callbackCount("validator", "throwing", "error")).isEqualTo(1.0);
+        assertThat(callbackCount("mutator", "mutate", "mutated")).isEqualTo(1.0);
+        assertThat(callbackCount("mutator", "changeidentity", "denied")).isEqualTo(1.0);
+        assertThat(callbackCount("mutator", "nullmutator", "error")).isEqualTo(1.0);
+        assertThat(meters.get("operator.framework.callback.duration")
+                .tags("callback.type", "validator", "bean", "allow", "outcome", "allowed")
+                .timer().count()).isEqualTo(1);
+    }
+
+    private double callbackCount(String type, String bean, String outcome) {
+        return meters.get("operator.framework.callback.total")
+                .tags("callback.type", type, "bean", bean, "outcome", outcome).counter().count();
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder admission(String path)

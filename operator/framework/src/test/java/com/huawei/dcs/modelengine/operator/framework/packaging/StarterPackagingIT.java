@@ -25,6 +25,7 @@ class StarterPackagingIT {
             "operator.framework.controller.worker-threads",
             "operator.framework.controller.resync-period",
             "operator.framework.controller.generation-change-filter",
+            "operator.framework.controller.filter-events-by-involved-object",
             "operator.framework.controller.startup-retry-delay",
             "operator.framework.leader-election.enabled",
             "operator.framework.leader-election.lease-name",
