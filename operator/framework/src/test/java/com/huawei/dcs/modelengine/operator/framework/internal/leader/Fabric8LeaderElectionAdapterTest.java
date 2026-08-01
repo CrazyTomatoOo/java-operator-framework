@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -92,6 +93,41 @@ class Fabric8LeaderElectionAdapterTest {
 
         assertThat(election).isCancelled();
         verify(elector, never()).release();
+    }
+
+    @Test
+    void startIsIdempotentAndStopWithoutStartIsNoop() {
+        var client = mock(KubernetesClient.class);
+        var builder = mock(LeaderElectorBuilder.class);
+        var elector = mock(LeaderElector.class);
+        var election = new CompletableFuture<>();
+        when(client.leaderElector()).thenReturn(builder);
+        when(builder.withConfig(any())).thenReturn(builder);
+        when(builder.build()).thenReturn(elector);
+        doReturn(election).when(elector).start();
+        var adapter = new Fabric8LeaderElectionAdapter(
+                client, new OperatorFrameworkProperties(), new MockEnvironment());
+
+        adapter.start(() -> { }, () -> { });
+        adapter.start(() -> { }, () -> { });
+        verify(elector, times(1)).start();
+
+        adapter.stop();
+        adapter.stop();
+        new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), new MockEnvironment()).stop();
+    }
+
+    @Test
+    void generatedLeaseNameAndNamespaceFallBackToDefaults() {
+        var client = mock(KubernetesClient.class);
+        when(client.getNamespace()).thenReturn(null);
+        var environment = new MockEnvironment().withProperty("spring.application.name", "!!!");
+        var adapter = new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), environment);
+
+        var config = adapter.config(() -> { }, () -> { });
+
+        assertThat(config.getName()).isEqualTo("operator-framework-leader");
+        assertThat(config.getLock().describe()).contains("default");
     }
 
     @Test

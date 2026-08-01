@@ -6,11 +6,16 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResu
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationTrigger;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.TriggerRole;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
+import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.EventBuilder;
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -19,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -339,6 +345,251 @@ class Fabric8ControllerTest {
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(found).contains(true));
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void startTwiceIsIgnoredAndStopBeforeStartCompletesImmediately() throws Exception {
+        var registration = ControllerBuilder.forResource(ConfigMap.class,
+                (resource, context) -> ReconcileResult.done()).build();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+
+        runtime.stop().toCompletableFuture().get(1, TimeUnit.SECONDS);
+        assertThat(runtime.isRunning()).isFalse();
+        assertThat(runtime.isReady()).isFalse();
+
+        try {
+            runtime.start();
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
+            assertThat(runtime.isRunning()).isTrue();
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+        assertThat(runtime.isRunning()).isFalse();
+    }
+
+    @Test
+    void labelSelectorReconcilesOnlyMatchingPrimaries() throws Exception {
+        var names = new CopyOnWriteArrayList<String>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            names.add(resource.getMetadata().getName());
+            return ReconcileResult.done();
+        }).labelSelector(Map.of("expose", "yes")).build();
+        client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder()
+                .withNewMetadata().withName("visible").withNamespace("operators").withUid("visible-uid")
+                .addToLabels("expose", "yes").endMetadata().build()).create();
+        client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder()
+                .withNewMetadata().withName("hidden").withNamespace("operators").withUid("hidden-uid")
+                .endMetadata().build()).create();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(names).contains("visible"));
+            Thread.sleep(300);
+            assertThat(names).doesNotContain("hidden");
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void ownedResourceTriggersOwnedReconcile() throws Exception {
+        var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            contexts.add(context);
+            return ReconcileResult.done();
+        }).owns(Secret.class).build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
+            contexts.clear();
+
+            client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                    .withNewMetadata().withName("owned").withNamespace("operators")
+                    .withOwnerReferences(new OwnerReferenceBuilder()
+                            .withApiVersion("v1").withKind("ConfigMap").withController(true)
+                            .withName("sample").withUid("primary-uid").build())
+                    .endMetadata().build()).create();
+            awaitRole(contexts, TriggerRole.OWNED);
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void watchedSecondaryDeleteEnqueuesDeletionTrigger() throws Exception {
+        var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            contexts.add(context);
+            return ReconcileResult.done();
+        }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                .withNewMetadata().withName("secondary").withNamespace("operators")
+                .addToLabels("primary", "sample").endMetadata().build()).create();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            awaitRole(contexts, TriggerRole.WATCHED);
+            contexts.clear();
+
+            client.secrets().inNamespace("operators").withName("secondary").delete();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
+                    .anySatisfy(context -> assertThat(context.triggers()).anySatisfy(trigger -> {
+                        assertThat(trigger.role()).isEqualTo(TriggerRole.WATCHED);
+                        assertThat(trigger.eventType()).isEqualTo(ResourceEventType.DELETED);
+                    })));
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void failingSecondaryMapperIsSwallowedAndControllerStaysHealthy() throws Exception {
+        var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            contexts.add(context);
+            return ReconcileResult.done();
+        }).watches("secrets", Secret.class, event -> {
+            throw new IllegalStateException("broken mapper");
+        }).build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
+            contexts.clear();
+
+            client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                    .withNewMetadata().withName("secondary").withNamespace("operators").endMetadata()
+                    .build()).create();
+            Thread.sleep(300);
+            assertThat(contexts).isEmpty();
+            assertThat(runtime.isReady()).isTrue();
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void secondaryKeyWithoutPrimaryResourceIsSkipped() throws Exception {
+        var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            contexts.add(context);
+            return ReconcileResult.done();
+        }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
+
+            client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                    .withNewMetadata().withName("orphan").withNamespace("operators")
+                    .addToLabels("primary", "ghost").endMetadata().build()).create();
+            Thread.sleep(300);
+            assertThat(contexts).isEmpty();
+            assertThat(runtime.isReady()).isTrue();
+            assertThat(runtime.queueDepth()).isZero();
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void resyncPeriodDeliversResyncTriggers() throws Exception {
+        var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
+            contexts.add(context);
+            return ReconcileResult.done();
+        }).generationFilter(true).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        client.secrets().inNamespace("operators").resource(new SecretBuilder()
+                .withNewMetadata().withName("secondary").withNamespace("operators")
+                .addToLabels("primary", "sample").endMetadata().build()).create();
+        var props = properties();
+        props.getController().setResyncPeriod(Duration.ofMillis(100));
+        var runtime = new Fabric8Controller<>(client, registration, props.getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
+                    .flatExtracting(ReconciliationContext::triggers)
+                    .extracting(ReconciliationTrigger::eventType)
+                    .contains(ResourceEventType.RESYNC));
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void gaugesReflectQueueDepthAndSyncState() throws Exception {
+        var registry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        var metrics = new OperatorFrameworkMetrics(registry);
+        var controller = ConfigMap.class.getName();
+        var registration = ControllerBuilder.forResource(ConfigMap.class,
+                (resource, context) -> ReconcileResult.done()).build();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1), metrics);
+
+        assertThat(registry.get("operator.framework.queue.depth")
+                .tag("controller", controller).gauge().value()).isZero();
+        assertThat(registry.get("operator.framework.informer.synced")
+                .tag("controller", controller).gauge().value()).isZero();
+
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
+                    assertThat(registry.get("operator.framework.informer.synced")
+                            .tag("controller", controller).gauge().value()).isEqualTo(1.0));
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void clusterScopedResourceReconcilesWithNullNamespaceKey() throws Exception {
+        var keys = new CopyOnWriteArrayList<ResourceKey>();
+        var registration = ControllerBuilder.forResource(Namespace.class, (resource, context) -> {
+            keys.add(context.resourceKey());
+            return ReconcileResult.done();
+        }).build();
+        client.namespaces().resource(new NamespaceBuilder()
+                .withNewMetadata().withName("watched-namespace").endMetadata().build()).create();
+        var props = properties();
+        props.getController().setClusterScoped(true);
+        var runtime = new Fabric8Controller<>(client, registration, props.getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(keys)
+                    .anySatisfy(key -> assertThat(key.namespace()).isNull()));
+        } finally {
+            runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test
+    void eventInformerWithInvolvedObjectFieldFilterStartsAndStaysHealthy() throws Exception {
+        // ponytail: the in-memory mock cannot match involvedObject field selectors, so this
+        // only exercises the filter-enabled informer wiring, not event delivery
+        var registration = ControllerBuilder.forResource(ConfigMap.class,
+                (resource, context) -> ReconcileResult.done()).watchesKubernetesEvents().build();
+        client.configMaps().inNamespace("operators").resource(primary()).create();
+        var runtime = new Fabric8Controller<>(
+                client, registration, properties().getController(), Duration.ofSeconds(1));
+        try {
+            runtime.start();
+            await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
+            assertThat(runtime.isRunning()).isTrue();
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }

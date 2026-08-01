@@ -202,6 +202,129 @@ class OperatorFrameworkLifecycleTest {
         stop(lifecycle);
     }
 
+    @Test
+    void startStopAreIdempotentAndAccessorsReflectRuntimeState() throws Exception {
+        var runtime = new TestRuntime(true);
+        var factory = new TestRuntimeFactory(runtime);
+        var lifecycle = new OperatorFrameworkLifecycle(properties(), factory, new TestLeaderElection(), readiness());
+
+        assertThat(lifecycle.lastFailure()).isEqualTo("none");
+        assertThat(lifecycle.isLeading()).isFalse();
+        assertThat(lifecycle.isInformerSynced()).isFalse();
+        assertThat(lifecycle.isWorkerRunning()).isFalse();
+        assertThat(lifecycle.queueDepth()).isZero();
+
+        lifecycle.start();
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(factory.creations).hasValue(1));
+        assertThat(lifecycle.isInformerSynced()).isTrue();
+        assertThat(lifecycle.isWorkerRunning()).isTrue();
+
+        var stopped = new CountDownLatch(1);
+        lifecycle.stop(stopped::countDown);
+        runtime.stopped.complete(null);
+        assertThat(stopped.await(1, TimeUnit.SECONDS)).isTrue();
+
+        var repeated = new CountDownLatch(1);
+        lifecycle.stop(repeated::countDown);
+        assertThat(repeated.await(1, TimeUnit.SECONDS)).isTrue();
+        assertThat(lifecycle.isInformerSynced()).isFalse();
+        lifecycle.stop();
+    }
+
+    @Test
+    void retriesWhenLeaderElectionStartThrowsSynchronously() throws Exception {
+        var properties = properties();
+        properties.getLeaderElection().setEnabled(true);
+        var leader = new TestLeaderElection();
+        leader.failStartWith(new IllegalStateException("no lease endpoint"));
+        var lifecycle = new OperatorFrameworkLifecycle(properties, new TestRuntimeFactory(), leader, readiness());
+
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
+        assertThat(lifecycle.lastFailure()).isEqualTo(IllegalStateException.class.getName());
+
+        stop(lifecycle);
+    }
+
+    @Test
+    void completedElectionRestartsAndRecordsUnexpectedCompletion() throws Exception {
+        var properties = properties();
+        properties.getLeaderElection().setEnabled(true);
+        var leader = new TestLeaderElection();
+        var lifecycle = new OperatorFrameworkLifecycle(properties, new TestRuntimeFactory(), leader, readiness());
+
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
+        leader.completeElection();
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
+        assertThat(lifecycle.lastFailure()).isEqualTo("unexpected completion");
+
+        stop(lifecycle);
+    }
+
+    @Test
+    void stopWithoutLeadershipTermCompletesCallback() throws Exception {
+        var properties = properties();
+        properties.getLeaderElection().setEnabled(true);
+        var leader = new TestLeaderElection();
+        var lifecycle = new OperatorFrameworkLifecycle(properties, new TestRuntimeFactory(), leader, readiness());
+
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
+
+        stop(lifecycle);
+    }
+
+    @Test
+    void leadershipRegainedDuringDrainResumesRuntimeAfterStopCompletes() throws Exception {
+        var properties = properties();
+        properties.getLeaderElection().setEnabled(true);
+        var leader = new TestLeaderElection();
+        var first = new TestRuntime(true);
+        var second = new TestRuntime(true);
+        var factory = new TestRuntimeFactory(first, second);
+        var lifecycle = new OperatorFrameworkLifecycle(properties, factory, leader, readiness());
+
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.started).isTrue());
+        leader.startLeading.run();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(first.started).isTrue());
+
+        leader.stopLeading.run();
+        leader.startLeading.run();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(first.stopCalls).hasValue(1));
+        assertThat(factory.creations).hasValue(1);
+
+        first.stopped.complete(null);
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() -> assertThat(factory.creations).hasValue(2));
+
+        second.stopped.complete(null);
+        stop(lifecycle);
+    }
+
+    @Test
+    void repeatedLeadershipStartKeepsExistingRuntime() throws Exception {
+        var properties = properties();
+        properties.getLeaderElection().setEnabled(true);
+        var leader = new TestLeaderElection();
+        var runtime = new TestRuntime(true);
+        var factory = new TestRuntimeFactory(runtime);
+        var lifecycle = new OperatorFrameworkLifecycle(properties, factory, leader, readiness());
+
+        lifecycle.start();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.started).isTrue());
+        leader.startLeading.run();
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(factory.creations).hasValue(1));
+
+        leader.startLeading.run();
+        await().during(Duration.ofMillis(50)).atMost(Duration.ofSeconds(1))
+                .untilAsserted(() -> assertThat(factory.creations).hasValue(1));
+
+        runtime.stopped.complete(null);
+        stop(lifecycle);
+    }
+
     private ProceedingJoinPoint policyJoinPoint() {
         var point = mock(ProceedingJoinPoint.class);
         var resource = new ConfigMapBuilder().withNewMetadata()
@@ -295,21 +418,35 @@ class OperatorFrameworkLifecycleTest {
         private volatile boolean started;
         private final AtomicInteger startCalls = new AtomicInteger();
         private volatile CompletableFuture<Void> election;
+        private volatile RuntimeException startFailure;
 
         @Override
         public java.util.concurrent.CompletionStage<Void> start(
                 Runnable onStartLeading,
                 Runnable onStopLeading) {
+            var failure = startFailure;
+            startFailure = null;
+            startCalls.incrementAndGet();
+            if (failure != null) {
+                throw failure;
+            }
             startLeading = onStartLeading;
             stopLeading = onStopLeading;
             started = true;
-            startCalls.incrementAndGet();
             election = new CompletableFuture<>();
             return election;
         }
 
         void fail(Throwable failure) {
             election.completeExceptionally(failure);
+        }
+
+        void failStartWith(RuntimeException failure) {
+            startFailure = failure;
+        }
+
+        void completeElection() {
+            election.complete(null);
         }
 
         @Override

@@ -430,7 +430,7 @@ Run the complete gate from the repository root:
 mvn -f operator/framework/pom.xml clean verify
 ```
 
-The gate runs tests, post-package integration checks, configuration metadata/resource checks, JAR/package-boundary checks, source JAR generation, and Checkstyle. Checkstyle applies to production sources only and enforces 120-column lines, no more than 5 method/constructor parameters, methods no longer than 50 non-empty lines, and cyclomatic complexity no greater than 5.
+The gate runs tests, post-package integration checks, configuration metadata/resource checks, JAR/package-boundary checks, source JAR generation, and Checkstyle (production sources only: 120-column lines, no more than 5 method/constructor parameters, methods no longer than 50 non-empty lines, cyclomatic complexity no greater than 5). JaCoCo then enforces a bundle-level coverage floor — line coverage at least 75% and branch coverage at least 50% — with the HTML report under `target/site/jacoco/`; `operator/testing` applies the same thresholds.
 
 For a faster test-only cycle:
 

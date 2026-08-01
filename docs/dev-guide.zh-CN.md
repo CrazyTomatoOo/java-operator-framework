@@ -430,7 +430,7 @@ try (var kit = OperatorTestKit.create()) {
 mvn -f operator/framework/pom.xml clean verify
 ```
 
-门禁会执行测试、打包后集成检查、配置元数据/资源检查、JAR/包边界检查、源码 JAR 生成与 Checkstyle。Checkstyle 仅检查生产源码，并强制每行最多 120 字符、方法/构造参数最多 5 个、每个方法最多 50 个非空行、圈复杂度不大于 5。
+门禁会执行测试、打包后集成检查、配置元数据/资源检查、JAR/包边界检查、源码 JAR 生成与 Checkstyle（仅生产源码：每行最多 120 字符、方法/构造参数最多 5 个、每个方法最多 50 个非空行、圈复杂度不大于 5）。随后 JaCoCo 强制包级覆盖率下限——行覆盖率不低于 75%、分支覆盖率不低于 50%，HTML 报告位于 `target/site/jacoco/`；`operator/testing` 模块采用相同阈值。
 
 更快的仅测试循环：
 
