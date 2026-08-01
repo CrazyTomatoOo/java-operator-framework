@@ -41,6 +41,7 @@ Thumbs.db
 
 # ===== Logs =====
 *.log
+logs/
 # Agent evidence logs under .omo/.sisyphus are intentionally tracked
 !/.omo/**/*.log
 !/.sisyphus/**/*.log

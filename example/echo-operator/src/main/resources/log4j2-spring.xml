@@ -1,22 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Log4j2 configuration for the echo-operator example. Spring Boot auto-detects
      log4j2-spring.xml on the classpath; the SLF4J facade (used by Lombok @Slf4j)
-     routes through log4j-slf4j2-impl to this engine. -->
+     routes through log4j-slf4j2-impl to this engine.
+
+     Logs are split by component into separate rolling files under ${LOG_DIR}:
+       - framework.log        the operator framework itself
+       - controller-echo.log  the EchoReconciler controller
+       - app.log              everything else (webhooks, Spring, root)
+     Root also mirrors to the console so `kubectl logs` still works.
+
+     To split out another controller: add one <RollingFile> appender plus one
+     <Logger name="<controller FQN>" additivity="false"> pointing at it. -->
 <Configuration status="WARN">
   <Properties>
+    <Property name="LOG_DIR">logs</Property>
     <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+    <Property name="MAX_FILE_SIZE">10MB</Property>
+    <Property name="MAX_BACKUPS">5</Property>
   </Properties>
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="${LOG_PATTERN}"/>
     </Console>
+    <RollingFile name="FrameworkFile"
+                 fileName="${LOG_DIR}/framework.log"
+                 filePattern="${LOG_DIR}/framework-%i.log.gz">
+      <PatternLayout pattern="${LOG_PATTERN}"/>
+      <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+      <DefaultRolloverStrategy max="${MAX_BACKUPS}"/>
+    </RollingFile>
+    <RollingFile name="EchoControllerFile"
+                 fileName="${LOG_DIR}/controller-echo.log"
+                 filePattern="${LOG_DIR}/controller-echo-%i.log.gz">
+      <PatternLayout pattern="${LOG_PATTERN}"/>
+      <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+      <DefaultRolloverStrategy max="${MAX_BACKUPS}"/>
+    </RollingFile>
+    <RollingFile name="AppFile"
+                 fileName="${LOG_DIR}/app.log"
+                 filePattern="${LOG_DIR}/app-%i.log.gz">
+      <PatternLayout pattern="${LOG_PATTERN}"/>
+      <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+      <DefaultRolloverStrategy max="${MAX_BACKUPS}"/>
+    </RollingFile>
   </Appenders>
   <Loggers>
-    <Logger name="com.example.echooperator" level="DEBUG"/>
-    <Logger name="com.huawei.dcs.modelengine.operator.framework" level="INFO"/>
+    <!-- The framework itself. additivity=false keeps these out of app.log/console. -->
+    <Logger name="com.huawei.dcs.modelengine.operator.framework" level="INFO" additivity="false">
+      <AppenderRef ref="FrameworkFile"/>
+    </Logger>
+    <!-- One logger per controller. EchoReconciler is this example's only controller. -->
+    <Logger name="com.example.echooperator.EchoReconciler" level="DEBUG" additivity="false">
+      <AppenderRef ref="EchoControllerFile"/>
+    </Logger>
     <Logger name="io.fabric8" level="WARN"/>
     <Root level="INFO">
       <AppenderRef ref="Console"/>
+      <AppenderRef ref="AppFile"/>
     </Root>
   </Loggers>
 </Configuration>
