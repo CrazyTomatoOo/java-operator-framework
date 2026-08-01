@@ -119,6 +119,42 @@ Applies.apply(client, Owners.setController(primaryResource, desiredConfigMap), "
 
 `Owners.setController` writes a `controller=true, blockOwnerDeletion=true` reference; it requires the owner to exist on the server (a uid), both objects to share a namespace (or a cluster-scoped owner), and rejects a dependent already controlled by a different owner instead of silently taking it over.
 
+### Managed dependents
+
+The common case — one or more resources owned by the primary — collapses to a callback plus one call. Implement `DependentResource` to compute the desired state, declare it on the controller with `manages`, and submit it in the reconciler:
+
+```java
+final class EchoConfigMap implements DependentResource<ConfigMap, MyResource> {
+    @Override
+    public Class<ConfigMap> resourceType() {
+        return ConfigMap.class;
+    }
+
+    @Override
+    public ConfigMap desired(MyResource primary, ReconciliationContext<MyResource> context) {
+        return new ConfigMapBuilder()
+                .withNewMetadata()
+                .withNamespace(primary.getMetadata().getNamespace())
+                .withName(primary.getMetadata().getName() + "-echo")
+                .endMetadata()
+                .addToData("message", primary.getSpec().getMessage())
+                .build();
+    }
+}
+
+@Bean
+ControllerRegistration<MyResource> myResourceController(MyResourceReconciler reconciler) {
+    return ControllerBuilder.forResource(MyResource.class, reconciler)
+            .manages(new EchoConfigMap())
+            .build();
+}
+
+// in the reconciler:
+Dependents.apply(client, new EchoConfigMap(), resource, context, "my-operator");
+```
+
+`Dependents.apply` computes the desired state, sets the controller owner reference, and server-side-applies it: the apiserver creates the dependent when absent, converges owned fields when it drifts, and garbage-collects it when the primary is deleted. `manages(...)` registers the dependent's type as an owned resource so its events trigger reconciliation. Deleting an individual dependent while the primary lives is out of scope — use the client directly.
+
 ## 3. Configure an advanced controller
 
 A plain `Reconciler<T>` bean gets default controller settings. Define one `ControllerRegistration<T>` Bean when the controller needs explicit sources or per-controller overrides.
@@ -478,13 +514,15 @@ All types live under `com.huawei.dcs.modelengine.operator.framework.api` unless 
 | `StatusUpdates` | `update(client, resource, status)` | JSON-merge-patch of the `/status` subresource (§2) |
 | `Applies` | `apply(client, desired, fieldManager)`, `applyForcibly(...)` | Server-side apply of full desired state (§2) |
 | `Owners` | `setController(owner, dependent)` | Controller owner reference with GC and `owns(...)` mapping (§2) |
+| `DependentResource<D, P>` | `resourceType()`, `desired(primary, context)` | Computes a dependent's desired state; declared via `ControllerBuilder.manages` (§2) |
+| `Dependents` | `apply(client, dependent, primary, context, fieldManager)` | desired → owner ref → server-side apply, one call (§2) |
 | Value types | `ReconciliationTrigger(eventType, role, resource)`, `ResourceKey(namespace, name)`, `ResourceReference.from(HasMetadata)`, enums `ResourceEventType`, `TriggerRole` | Describe why a reconcile fired and which resource it targets |
 
 ### Controller (`api.controller`)
 
 | Type | Key members | Purpose |
 | --- | --- | --- |
-| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`, `watches`, `watchesKubernetesEvents`, `generationFilter`, `resyncPeriod`, `labelSelector`, `fieldSelector`, `indexField` → `build()` | Fluent controller definition (§3) |
+| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`, `manages`, `watches`, `watchesKubernetesEvents`, `generationFilter`, `resyncPeriod`, `labelSelector`, `fieldSelector`, `indexField` → `build()` | Fluent controller definition (§3) |
 | `ControllerRegistration<T>` | accessors: `resourceType`, `reconciler`, `ownedResources`, `secondaryWatches`, `indexFields`, ... | Immutable descriptor consumed by the runtime and the test kit |
 | `ResourceMapper<S, T>` | `Collection<ResourceKey> map(ResourceEvent<S> event)` | Maps a secondary-resource event to primary keys; prefabs in `Mappers`: `ownerReferences`, `byLabel`, `byAnnotation`, `involvedObject` |
 | `ResourceEvent<S>` | `added`, `updated`, `deleted`, `resync`; record `(type, resource, previousResource)` | Informer event handed to a mapper |

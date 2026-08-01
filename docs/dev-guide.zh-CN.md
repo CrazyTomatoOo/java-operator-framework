@@ -119,6 +119,42 @@ Applies.apply(client, Owners.setController(primaryResource, desiredConfigMap), "
 
 `Owners.setController` 写入 `controller=true, blockOwnerDeletion=true` 的引用；要求 owner 已存在于服务端（有 uid）、两个对象同 namespace（或 owner 为集群作用域），且拒绝已被其他 owner 控制的 dependent，而不是静默接管。
 
+### 托管 dependents
+
+常见场景——主资源拥有一个或多个从属资源——可以收敛为一个回调加一次调用。实现 `DependentResource` 计算期望状态，用 `manages` 在 controller 上声明，并在 reconciler 中提交：
+
+```java
+final class EchoConfigMap implements DependentResource<ConfigMap, MyResource> {
+    @Override
+    public Class<ConfigMap> resourceType() {
+        return ConfigMap.class;
+    }
+
+    @Override
+    public ConfigMap desired(MyResource primary, ReconciliationContext<MyResource> context) {
+        return new ConfigMapBuilder()
+                .withNewMetadata()
+                .withNamespace(primary.getMetadata().getNamespace())
+                .withName(primary.getMetadata().getName() + "-echo")
+                .endMetadata()
+                .addToData("message", primary.getSpec().getMessage())
+                .build();
+    }
+}
+
+@Bean
+ControllerRegistration<MyResource> myResourceController(MyResourceReconciler reconciler) {
+    return ControllerBuilder.forResource(MyResource.class, reconciler)
+            .manages(new EchoConfigMap())
+            .build();
+}
+
+// 在 reconciler 中：
+Dependents.apply(client, new EchoConfigMap(), resource, context, "my-operator");
+```
+
+`Dependents.apply` 计算期望状态、写入 controller owner reference 并执行 server-side apply：apiserver 在 dependent 不存在时创建它，在其漂移时收敛所属字段，并在主资源删除时级联回收它。`manages(...)` 将 dependent 的类型注册为 owned resource，使其事件触发调和。主资源存活期间删除单个 dependent 不在此范畴内——请直接使用 client。
+
 ## 3. 配置高级控制器
 
 普通 `Reconciler<T>` Bean 使用控制器默认设置。需要显式事件源或单控制器覆盖项时，定义一个 `ControllerRegistration<T>` Bean。
@@ -478,13 +514,15 @@ example/echo-operator/scripts/e2e-test.sh
 | `StatusUpdates` | `update(client, resource, status)` | 对 `/status` 子资源做 JSON Merge Patch（§2） |
 | `Applies` | `apply(client, desired, fieldManager)`、`applyForcibly(...)` | 以 server-side apply 提交完整期望状态（§2） |
 | `Owners` | `setController(owner, dependent)` | Controller owner reference，级联回收与 `owns(...)` 映射（§2） |
+| `DependentResource<D, P>` | `resourceType()`、`desired(primary, context)` | 计算 dependent 的期望状态；经 `ControllerBuilder.manages` 声明（§2） |
+| `Dependents` | `apply(client, dependent, primary, context, fieldManager)` | desired → owner ref → server-side apply，一次调用（§2） |
 | 值类型 | `ReconciliationTrigger(eventType, role, resource)`、`ResourceKey(namespace, name)`、`ResourceReference.from(HasMetadata)`、枚举 `ResourceEventType`、`TriggerRole` | 描述调和为何触发、目标资源是谁 |
 
 ### 控制器（`api.controller`）
 
 | 类型 | 关键成员 | 用途 |
 | --- | --- | --- |
-| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`、`watches`、`watchesKubernetesEvents`、`generationFilter`、`resyncPeriod`、`labelSelector`、`fieldSelector`、`indexField` → `build()` | 流式控制器定义（§3） |
+| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`、`manages`、`watches`、`watchesKubernetesEvents`、`generationFilter`、`resyncPeriod`、`labelSelector`、`fieldSelector`、`indexField` → `build()` | 流式控制器定义（§3） |
 | `ControllerRegistration<T>` | 访问器：`resourceType`、`reconciler`、`ownedResources`、`secondaryWatches`、`indexFields` 等 | 不可变描述符，由运行时与测试套件消费 |
 | `ResourceMapper<S, T>` | `Collection<ResourceKey> map(ResourceEvent<S> event)` | 将二级资源事件映射为主资源键；预置实现见 `Mappers`：`ownerReferences`、`byLabel`、`byAnnotation`、`involvedObject` |
 | `ResourceEvent<S>` | `added`、`updated`、`deleted`、`resync`；record `(type, resource, previousResource)` | 传递给 Mapper 的 informer 事件 |

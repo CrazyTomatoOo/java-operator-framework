@@ -4,6 +4,7 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.DependentResource;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.time.Duration;
@@ -63,6 +64,12 @@ public final class ControllerBuilder<T extends HasMetadata> {
     public <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
         ownedResources.add(Objects.requireNonNull(resourceType, "resourceType must not be null"));
         return this;
+    }
+
+    /** Registers the dependent's type as an owned resource; submit its desired state via {@code Dependents.apply}. */
+    public ControllerBuilder<T> manages(DependentResource<? extends HasMetadata, T> dependent) {
+        Objects.requireNonNull(dependent, "dependent must not be null");
+        return owns(dependent.resourceType());
     }
 
     public <S extends HasMetadata> ControllerBuilder<T> watches(

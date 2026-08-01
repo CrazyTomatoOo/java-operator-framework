@@ -4,7 +4,9 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.DependentResource;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -150,6 +152,29 @@ class ControllerApiTest {
         assertEquals(Map.of("app", "my-op"), selector.labels());
         assertEquals(Map.of("metadata.namespace", "operators"), selector.fields());
         assertThrows(UnsupportedOperationException.class, () -> selector.labels().put("x", "y"));
+    }
+
+    @Test
+    void managesRegistersDependentResourceTypeAsOwned() {
+        var registration = ControllerBuilder
+                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+                .manages(new DependentResource<Secret, ConfigMap>() {
+                    @Override
+                    public Class<Secret> resourceType() {
+                        return Secret.class;
+                    }
+
+                    @Override
+                    public Secret desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
+                        return null;
+                    }
+                })
+                .build();
+
+        assertEquals(List.of(Secret.class), registration.ownedResources());
+        assertThrows(NullPointerException.class, () -> ControllerBuilder
+                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+                .manages(null));
     }
 
     @Test
