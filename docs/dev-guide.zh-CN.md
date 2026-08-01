@@ -111,6 +111,14 @@ Applies.apply(client, desiredConfigMap, "my-operator");
 
 `Applies.apply` 将整个期望对象作为 `application/apply-patch+yaml` patch 发送：apiserver 在资源不存在时创建它，并只更新该 field manager 拥有的字段。每个 Operator 的 field manager 名称应保持稳定（应用名是不错的选择）；否则 fabric8 会回退到 `fabric8`，而共用同一名字的 manager 会静默互相接管字段。始终传入新建的期望对象——绝不传入被修改过的 informer 缓存实例。
 
+apply 之前，为每个持有资源打上 controller owner reference，让 Kubernetes 随主资源级联回收它，并让 `owns(...)` 监听能把它的事件映射回主资源：
+
+```java
+Applies.apply(client, Owners.setController(primaryResource, desiredConfigMap), "my-operator");
+```
+
+`Owners.setController` 写入 `controller=true, blockOwnerDeletion=true` 的引用；要求 owner 已存在于服务端（有 uid）、两个对象同 namespace（或 owner 为集群作用域），且拒绝已被其他 owner 控制的 dependent，而不是静默接管。
+
 ## 3. 配置高级控制器
 
 普通 `Reconciler<T>` Bean 使用控制器默认设置。需要显式事件源或单控制器覆盖项时，定义一个 `ControllerRegistration<T>` Bean。
@@ -469,6 +477,7 @@ example/echo-operator/scripts/e2e-test.sh
 | `Finalizers` | `isDeleting`、`present`、`add`、`remove` | Finalizer 服务端 JSON Patch（§2） |
 | `StatusUpdates` | `update(client, resource, status)` | 对 `/status` 子资源做 JSON Merge Patch（§2） |
 | `Applies` | `apply(client, desired, fieldManager)`、`applyForcibly(...)` | 以 server-side apply 提交完整期望状态（§2） |
+| `Owners` | `setController(owner, dependent)` | Controller owner reference，级联回收与 `owns(...)` 映射（§2） |
 | 值类型 | `ReconciliationTrigger(eventType, role, resource)`、`ResourceKey(namespace, name)`、`ResourceReference.from(HasMetadata)`、枚举 `ResourceEventType`、`TriggerRole` | 描述调和为何触发、目标资源是谁 |
 
 ### 控制器（`api.controller`）

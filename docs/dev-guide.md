@@ -111,6 +111,14 @@ Applies.apply(client, desiredConfigMap, "my-operator");
 
 `Applies.apply` sends the whole desired object as an `application/apply-patch+yaml` patch: the apiserver creates the resource when absent and updates only the fields the given field manager owns. Keep the field-manager name stable per operator (the application name is a good choice); fabric8 otherwise falls back to `fabric8`, and managers sharing one name silently take over each other's fields. Always pass a freshly built desired object — never a mutated informer-cached instance.
 
+Mark each owned resource with a controller owner reference before applying it, so Kubernetes garbage-collects it with the primary and `owns(...)` watches map its events back:
+
+```java
+Applies.apply(client, Owners.setController(primaryResource, desiredConfigMap), "my-operator");
+```
+
+`Owners.setController` writes a `controller=true, blockOwnerDeletion=true` reference; it requires the owner to exist on the server (a uid), both objects to share a namespace (or a cluster-scoped owner), and rejects a dependent already controlled by a different owner instead of silently taking it over.
+
 ## 3. Configure an advanced controller
 
 A plain `Reconciler<T>` bean gets default controller settings. Define one `ControllerRegistration<T>` Bean when the controller needs explicit sources or per-controller overrides.
@@ -469,6 +477,7 @@ All types live under `com.huawei.dcs.modelengine.operator.framework.api` unless 
 | `Finalizers` | `isDeleting`, `present`, `add`, `remove` | Server-side finalizer JSON patch (§2) |
 | `StatusUpdates` | `update(client, resource, status)` | JSON-merge-patch of the `/status` subresource (§2) |
 | `Applies` | `apply(client, desired, fieldManager)`, `applyForcibly(...)` | Server-side apply of full desired state (§2) |
+| `Owners` | `setController(owner, dependent)` | Controller owner reference with GC and `owns(...)` mapping (§2) |
 | Value types | `ReconciliationTrigger(eventType, role, resource)`, `ResourceKey(namespace, name)`, `ResourceReference.from(HasMetadata)`, enums `ResourceEventType`, `TriggerRole` | Describe why a reconcile fired and which resource it targets |
 
 ### Controller (`api.controller`)
