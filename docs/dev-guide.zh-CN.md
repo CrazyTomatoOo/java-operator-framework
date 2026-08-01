@@ -445,3 +445,48 @@ example/echo-operator/scripts/e2e-test.sh
 ```
 
 该脚本部署到临时命名空间（含 RBAC/TLS），注册真实 admission webhook 配置，并对活跃 API server 验证 mutation、validation、reconcile、事件发布、垃圾回收、健康检查与指标。
+
+## 附录 A. 关键接口速查
+
+除非特别说明，所有类型均位于 `com.huawei.dcs.modelengine.operator.framework.api` 包下。
+
+### 调和（`api.reconcile`）
+
+| 类型 | 关键成员 | 用途 |
+| --- | --- | --- |
+| `Reconciler<T>` | `ReconcileResult reconcile(T resource, ReconciliationContext<T> context) throws Exception` | 用户 Bean，每个工作队列键调用一次（§2） |
+| `ReconciliationContext<T>` | record `(resourceKey, triggers, cache, caches)`；`cacheFor(Class<S>)`；`withoutCache(...)` | 单次请求数据：键、触发事件、主资源 informer 缓存、Owned/Watched 类型的二级缓存 |
+| `ReconcileResult` | `done()`、`requeueNow()`、`requeueAfter(Duration)` | 调和结果的调度语义 |
+| `Finalizers` | `isDeleting`、`present`、`add`、`remove` | Finalizer 服务端 JSON Patch（§2） |
+| `StatusUpdates` | `update(client, resource, status)` | 对 `/status` 子资源做 JSON Merge Patch（§2） |
+| 值类型 | `ReconciliationTrigger(eventType, role, resource)`、`ResourceKey(namespace, name)`、`ResourceReference.from(HasMetadata)`、枚举 `ResourceEventType`、`TriggerRole` | 描述调和为何触发、目标资源是谁 |
+
+### 控制器（`api.controller`）
+
+| 类型 | 关键成员 | 用途 |
+| --- | --- | --- |
+| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`、`watches`、`watchesKubernetesEvents`、`generationFilter`、`resyncPeriod`、`labelSelector`、`fieldSelector`、`indexField` → `build()` | 流式控制器定义（§3） |
+| `ControllerRegistration<T>` | 访问器：`resourceType`、`reconciler`、`ownedResources`、`secondaryWatches`、`indexFields` 等 | 不可变描述符，由运行时与测试套件消费 |
+| `ResourceMapper<S, T>` | `Collection<ResourceKey> map(ResourceEvent<S> event)` | 将二级资源事件映射为主资源键；预置实现见 `Mappers`：`ownerReferences`、`byLabel`、`byAnnotation`、`involvedObject` |
+| `ResourceEvent<S>` | `added`、`updated`、`deleted`、`resync`；record `(type, resource, previousResource)` | 传递给 Mapper 的 informer 事件 |
+
+### 事件（`api.event`）
+
+| 类型 | 关键成员 | 用途 |
+| --- | --- | --- |
+| `KubernetesEventPublisher` | `normal(obj, reason, message)`、`warning(obj, reason, message)` | 为关联对象发布 Kubernetes Event（§6） |
+
+### Webhook（`api.webhook`）
+
+| 类型 | 关键成员 | 用途 |
+| --- | --- | --- |
+| `AdmissionValidator<T>` | `AdmissionDecision validate(T current, AdmissionContext)` | 校验 webhook Bean；通过 `AdmissionDecision.allow()/deny(msg)` 应答（§7） |
+| `AdmissionMutator<T>` | `MutationResult<T> mutate(T current, AdmissionContext)` | 变更 webhook Bean；通过 `MutationResult.unchanged()/mutated(resource)/denied(msg)` 应答 |
+| `ResourceConverter<T>` | `ConversionResult<T> convert(T resource, ConversionContext)` | CRD 版本转换；通过 `ConversionResult.converted(resource)/failed(msg)` 应答 |
+| 上下文 record | `AdmissionContext(uid, operation, resource, dryRun, user)`、`ConversionContext(sourceVersion, desiredVersion)` | 传递给 webhook Bean 的请求元数据 |
+
+### 测试（`operator-framework-testing`）
+
+| 类型 | 关键成员 | 用途 |
+| --- | --- | --- |
+| `OperatorTestKit` | `create()`、`client()`、`controller(registrations...)`、`context(primary)`、`close()` | 内存 API server + 真实控制器运行时，支撑用户测试（§12） |

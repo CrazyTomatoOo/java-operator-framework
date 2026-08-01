@@ -445,3 +445,48 @@ example/echo-operator/scripts/e2e-test.sh
 ```
 
 It deploys to a throwaway namespace with RBAC/TLS, registers real admission webhook configurations, and verifies mutation, validation, reconcile, event publication, garbage collection, health, and metrics against a live API server.
+
+## Appendix A. Key interfaces at a glance
+
+All types live under `com.huawei.dcs.modelengine.operator.framework.api` unless noted.
+
+### Reconcile (`api.reconcile`)
+
+| Type | Key members | Purpose |
+| --- | --- | --- |
+| `Reconciler<T>` | `ReconcileResult reconcile(T resource, ReconciliationContext<T> context) throws Exception` | User bean invoked once per work-queue key (§2) |
+| `ReconciliationContext<T>` | record `(resourceKey, triggers, cache, caches)`; `cacheFor(Class<S>)`; `withoutCache(...)` | Per-request data: key, triggering events, primary informer cache, secondary caches for owned/watched types |
+| `ReconcileResult` | `done()`, `requeueNow()`, `requeueAfter(Duration)` | Scheduling outcome of a reconcile |
+| `Finalizers` | `isDeleting`, `present`, `add`, `remove` | Server-side finalizer JSON patch (§2) |
+| `StatusUpdates` | `update(client, resource, status)` | JSON-merge-patch of the `/status` subresource (§2) |
+| Value types | `ReconciliationTrigger(eventType, role, resource)`, `ResourceKey(namespace, name)`, `ResourceReference.from(HasMetadata)`, enums `ResourceEventType`, `TriggerRole` | Describe why a reconcile fired and which resource it targets |
+
+### Controller (`api.controller`)
+
+| Type | Key members | Purpose |
+| --- | --- | --- |
+| `ControllerBuilder<T>` | `forResource(Class<T>, Reconciler<T>)` → `owns`, `watches`, `watchesKubernetesEvents`, `generationFilter`, `resyncPeriod`, `labelSelector`, `fieldSelector`, `indexField` → `build()` | Fluent controller definition (§3) |
+| `ControllerRegistration<T>` | accessors: `resourceType`, `reconciler`, `ownedResources`, `secondaryWatches`, `indexFields`, ... | Immutable descriptor consumed by the runtime and the test kit |
+| `ResourceMapper<S, T>` | `Collection<ResourceKey> map(ResourceEvent<S> event)` | Maps a secondary-resource event to primary keys; prefabs in `Mappers`: `ownerReferences`, `byLabel`, `byAnnotation`, `involvedObject` |
+| `ResourceEvent<S>` | `added`, `updated`, `deleted`, `resync`; record `(type, resource, previousResource)` | Informer event handed to a mapper |
+
+### Events (`api.event`)
+
+| Type | Key members | Purpose |
+| --- | --- | --- |
+| `KubernetesEventPublisher` | `normal(obj, reason, message)`, `warning(obj, reason, message)` | Publishes Kubernetes Events for the involved object (§6) |
+
+### Webhooks (`api.webhook`)
+
+| Type | Key members | Purpose |
+| --- | --- | --- |
+| `AdmissionValidator<T>` | `AdmissionDecision validate(T current, AdmissionContext)` | Validating webhook bean; answer via `AdmissionDecision.allow()/deny(msg)` (§7) |
+| `AdmissionMutator<T>` | `MutationResult<T> mutate(T current, AdmissionContext)` | Mutating webhook bean; answer via `MutationResult.unchanged()/mutated(resource)/denied(msg)` |
+| `ResourceConverter<T>` | `ConversionResult<T> convert(T resource, ConversionContext)` | CRD version conversion; answer via `ConversionResult.converted(resource)/failed(msg)` |
+| Context records | `AdmissionContext(uid, operation, resource, dryRun, user)`, `ConversionContext(sourceVersion, desiredVersion)` | Request metadata handed to webhook beans |
+
+### Testing (`operator-framework-testing`)
+
+| Type | Key members | Purpose |
+| --- | --- | --- |
+| `OperatorTestKit` | `create()`, `client()`, `controller(registrations...)`, `context(primary)`, `close()` | In-memory API server plus real controller runtime for user tests (§12) |
