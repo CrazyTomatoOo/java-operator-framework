@@ -102,6 +102,15 @@ public ReconcileResult reconcile(MyResource resource, ReconciliationContext cont
 
 `Finalizers.add`/`remove` apply a server-side JSON patch (idempotent and safe under concurrent reconciles). `StatusUpdates.update` merges the given status object into the `/status` subresource via JSON merge patch and never mutates the passed (informer-cached) resource; it requires the CRD to declare a `status` subresource.
 
+For resources the operator owns (ConfigMaps, Deployments, Secrets, ...), submit the full desired state with server-side apply instead of hand-rolled create-or-update:
+
+```java
+Applies.apply(client, desiredConfigMap, "my-operator");
+// Applies.applyForcibly(client, desiredConfigMap, "my-operator"); // also takes over conflicting fields
+```
+
+`Applies.apply` sends the whole desired object as an `application/apply-patch+yaml` patch: the apiserver creates the resource when absent and updates only the fields the given field manager owns. Keep the field-manager name stable per operator (the application name is a good choice); fabric8 otherwise falls back to `fabric8`, and managers sharing one name silently take over each other's fields. Always pass a freshly built desired object — never a mutated informer-cached instance.
+
 ## 3. Configure an advanced controller
 
 A plain `Reconciler<T>` bean gets default controller settings. Define one `ControllerRegistration<T>` Bean when the controller needs explicit sources or per-controller overrides.
@@ -459,6 +468,7 @@ All types live under `com.huawei.dcs.modelengine.operator.framework.api` unless 
 | `ReconcileResult` | `done()`, `requeueNow()`, `requeueAfter(Duration)` | Scheduling outcome of a reconcile |
 | `Finalizers` | `isDeleting`, `present`, `add`, `remove` | Server-side finalizer JSON patch (§2) |
 | `StatusUpdates` | `update(client, resource, status)` | JSON-merge-patch of the `/status` subresource (§2) |
+| `Applies` | `apply(client, desired, fieldManager)`, `applyForcibly(...)` | Server-side apply of full desired state (§2) |
 | Value types | `ReconciliationTrigger(eventType, role, resource)`, `ResourceKey(namespace, name)`, `ResourceReference.from(HasMetadata)`, enums `ResourceEventType`, `TriggerRole` | Describe why a reconcile fired and which resource it targets |
 
 ### Controller (`api.controller`)

@@ -102,6 +102,15 @@ public ReconcileResult reconcile(MyResource resource, ReconciliationContext cont
 
 `Finalizers.add`/`remove` 执行服务端 JSON patch（幂等，并发调和下安全）。`StatusUpdates.update` 将给定 status 对象以 JSON merge patch 合并进 `/status` 子资源，绝不修改传入的（informer 缓存的）资源实例；要求 CRD 声明 `status` 子资源。
 
+对于 Operator 持有的资源（ConfigMap、Deployment、Secret 等），用 server-side apply 提交完整的期望状态，而不是手写 create-or-update：
+
+```java
+Applies.apply(client, desiredConfigMap, "my-operator");
+// Applies.applyForcibly(client, desiredConfigMap, "my-operator"); // 同时接管冲突字段
+```
+
+`Applies.apply` 将整个期望对象作为 `application/apply-patch+yaml` patch 发送：apiserver 在资源不存在时创建它，并只更新该 field manager 拥有的字段。每个 Operator 的 field manager 名称应保持稳定（应用名是不错的选择）；否则 fabric8 会回退到 `fabric8`，而共用同一名字的 manager 会静默互相接管字段。始终传入新建的期望对象——绝不传入被修改过的 informer 缓存实例。
+
 ## 3. 配置高级控制器
 
 普通 `Reconciler<T>` Bean 使用控制器默认设置。需要显式事件源或单控制器覆盖项时，定义一个 `ControllerRegistration<T>` Bean。
@@ -459,6 +468,7 @@ example/echo-operator/scripts/e2e-test.sh
 | `ReconcileResult` | `done()`、`requeueNow()`、`requeueAfter(Duration)` | 调和结果的调度语义 |
 | `Finalizers` | `isDeleting`、`present`、`add`、`remove` | Finalizer 服务端 JSON Patch（§2） |
 | `StatusUpdates` | `update(client, resource, status)` | 对 `/status` 子资源做 JSON Merge Patch（§2） |
+| `Applies` | `apply(client, desired, fieldManager)`、`applyForcibly(...)` | 以 server-side apply 提交完整期望状态（§2） |
 | 值类型 | `ReconciliationTrigger(eventType, role, resource)`、`ResourceKey(namespace, name)`、`ResourceReference.from(HasMetadata)`、枚举 `ResourceEventType`、`TriggerRole` | 描述调和为何触发、目标资源是谁 |
 
 ### 控制器（`api.controller`）
