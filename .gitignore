@@ -56,3 +56,6 @@ certs/
 *.key
 *.pem
 kubeconfig*
+
+# agent local state
+.evolver/
