@@ -9,8 +9,10 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecisi
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,6 +28,13 @@ final class EchoWebhooks {
 
     @Component("echovalidator")
     static class EchoValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Rejects echo-enabled ConfigMaps whose {@code data.message} is blank.
+         *
+         * @param current the ConfigMap under admission
+         * @param context the admission context
+         * @return allow when the ConfigMap is not echo-enabled or carries a message, otherwise a denial
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             if (!EchoReconciler.isEnabled(current)) {
@@ -40,6 +49,13 @@ final class EchoWebhooks {
 
     @Component("echomutator")
     static class EchoMutator implements AdmissionMutator<ConfigMap> {
+        /**
+         * Defaults {@code data.message} to {@code "hello world"} on echo-enabled ConfigMaps that lack one.
+         *
+         * @param current the ConfigMap under admission
+         * @param context the admission context
+         * @return a mutated copy with the default message, or unchanged when the default does not apply
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             if (!EchoReconciler.isEnabled(current) || EchoReconciler.message(current) != null) {

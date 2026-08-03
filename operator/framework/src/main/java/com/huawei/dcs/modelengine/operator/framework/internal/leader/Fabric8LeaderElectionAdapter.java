@@ -5,13 +5,16 @@
 package com.huawei.dcs.modelengine.operator.framework.internal.leader;
 
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
+
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.extended.leaderelection.LeaderCallbacks;
 import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElectionConfig;
 import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElectionConfigBuilder;
 import io.fabric8.kubernetes.client.extended.leaderelection.LeaderElector;
 import io.fabric8.kubernetes.client.extended.leaderelection.resourcelock.LeaseLock;
+
 import org.springframework.core.env.Environment;
+
 import java.lang.management.ManagementFactory;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
@@ -32,6 +35,13 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
     private LeaderElector elector;
     private CompletableFuture<?> election;
 
+    /**
+     * Creates the leader election adapter.
+     *
+     * @param client the Kubernetes client used for the Lease lock
+     * @param properties the operator framework configuration
+     * @param environment the Spring environment used to derive the lease name
+     */
     public Fabric8LeaderElectionAdapter(
             KubernetesClient client,
             OperatorFrameworkProperties properties,
@@ -42,6 +52,13 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
         this.environment = environment;
     }
 
+    /**
+     * Starts the Lease-backed leader election; does nothing when already started.
+     *
+     * @param onStartLeading invoked when this instance becomes leader
+     * @param onStopLeading invoked when this instance loses leadership
+     * @return a stage that completes when the election ends
+     */
     @Override
     public synchronized CompletionStage<Void> start(Runnable onStartLeading, Runnable onStopLeading) {
         if (elector == null) {
@@ -51,6 +68,7 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
         return election.thenApply(ignored -> null);
     }
 
+    /** Cancels the running election and releases the Lease, if any. */
     @Override
     public synchronized void stop() {
         if (elector != null) {

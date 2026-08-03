@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
 import io.fabric8.kubernetes.client.utils.Serialization;
+
 import java.util.Objects;
 
 /**
@@ -25,7 +26,14 @@ public final class StatusUpdates {
     private StatusUpdates() {
     }
 
-    /** Patches the status subresource with the given status; returns the server result. */
+    /**
+     * Patches the status subresource with the given status; returns the server result.
+     *
+     * @param client the Kubernetes client used to submit the patch
+     * @param resource the resource whose status subresource is patched
+     * @param status the desired status object, serialized as JSON
+     * @return the server result after patching the status
+     */
     public static <T extends HasMetadata> T update(KubernetesClient client, T resource, Object status) {
         Objects.requireNonNull(resource, "resource");
         Objects.requireNonNull(status, "status");

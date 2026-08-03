@@ -4,23 +4,26 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionResponse;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionReview;
 import io.fabric8.kubernetes.api.model.StatusBuilder;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +44,14 @@ public final class ConversionWebhookController {
     private final OperatorFrameworkMetrics metrics;
 
 
+    /**
+     * Handles a ConversionReview by dispatching its objects to the named converter callback.
+     *
+     * @param name the converter route name, matching the callback bean name
+     * @param review the conversion review carrying the objects to convert
+     * @return the review response with the converted objects, or 400 for an unknown name or a
+     *     malformed review
+     */
     @PostMapping("/operator-framework/webhooks/convert/{name}")
     public ResponseEntity<ConversionReview> convert(
             @PathVariable String name,

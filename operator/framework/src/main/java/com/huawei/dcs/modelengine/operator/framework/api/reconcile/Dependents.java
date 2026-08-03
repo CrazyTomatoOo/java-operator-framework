@@ -6,6 +6,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
+
 import java.util.Objects;
 
 /**
@@ -29,6 +30,13 @@ public final class Dependents {
      * Computes the dependent's desired state, sets the controller owner reference to
      * {@code primary}, and server-side-applies it under {@code fieldManager}; returns the server
      * result.
+     *
+     * @param client the Kubernetes client used to submit the apply
+     * @param dependent the dependent resource to reconcile
+     * @param primary the primary resource that owns the dependent
+     * @param context the reconciliation context
+     * @param fieldManager the explicit field manager name
+     * @return the server result after applying the dependent's desired state
      */
     public static <D extends HasMetadata, P extends HasMetadata> D apply(
             KubernetesClient client,

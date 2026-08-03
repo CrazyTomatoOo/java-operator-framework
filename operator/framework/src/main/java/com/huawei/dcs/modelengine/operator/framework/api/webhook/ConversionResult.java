@@ -22,10 +22,25 @@ public final class ConversionResult<T> {
         this.message = message;
     }
 
+    /**
+     * Creates a result carrying the converted resource.
+     *
+     * @param <T> the resource type
+     * @param resource the converted resource
+     * @return a successful conversion result
+     */
     public static <T> ConversionResult<T> converted(T resource) {
         return new ConversionResult<>(Objects.requireNonNull(resource, "resource must not be null"), null);
     }
 
+    /**
+     * Creates a result reporting a failed conversion.
+     *
+     * @param <T> the resource type
+     * @param message the reason the conversion failed
+     * @return a failed conversion result
+     * @throws IllegalArgumentException if the message is blank
+     */
     public static <T> ConversionResult<T> failed(String message) {
         if (message == null || message.isBlank()) {
             throw new IllegalArgumentException("message must not be blank");
@@ -33,14 +48,29 @@ public final class ConversionResult<T> {
         return new ConversionResult<>(null, message);
     }
 
+    /**
+     * Checks whether the conversion succeeded.
+     *
+     * @return {@code true} when a converted resource is present
+     */
     public boolean isConverted() {
         return resource != null;
     }
 
+    /**
+     * Returns the converted resource, if any.
+     *
+     * @return the converted resource, or empty when the conversion failed
+     */
     public Optional<T> resource() {
         return Optional.ofNullable(resource);
     }
 
+    /**
+     * Returns the failure reason, if any.
+     *
+     * @return the message, or empty when the conversion succeeded
+     */
     public Optional<String> message() {
         return Optional.ofNullable(message);
     }

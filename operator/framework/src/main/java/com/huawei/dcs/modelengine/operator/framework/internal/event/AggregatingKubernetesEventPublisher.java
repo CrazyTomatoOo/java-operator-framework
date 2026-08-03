@@ -7,6 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.internal.event;
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.EventBuilder;
 import io.fabric8.kubernetes.api.model.EventSourceBuilder;
@@ -15,7 +16,9 @@ import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.core.env.Environment;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -43,6 +46,15 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
     private final Map<String, CachedEvent> cache;
     private final OperatorFrameworkMetrics metrics;
 
+    /**
+     * Creates the aggregating event publisher.
+     *
+     * @param client the Kubernetes client used to create and update Events
+     * @param properties the operator framework configuration
+     * @param environment the Spring environment used to derive the reporting component
+     * @param clock the clock used for aggregation windows and timestamps
+     * @param metrics the metrics sink for publication outcomes
+     */
     public AggregatingKubernetesEventPublisher(
             KubernetesClient client,
             OperatorFrameworkProperties properties,
@@ -65,16 +77,31 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         this(client, properties, environment, clock, new OperatorFrameworkMetrics(null));
     }
 
+    /**
+     * Publishes a Normal event for the involved object, aggregating repeats within a time window.
+     *
+     * @param involvedObject the resource the event is about
+     * @param reason the short machine-readable reason of the event
+     * @param message the human-readable description of the event
+     */
     @Override
     public void normal(HasMetadata involvedObject, String reason, String message) {
         publish("Normal", involvedObject, reason, message);
     }
 
+    /**
+     * Publishes a Warning event for the involved object, aggregating repeats within a time window.
+     *
+     * @param involvedObject the resource the event is about
+     * @param reason the short machine-readable reason of the event
+     * @param message the human-readable description of the event
+     */
     @Override
     public void warning(HasMetadata involvedObject, String reason, String message) {
         publish("Warning", involvedObject, reason, message);
     }
 
+    /** Clears the aggregation cache; already persisted Kubernetes Events are left untouched. */
     @Override
     public synchronized void close() {
         cache.clear();
@@ -245,6 +272,12 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
 
     private Map<String, CachedEvent> boundedCache(int maximum) {
         return new LinkedHashMap<>(16, 0.75f, true) {
+            /**
+             * Evicts the eldest entry once the cache exceeds its maximum size.
+             *
+             * @param eldest the least recently accessed entry
+             * @return {@code true} when the eldest entry should be removed
+             */
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, CachedEvent> eldest) {
                 return size() > maximum;

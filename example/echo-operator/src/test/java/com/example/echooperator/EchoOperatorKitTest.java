@@ -7,17 +7,18 @@ package com.example.echooperator;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
 import com.huawei.dcs.modelengine.operator.framework.testing.OperatorTestKit;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 /** End-to-end: real controller runtime against the in-memory API server from the testing kit. */
 class EchoOperatorKitTest {
@@ -26,10 +27,24 @@ class EchoOperatorKitTest {
         try (var kit = OperatorTestKit.create()) {
             var namespace = kit.client().getNamespace();
             var reconciler = new EchoReconciler(kit.client(), new KubernetesEventPublisher() {
+                /**
+                 * Ignores normal events.
+                 *
+                 * @param involvedObject the object the event is about
+                 * @param reason the event reason
+                 * @param message the event message
+                 */
                 @Override
                 public void normal(HasMetadata involvedObject, String reason, String message) {
                 }
 
+                /**
+                 * Ignores warning events.
+                 *
+                 * @param involvedObject the object the event is about
+                 * @param reason the event reason
+                 * @param message the event message
+                 */
                 @Override
                 public void warning(HasMetadata involvedObject, String reason, String message) {
                 }

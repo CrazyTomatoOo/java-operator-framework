@@ -7,10 +7,13 @@ package com.huawei.dcs.modelengine.operator.framework.internal.discovery;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.ResolvableType;
+
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,10 +29,22 @@ import java.util.Set;
 public final class ControllerRegistrationDiscovery {
     private final ConfigurableListableBeanFactory beanFactory;
 
+    /**
+     * Creates the discovery over the given bean factory.
+     *
+     * @param beanFactory the Spring bean factory to scan for controller beans
+     */
     public ControllerRegistrationDiscovery(ConfigurableListableBeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
+    /**
+     * Discovers controller registrations from explicit beans and typed reconciler beans.
+     *
+     * @return the discovered controller registrations, one per resource type
+     * @throws IllegalStateException when no controller is found, a resource type is duplicated,
+     *         a reconciler is a lambda, or a resource type cannot be resolved
+     */
     public List<ControllerRegistration<?>> discover() {
         var explicit = explicitRegistrations();
         var explicitTypes = Set.copyOf(explicit.keySet());

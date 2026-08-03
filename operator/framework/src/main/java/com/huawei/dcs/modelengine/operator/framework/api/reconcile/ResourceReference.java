@@ -5,6 +5,7 @@
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import java.util.Objects;
 
 /**
@@ -26,6 +27,12 @@ public record ResourceReference(String apiVersion, String kind, String namespace
         }
     }
 
+    /**
+     * Creates a reference from a Kubernetes resource and its metadata.
+     *
+     * @param resource the resource to describe
+     * @return a reference holding the resource's identity details
+     */
     public static ResourceReference from(HasMetadata resource) {
         Objects.requireNonNull(resource, "resource must not be null");
         var metadata = Objects.requireNonNull(resource.getMetadata(), "resource metadata must not be null");
@@ -33,6 +40,11 @@ public record ResourceReference(String apiVersion, String kind, String namespace
                 metadata.getName(), metadata.getUid());
     }
 
+    /**
+     * Returns the namespace and name key of this reference.
+     *
+     * @return the resource key
+     */
     public ResourceKey key() {
         return new ResourceKey(namespace, name);
     }

@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,10 @@ public final class Owners {
      * Sets (or idempotently refreshes) the controller owner reference from {@code owner} on
      * {@code dependent}; returns the dependent. {@code blockOwnerDeletion} is set, so the owner
      * must have delete permission on the dependent's kind.
+     *
+     * @param owner the owning (controller) resource
+     * @param dependent the dependent resource to stamp the owner reference on
+     * @return the dependent with the controller owner reference set
      */
     public static <T extends HasMetadata> T setController(HasMetadata owner, T dependent) {
         Objects.requireNonNull(dependent, "dependent");

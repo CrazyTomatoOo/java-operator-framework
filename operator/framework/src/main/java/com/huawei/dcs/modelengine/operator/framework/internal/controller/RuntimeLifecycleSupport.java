@@ -8,6 +8,7 @@ import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorF
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.RuntimeReadiness;
 import com.huawei.dcs.modelengine.operator.framework.internal.policy.ReconcileRateLimitAspect;
 import com.huawei.dcs.modelengine.operator.framework.internal.policy.ReconcileRetryAspect;
+
 import java.util.function.BooleanSupplier;
 
 /**
@@ -23,6 +24,14 @@ public final class RuntimeLifecycleSupport {
     private final ReconcileRateLimitAspect rateLimit;
     private OperatorFrameworkMetrics.GaugeHandle leadershipGauge;
 
+    /**
+     * Creates the lifecycle support bundle.
+     *
+     * @param readiness the runtime readiness state to update
+     * @param metrics the metrics sink for the leadership gauge
+     * @param retry the retry policy aspect whose state is cleared when a runtime stops
+     * @param rateLimit the rate-limit aspect whose state is cleared when a runtime stops
+     */
     public RuntimeLifecycleSupport(
             RuntimeReadiness readiness,
             OperatorFrameworkMetrics metrics,

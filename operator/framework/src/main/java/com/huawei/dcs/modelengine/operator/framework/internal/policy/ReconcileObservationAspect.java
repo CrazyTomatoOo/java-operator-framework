@@ -9,8 +9,10 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecisi
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -39,6 +41,13 @@ public final class ReconcileObservationAspect {
     private final OperatorFrameworkMetrics metrics;
     private final SpringCallbackIdentifier identifiers;
 
+    /**
+     * Creates the aspect with the observation and metrics sinks.
+     *
+     * @param observations the registry used to start one observation per callback invocation
+     * @param metrics the metrics recorder for callback timing and outcome
+     * @param beanFactory the bean factory used to resolve callback bean names
+     */
     public ReconcileObservationAspect(
             ObservationRegistry observations,
             OperatorFrameworkMetrics metrics,
@@ -48,6 +57,13 @@ public final class ReconcileObservationAspect {
         identifiers = new SpringCallbackIdentifier(beanFactory);
     }
 
+    /**
+     * Wraps a callback invocation in an observation and records its duration and outcome metric.
+     *
+     * @param joinPoint the intercepted callback invocation
+     * @return the callback result
+     * @throws Throwable the failure thrown by the callback, recorded on the observation before rethrow
+     */
     @Around(CALLBACKS)
     public Object observe(ProceedingJoinPoint joinPoint) throws Throwable {
         var identity = identifiers.identify(joinPoint);

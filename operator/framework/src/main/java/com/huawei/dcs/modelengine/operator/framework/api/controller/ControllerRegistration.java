@@ -5,7 +5,9 @@
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -42,38 +44,83 @@ public final class ControllerRegistration<T extends HasMetadata> {
         indexFields = Map.copyOf(builder.indexFields());
     }
 
+    /**
+     * Returns the primary resource type reconciled by this controller.
+     *
+     * @return the primary resource class
+     */
     public Class<T> resourceType() {
         return resourceType;
     }
 
+    /**
+     * Returns the reconciler invoked for the primary resource.
+     *
+     * @return the reconciler
+     */
     public Reconciler<T> reconciler() {
         return reconciler;
     }
 
+    /**
+     * Returns whether reconciliation triggers only on generation changes, when configured.
+     *
+     * @return the generation filter setting, or empty when not configured
+     */
     public Optional<Boolean> generationFilter() {
         return generationFilter;
     }
 
+    /**
+     * Returns the periodic resync interval, when configured.
+     *
+     * @return the resync period, or empty when not configured
+     */
     public Optional<Duration> resyncPeriod() {
         return resyncPeriod;
     }
 
+    /**
+     * Returns the owned resource types whose changes reconcile the primary resource.
+     *
+     * @return the owned resource classes
+     */
     public List<Class<? extends HasMetadata>> ownedResources() {
         return ownedResources;
     }
 
+    /**
+     * Returns the registered secondary resource watches.
+     *
+     * @return the secondary watches
+     */
     public List<SecondaryWatch<? extends HasMetadata, T>> secondaryWatches() {
         return secondaryWatches;
     }
 
+    /**
+     * Checks whether the controller also watches Kubernetes {@code Event} objects.
+     *
+     * @return {@code true} when Kubernetes events are watched
+     */
     public boolean watchesKubernetesEvents() {
         return kubernetesEvents;
     }
 
+    /**
+     * Returns the label and field selector restricting the primary watch, when configured.
+     *
+     * @return the watch selector, or empty when not configured
+     */
     public Optional<ControllerBuilder.WatchSelector> watchSelector() {
         return watchSelector;
     }
 
+    /**
+     * Returns the registered field indexes keyed by index name.
+     *
+     * @return the index field extractors
+     */
     public Map<String, Function<T, String>> indexFields() {
         return indexFields;
     }

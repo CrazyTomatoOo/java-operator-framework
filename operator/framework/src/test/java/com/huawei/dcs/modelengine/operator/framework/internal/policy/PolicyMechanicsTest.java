@@ -9,14 +9,22 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -25,13 +33,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class PolicyMechanicsTest {
     @Test
@@ -162,6 +163,13 @@ class PolicyMechanicsTest {
     private static final class FailingReconciler implements Reconciler<ConfigMap> {
         private final AtomicInteger calls = new AtomicInteger();
 
+        /**
+         * Counts the call, then fails with a temporary error.
+         *
+         * @param resource the resource to reconcile
+         * @param context the reconciliation context
+         * @return never returns
+         */
         @Override
         public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
             calls.incrementAndGet();
@@ -180,16 +188,32 @@ class PolicyMechanicsTest {
             instant = instant.plus(duration);
         }
 
+        /**
+         * Returns the clock's zone.
+         *
+         * @return always UTC
+         */
         @Override
         public ZoneId getZone() {
             return ZoneOffset.UTC;
         }
 
+        /**
+         * Ignores the requested zone; the clock stays on UTC.
+         *
+         * @param zone the requested zone
+         * @return this clock
+         */
         @Override
         public Clock withZone(ZoneId zone) {
             return this;
         }
 
+        /**
+         * Returns the current test-controlled instant.
+         *
+         * @return the current instant
+         */
         @Override
         public Instant instant() {
             return instant;

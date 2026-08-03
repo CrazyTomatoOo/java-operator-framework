@@ -7,18 +7,19 @@ package com.huawei.dcs.modelengine.operator.framework.testing;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.Mappers;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
+
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 class OperatorTestKitTest {
     @Test

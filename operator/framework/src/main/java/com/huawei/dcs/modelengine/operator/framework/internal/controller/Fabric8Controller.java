@@ -18,6 +18,7 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceRefer
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.TriggerRole;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -25,6 +26,7 @@ import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.cache.Indexer;
 import lombok.extern.slf4j.Slf4j;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +100,11 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         this(client, registration, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
     }
 
+    /**
+     * Starts the informers and worker threads; does nothing when already started.
+     *
+     * @throws RuntimeException when informer or worker setup fails, after stopping what was started
+     */
     @Override
     public void start() {
         if (!started.compareAndSet(false, true)) {
@@ -113,21 +120,41 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         }
     }
 
+    /**
+     * Reports whether the controller is started, not stopping, and all informers have synced.
+     *
+     * @return {@code true} when the controller is ready to serve
+     */
     @Override
     public boolean isReady() {
         return started.get() && !stopping && informers.stream().allMatch(SharedIndexInformer::hasSynced);
     }
 
+    /**
+     * Reports whether the controller is started and not stopping.
+     *
+     * @return {@code true} when the controller is running
+     */
     @Override
     public boolean isRunning() {
         return started.get() && !stopping;
     }
 
+    /**
+     * Returns the number of reconciliation requests waiting in the queue.
+     *
+     * @return the current queue depth
+     */
     @Override
     public int queueDepth() {
         return queue.size();
     }
 
+    /**
+     * Stops the informers and scheduler, discards pending work, and shuts the workers down.
+     *
+     * @return a stage that completes when the worker threads have terminated
+     */
     @Override
     public synchronized CompletionStage<Void> stop() {
         if (!started.get()) {
@@ -335,12 +362,23 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     }
 
     private final class PrimaryHandler implements ResourceEventHandler<T> {
+        /**
+         * Enqueues an added primary resource for reconciliation.
+         *
+         * @param resource the added resource
+         */
         @Override
         public void onAdd(T resource) {
             deletedResources.remove(ResourceReference.from(resource).key());
             enqueue(ResourceEventType.ADDED, TriggerRole.PRIMARY, resource);
         }
 
+        /**
+         * Enqueues an updated primary resource when the generation filter accepts the change.
+         *
+         * @param previous the previous state of the resource
+         * @param resource the current state of the resource
+         */
         @Override
         public void onUpdate(T previous, T resource) {
             deletedResources.remove(ResourceReference.from(resource).key());
@@ -351,6 +389,12 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             }
         }
 
+        /**
+         * Retains a deleted primary resource and enqueues it for a final reconciliation.
+         *
+         * @param resource the deleted resource
+         * @param deletedFinalStateUnknown whether the final state of the resource is unknown
+         */
         @Override
         public void onDelete(T resource, boolean deletedFinalStateUnknown) {
             deletedResources.put(ResourceReference.from(resource).key(), resource);
@@ -367,11 +411,22 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             this.role = role;
         }
 
+        /**
+         * Maps an added secondary resource onto the primary resources to reconcile.
+         *
+         * @param resource the added secondary resource
+         */
         @Override
         public void onAdd(S resource) {
             map(ResourceEvent.added(resource));
         }
 
+        /**
+         * Maps an updated secondary resource onto the primary resources to reconcile.
+         *
+         * @param previous the previous state of the secondary resource
+         * @param resource the current state of the secondary resource
+         */
         @Override
         public void onUpdate(S previous, S resource) {
             // ponytail: event count increments are aggregation churn; new reasons arrive as ADDs
@@ -382,6 +437,12 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
                     ? ResourceEvent.resync(resource) : ResourceEvent.updated(previous, resource));
         }
 
+        /**
+         * Maps a deleted secondary resource onto the primary resources to reconcile.
+         *
+         * @param resource the deleted secondary resource
+         * @param deletedFinalStateUnknown whether the final state of the resource is unknown
+         */
         @Override
         public void onDelete(S resource, boolean deletedFinalStateUnknown) {
             map(ResourceEvent.deleted(resource));

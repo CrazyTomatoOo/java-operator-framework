@@ -7,11 +7,14 @@ package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.controller.OperatorFrameworkLifecycle;
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.WebhookCallbackRegistry;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,6 +32,12 @@ public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
     private final RuntimeReadiness readiness;
 
 
+    /**
+     * Builds the aggregated health of the framework: overall status plus mode, liveness, readiness,
+     * and per-mode controller or webhook details.
+     *
+     * @return the aggregated health contribution
+     */
     @Override
     public Health health() {
         var builder = status();

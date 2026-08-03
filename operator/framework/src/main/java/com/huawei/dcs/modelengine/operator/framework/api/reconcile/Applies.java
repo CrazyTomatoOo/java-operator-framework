@@ -7,6 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ServerSideApplicable;
+
 import java.util.Objects;
 
 /**
@@ -26,12 +27,26 @@ public final class Applies {
     private Applies() {
     }
 
-    /** Server-side-applies the desired state under the given field manager; returns the server result. */
+    /**
+     * Server-side-applies the desired state under the given field manager; returns the server result.
+     *
+     * @param client the Kubernetes client used to submit the apply
+     * @param desired the freshly built desired state; never an informer-cached instance
+     * @param fieldManager the explicit field manager name
+     * @return the server result after applying {@code desired}
+     */
     public static <T extends HasMetadata> T apply(KubernetesClient client, T desired, String fieldManager) {
         return operation(client, desired, fieldManager).serverSideApply();
     }
 
-    /** Like {@link #apply}, but forces conflicts, taking ownership of fields owned by other managers. */
+    /**
+     * Like {@link #apply}, but forces conflicts, taking ownership of fields owned by other managers.
+     *
+     * @param client the Kubernetes client used to submit the apply
+     * @param desired the freshly built desired state; never an informer-cached instance
+     * @param fieldManager the explicit field manager name
+     * @return the server result after applying {@code desired}
+     */
     public static <T extends HasMetadata> T applyForcibly(KubernetesClient client, T desired, String fieldManager) {
         return operation(client, desired, fieldManager).forceConflicts().serverSideApply();
     }

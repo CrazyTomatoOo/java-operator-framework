@@ -4,13 +4,14 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
@@ -18,6 +19,7 @@ import io.fabric8.kubernetes.api.model.authentication.UserInfoBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,15 +27,14 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.concurrent.atomic.AtomicReference;
 
 class AdmissionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -207,6 +208,13 @@ class AdmissionWebhookControllerTest {
     static final class AllowValidator implements AdmissionValidator<ConfigMap> {
         private final AtomicReference<AdmissionContext> context = new AtomicReference<>();
 
+        /**
+         * Records the admission context and allows the request.
+         *
+         * @param current the resource under admission
+         * @param admissionContext the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext admissionContext) {
             context.set(admissionContext);
@@ -215,6 +223,13 @@ class AdmissionWebhookControllerTest {
     }
 
     static final class DenyValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Denies the request as invalid.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return a deny decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.deny("invalid spec");
@@ -222,6 +237,14 @@ class AdmissionWebhookControllerTest {
     }
 
     static final class ThrowingValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Always throws, to exercise error sanitization.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return never returns
+         * @throws Exception always
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) throws Exception {
             throw new Exception("sensitive callback detail");
@@ -229,6 +252,13 @@ class AdmissionWebhookControllerTest {
     }
 
     static final class DataMutator implements AdmissionMutator<ConfigMap> {
+        /**
+         * Adds a data entry to the resource.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return the resource with an added data entry
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             return MutationResult.mutated(new ConfigMapBuilder(current).addToData("added", "yes").build());
@@ -236,6 +266,13 @@ class AdmissionWebhookControllerTest {
     }
 
     static final class IdentityMutator implements AdmissionMutator<ConfigMap> {
+        /**
+         * Renames the resource, changing its identity.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return the resource under a different name
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             return MutationResult.mutated(new ConfigMapBuilder(current)
@@ -244,6 +281,13 @@ class AdmissionWebhookControllerTest {
     }
 
     static final class NullMutator implements AdmissionMutator<ConfigMap> {
+        /**
+         * Returns no result, to exercise the null check.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return always null
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             return null;

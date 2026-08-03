@@ -7,6 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,6 +15,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -35,6 +37,13 @@ public final class ReconcileRetryAspect {
     private final SpringCallbackIdentifier identifiers;
     private final DoubleSupplier jitterFactor;
 
+    /**
+     * Creates the aspect with production jitter applied to retry delays.
+     *
+     * @param properties the framework properties carrying the retry configuration
+     * @param metrics the metrics recorder for retry counts
+     * @param beanFactory the bean factory used to resolve controller bean names
+     */
     public ReconcileRetryAspect(
             OperatorFrameworkProperties properties,
             OperatorFrameworkMetrics metrics,
@@ -47,6 +56,14 @@ public final class ReconcileRetryAspect {
     }
 
     // ponytail: jitter factor seam lets tests pin deterministic delays while production spreads retries
+    /**
+     * Creates the aspect with an explicit jitter factor, allowing tests to pin deterministic delays.
+     *
+     * @param properties the framework properties carrying the retry configuration
+     * @param metrics the metrics recorder for retry counts
+     * @param beanFactory the bean factory used to resolve controller bean names
+     * @param jitterFactor supplies the multiplier applied to each computed retry delay
+     */
     public ReconcileRetryAspect(OperatorFrameworkProperties properties, OperatorFrameworkMetrics metrics,
             ConfigurableListableBeanFactory beanFactory, DoubleSupplier jitterFactor) {
         this.properties = properties.getRetry();
@@ -55,6 +72,15 @@ public final class ReconcileRetryAspect {
         this.jitterFactor = jitterFactor;
     }
 
+    /**
+     * Converts a transient reconciler exception into a delayed requeue with exponential backoff and
+     * jitter, and escalates to a terminal exception once the configured attempts are exhausted.
+     *
+     * @param joinPoint the intercepted reconcile invocation
+     * @return the reconciler result, or a requeue-after result for a retriable failure
+     * @throws ReconcileTerminalException when the maximum configured attempts are exhausted
+     * @throws Throwable any error other than a reconciler exception, propagated unchanged
+     */
     @Around("execution(* com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler+.reconcile(..))")
     public Object retry(ProceedingJoinPoint joinPoint) throws Throwable {
         var controller = identifiers.identify(joinPoint).bean();

@@ -8,21 +8,22 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.DependentReso
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.EventBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
+
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 class ControllerApiTest {
     @Test
@@ -159,11 +160,23 @@ class ControllerApiTest {
         var registration = ControllerBuilder
                 .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
                 .manages(new DependentResource<Secret, ConfigMap>() {
+                    /**
+                     * Returns the dependent resource type.
+                     *
+                     * @return the Secret type
+                     */
                     @Override
                     public Class<Secret> resourceType() {
                         return Secret.class;
                     }
 
+                    /**
+                     * Computes the desired Secret; unused by this test.
+                     *
+                     * @param primary the primary resource
+                     * @param context the reconciliation context
+                     * @return always null
+                     */
                     @Override
                     public Secret desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
                         return null;

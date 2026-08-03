@@ -4,8 +4,6 @@
 
 package com.example.echooperator;
 
-import com.example.echooperator.EchoWebhooks.EchoMutator;
-import com.example.echooperator.EchoWebhooks.EchoValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
@@ -13,23 +11,27 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciliatio
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceReference;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.TriggerRole;
+
+import com.example.echooperator.EchoWebhooks.EchoMutator;
+import com.example.echooperator.EchoWebhooks.EchoValidator;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import java.util.List;
 
 @EnableKubernetesMockClient(crud = true)
 class EchoOperatorTest {

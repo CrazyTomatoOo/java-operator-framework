@@ -6,13 +6,14 @@ package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.RuntimeReadiness;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class RuntimeLifecycleSupportTest {
     @Test

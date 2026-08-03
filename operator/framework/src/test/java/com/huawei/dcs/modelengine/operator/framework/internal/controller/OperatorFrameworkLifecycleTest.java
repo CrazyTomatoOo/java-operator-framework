@@ -13,10 +13,18 @@ import com.huawei.dcs.modelengine.operator.framework.internal.actuator.RuntimeRe
 import com.huawei.dcs.modelengine.operator.framework.internal.leader.LeaderElectionAdapter;
 import com.huawei.dcs.modelengine.operator.framework.internal.policy.ReconcileRateLimitAspect;
 import com.huawei.dcs.modelengine.operator.framework.internal.policy.ReconcileRetryAspect;
+
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.ArrayDeque;
@@ -26,13 +34,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class OperatorFrameworkLifecycleTest {
     @Test
@@ -365,6 +366,11 @@ class OperatorFrameworkLifecycleTest {
             this.runtimes.addAll(java.util.List.of(runtimes));
         }
 
+        /**
+         * Creates the next queued runtime and counts the creation.
+         *
+         * @return the next queued runtime
+         */
         @Override
         public ControllerRuntime create() {
             creations.incrementAndGet();
@@ -382,16 +388,29 @@ class OperatorFrameworkLifecycleTest {
             this.ready = ready;
         }
 
+        /**
+         * Marks the runtime as started.
+         */
         @Override
         public void start() {
             started = true;
         }
 
+        /**
+         * Reports the configured readiness.
+         *
+         * @return the configured readiness flag
+         */
         @Override
         public boolean isReady() {
             return ready;
         }
 
+        /**
+         * Counts the stop call and returns the controllable stop future.
+         *
+         * @return the stop future, completed by the test
+         */
         @Override
         public java.util.concurrent.CompletionStage<Void> stop() {
             stopCalls.incrementAndGet();
@@ -400,16 +419,31 @@ class OperatorFrameworkLifecycleTest {
     }
 
     private static final class FailingRuntime implements ControllerRuntime {
+        /**
+         * Always fails to start, simulating a temporary Kubernetes failure.
+         *
+         * @throws IllegalStateException always
+         */
         @Override
         public void start() {
             throw new IllegalStateException("temporary Kubernetes failure");
         }
 
+        /**
+         * Reports the runtime as never ready.
+         *
+         * @return always false
+         */
         @Override
         public boolean isReady() {
             return false;
         }
 
+        /**
+         * Stops immediately.
+         *
+         * @return an already-completed stage
+         */
         @Override
         public java.util.concurrent.CompletionStage<Void> stop() {
             return CompletableFuture.completedFuture(null);
@@ -424,6 +458,13 @@ class OperatorFrameworkLifecycleTest {
         private volatile CompletableFuture<Void> election;
         private volatile RuntimeException startFailure;
 
+        /**
+         * Records the leadership callbacks and returns a controllable election future.
+         *
+         * @param onStartLeading callback invoked when leadership is acquired
+         * @param onStopLeading callback invoked when leadership is lost
+         * @return the election future, completed or failed by the test
+         */
         @Override
         public java.util.concurrent.CompletionStage<Void> start(
                 Runnable onStartLeading,
@@ -453,6 +494,9 @@ class OperatorFrameworkLifecycleTest {
             election.complete(null);
         }
 
+        /**
+         * Cancels the running election, if any.
+         */
         @Override
         public void stop() {
             if (election != null) {

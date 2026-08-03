@@ -6,6 +6,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.informers.cache.Indexer;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +39,13 @@ public record ReconciliationContext<T extends HasMetadata>(
         caches = Objects.requireNonNull(caches, "caches must not be null");
     }
 
-    /** Backward-compatible factory: no secondary caches. */
+    /**
+     * Backward-compatible factory: no secondary caches.
+     *
+     * @param resourceKey the namespace and name of the primary resource
+     * @param triggers the events that triggered this reconciliation
+     * @param cache the primary-type informer cache
+     */
     public ReconciliationContext(ResourceKey resourceKey, List<ReconciliationTrigger> triggers, Indexer<T> cache) {
         this(resourceKey, triggers, cache, Map.of());
     }
@@ -47,6 +54,9 @@ public record ReconciliationContext<T extends HasMetadata>(
      * Informer cache for an owned/watched secondary type (or the primary type), avoiding a server
      * round-trip. Throws when the type has no informer — declare it via owns()/watches(). When the
      * same type is both primary and owned, the owned (unfiltered) informer wins.
+     *
+     * @param type the owned/watched secondary type (or the primary type)
+     * @return the informer cache for the type
      */
     @SuppressWarnings("unchecked")
     public <S extends HasMetadata> Indexer<S> cacheFor(Class<S> type) {
@@ -58,7 +68,13 @@ public record ReconciliationContext<T extends HasMetadata>(
         return (Indexer<S>) indexer;
     }
 
-    /** Test/standalone factory: cache is null. Do not call byIndex/getByKey on the result. */
+    /**
+     * Test/standalone factory: cache is null. Do not call byIndex/getByKey on the result.
+     *
+     * @param resourceKey the namespace and name of the primary resource
+     * @param triggers the events that triggered this reconciliation
+     * @return a context with no informer cache
+     */
     public static <T extends HasMetadata> ReconciliationContext<T> withoutCache(
             ResourceKey resourceKey, List<ReconciliationTrigger> triggers) {
         return new ReconciliationContext<>(resourceKey, triggers, null, Map.of());

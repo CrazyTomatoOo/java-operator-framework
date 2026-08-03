@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
+
 import java.util.Objects;
 
 /**
@@ -23,20 +24,38 @@ public final class Finalizers {
     private Finalizers() {
     }
 
-    /** True when the resource carries a deletion timestamp (being garbage-collected). */
+    /**
+     * True when the resource carries a deletion timestamp (being garbage-collected).
+     *
+     * @param resource the resource to check
+     * @return true if the resource is being deleted
+     */
     public static boolean isDeleting(HasMetadata resource) {
         Objects.requireNonNull(resource.getMetadata(), "metadata");
         return resource.getMetadata().getDeletionTimestamp() != null;
     }
 
-    /** True when the resource already carries the finalizer. */
+    /**
+     * True when the resource already carries the finalizer.
+     *
+     * @param resource the resource to check
+     * @param finalizer the finalizer name
+     * @return true if the resource already carries the finalizer
+     */
     public static boolean present(HasMetadata resource, String finalizer) {
         Objects.requireNonNull(resource.getMetadata(), "metadata");
         var current = resource.getMetadata().getFinalizers();
         return current != null && current.contains(finalizer);
     }
 
-    /** Server-side JSON patch adding the finalizer when absent; returns the patched resource. */
+    /**
+     * Server-side JSON patch adding the finalizer when absent; returns the patched resource.
+     *
+     * @param client the Kubernetes client used to submit the patch
+     * @param resource the resource to add the finalizer to
+     * @param finalizer the finalizer name
+     * @return the patched resource
+     */
     public static <T extends HasMetadata> T add(KubernetesClient client, T resource, String finalizer) {
         requireName(finalizer);
         if (present(resource, finalizer)) {
@@ -49,7 +68,14 @@ public final class Finalizers {
         return client.resource(resource).patch(PatchContext.of(PatchType.JSON), body);
     }
 
-    /** Server-side JSON patch removing the finalizer when present; returns the patched resource. */
+    /**
+     * Server-side JSON patch removing the finalizer when present; returns the patched resource.
+     *
+     * @param client the Kubernetes client used to submit the patch
+     * @param resource the resource to remove the finalizer from
+     * @param finalizer the finalizer name
+     * @return the patched resource
+     */
     public static <T extends HasMetadata> T remove(KubernetesClient client, T resource, String finalizer) {
         requireName(finalizer);
         var finalizers = resource.getMetadata().getFinalizers();

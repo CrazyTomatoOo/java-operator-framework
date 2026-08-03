@@ -7,11 +7,14 @@ package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.core.ResolvableType;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +36,13 @@ public final class WebhookCallbackRegistry {
     private final Map<String, Callback> converters;
     private final AtomicReference<String> lastFailure = new AtomicReference<>();
 
+    /**
+     * Discovers all validator, mutator, and converter beans and indexes them by route name.
+     *
+     * @param beanFactory the bean factory to discover callback beans from
+     * @throws ApplicationContextException when no callback bean exists, a bean name is not a safe URL
+     *     segment, a route name is duplicated, or a callback's resource type cannot be resolved
+     */
     public WebhookCallbackRegistry(ConfigurableListableBeanFactory beanFactory) {
         this.beanFactory = beanFactory;
         validators = discover(AdmissionValidator.class);
@@ -44,38 +54,87 @@ public final class WebhookCallbackRegistry {
         }
     }
 
+    /**
+     * Finds the validator callback registered under a route name.
+     *
+     * @param name the callback bean name from the webhook request path
+     * @return the matching validator callback, or empty when none is registered under {@code name}
+     */
     public Optional<Callback> validator(String name) {
         return Optional.ofNullable(validators.get(name));
     }
 
+    /**
+     * Finds the mutator callback registered under a route name.
+     *
+     * @param name the callback bean name from the webhook request path
+     * @return the matching mutator callback, or empty when none is registered under {@code name}
+     */
     public Optional<Callback> mutator(String name) {
         return Optional.ofNullable(mutators.get(name));
     }
 
+    /**
+     * Finds the converter callback registered under a route name.
+     *
+     * @param name the callback bean name from the webhook request path
+     * @return the matching converter callback, or empty when none is registered under {@code name}
+     */
     public Optional<Callback> converter(String name) {
         return Optional.ofNullable(converters.get(name));
     }
 
+    /**
+     * Returns the number of registered validator callbacks.
+     *
+     * @return the validator callback count
+     */
     public int validatorCount() {
         return validators.size();
     }
 
+    /**
+     * Returns the number of registered mutator callbacks.
+     *
+     * @return the mutator callback count
+     */
     public int mutatorCount() {
         return mutators.size();
     }
 
+    /**
+     * Returns the number of registered converter callbacks.
+     *
+     * @return the converter callback count
+     */
     public int converterCount() {
         return converters.size();
     }
 
+    /**
+     * Returns the total number of registered webhook callbacks of all types.
+     *
+     * @return the validator, mutator, and converter counts combined
+     */
     public int callbackCount() {
         return validatorCount() + mutatorCount() + converterCount();
     }
 
+    /**
+     * Returns the most recently recorded callback failure, if any.
+     *
+     * @return the last failure description, or empty when no callback has failed
+     */
     public Optional<String> lastFailure() {
         return Optional.ofNullable(lastFailure.get());
     }
 
+    /**
+     * Records a callback failure so it can be surfaced through health reporting.
+     *
+     * @param type the callback type, such as {@code validator}, {@code mutator}, or {@code converter}
+     * @param name the callback bean name that failed
+     */
     public void recordFailure(String type, String name) {
         lastFailure.set(type + " callback '" + name + "' failed");
     }

@@ -8,8 +8,10 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceRefer
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
@@ -17,11 +19,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(
         classes = ActuatorEndpointTest.Application.class,
@@ -80,6 +81,13 @@ class ActuatorEndpointTest {
     }
 
     static class TypedValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Allows every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.allow();

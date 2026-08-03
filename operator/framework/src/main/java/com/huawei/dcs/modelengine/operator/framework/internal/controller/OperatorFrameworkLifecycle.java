@@ -7,8 +7,11 @@ package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.RuntimeReadiness;
 import com.huawei.dcs.modelengine.operator.framework.internal.leader.LeaderElectionAdapter;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.SmartLifecycle;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +40,14 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
     private volatile String lastFailure = "none";
     private CompletableFuture<Void> stoppingRuntime = CompletableFuture.completedFuture(null);
 
+    /**
+     * Creates the lifecycle supervisor.
+     *
+     * @param properties the operator framework configuration
+     * @param runtimeFactory the factory creating a controller runtime per term
+     * @param leaderElection the leader election adapter
+     * @param support the readiness, metrics, and policy-state lifecycle support
+     */
     public OperatorFrameworkLifecycle(
             OperatorFrameworkProperties properties,
             ControllerRuntimeFactory runtimeFactory,
@@ -56,6 +67,9 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         this(properties, runtimeFactory, leaderElection, new RuntimeLifecycleSupport(readiness));
     }
 
+    /**
+     * Starts supervision asynchronously: leader election when enabled, otherwise the runtime directly.
+     */
     @Override
     public void start() {
         if (!running.compareAndSet(false, true)) {
@@ -70,6 +84,11 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         }
     }
 
+    /**
+     * Stops the runtime and leader election without blocking the caller.
+     *
+     * @param callback invoked once the stop has finished
+     */
     @Override
     public void stop(Runnable callback) {
         if (!running.compareAndSet(true, false)) {
@@ -82,39 +101,75 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
                 (ignored, exception) -> finishLifecycleStop(callback)));
     }
 
+    /** Stops the lifecycle without a completion callback. */
     @Override
     public void stop() {
         stop(() -> { });
     }
 
+    /**
+     * Reports whether the lifecycle has been started and not yet stopped.
+     *
+     * @return {@code true} when the lifecycle is running
+     */
     @Override
     public boolean isRunning() {
         return running.get();
     }
 
+    /**
+     * Reports whether this instance currently holds leadership.
+     *
+     * @return {@code true} when this instance is the leader
+     */
     public boolean isLeading() {
         return leading;
     }
 
+    /**
+     * Reports whether the current runtime's informers have synced.
+     *
+     * @return {@code true} when a runtime exists and is ready
+     */
     public boolean isInformerSynced() {
         var current = runtime;
         return current != null && current.isReady();
     }
 
+    /**
+     * Reports whether the current runtime's workers are running.
+     *
+     * @return {@code true} when a runtime exists and is running
+     */
     public boolean isWorkerRunning() {
         var current = runtime;
         return current != null && current.isRunning();
     }
 
+    /**
+     * Returns the current runtime's queue depth, or zero when no runtime exists.
+     *
+     * @return the number of pending reconciliation requests
+     */
     public int queueDepth() {
         var current = runtime;
         return current == null ? 0 : current.queueDepth();
     }
 
+    /**
+     * Returns the class name of the last recorded failure, or {@code "none"}.
+     *
+     * @return a description of the last failure
+     */
     public String lastFailure() {
         return lastFailure;
     }
 
+    /**
+     * Reports that this lifecycle always starts automatically with the context.
+     *
+     * @return always {@code true}
+     */
     @Override
     public boolean isAutoStartup() {
         return true;

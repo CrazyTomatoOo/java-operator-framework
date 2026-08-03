@@ -9,13 +9,14 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEvent
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceReference;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.TriggerRole;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ControllerMechanicsTest {
     @Test

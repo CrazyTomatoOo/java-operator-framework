@@ -24,14 +24,31 @@ public final class ReconcileResult {
         this.delay = delay;
     }
 
+    /**
+     * Creates a result that finishes reconciliation without requeueing.
+     *
+     * @return a result marking the resource as done
+     */
     public static ReconcileResult done() {
         return DONE;
     }
 
+    /**
+     * Creates a result that requeues the resource immediately.
+     *
+     * @return a result requesting an immediate requeue
+     */
     public static ReconcileResult requeueNow() {
         return REQUEUE_NOW;
     }
 
+    /**
+     * Creates a result that requeues the resource after the given delay.
+     *
+     * @param delay the time to wait before the next reconciliation
+     * @return a result requesting a delayed requeue
+     * @throws IllegalArgumentException if the delay is zero or negative
+     */
     public static ReconcileResult requeueAfter(Duration delay) {
         Objects.requireNonNull(delay, "delay must not be null");
         if (delay.isZero() || delay.isNegative()) {
@@ -40,10 +57,20 @@ public final class ReconcileResult {
         return new ReconcileResult(delay);
     }
 
+    /**
+     * Returns the requested requeue delay, if any.
+     *
+     * @return the requeue delay, or empty when the resource is done
+     */
     public Optional<Duration> requeueDelay() {
         return Optional.ofNullable(delay);
     }
 
+    /**
+     * Checks whether reconciliation is complete without a requeue.
+     *
+     * @return {@code true} when no requeue is requested
+     */
     public boolean isDone() {
         return delay == null;
     }

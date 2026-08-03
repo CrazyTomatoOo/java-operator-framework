@@ -5,20 +5,21 @@
 package com.huawei.dcs.modelengine.operator.framework.internal.event;
 
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
+
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 @EnableKubernetesMockClient(crud = true)
 class AggregatingKubernetesEventPublisherTest {
@@ -265,16 +266,32 @@ class AggregatingKubernetesEventPublisherTest {
             instant = instant.plus(duration);
         }
 
+        /**
+         * Returns the clock's zone.
+         *
+         * @return always UTC
+         */
         @Override
         public ZoneId getZone() {
             return ZoneOffset.UTC;
         }
 
+        /**
+         * Ignores the requested zone; the clock stays on UTC.
+         *
+         * @param zone the requested zone
+         * @return this clock
+         */
         @Override
         public Clock withZone(ZoneId zone) {
             return this;
         }
 
+        /**
+         * Returns the current test-controlled instant.
+         *
+         * @return the current instant
+         */
         @Override
         public Instant instant() {
             return instant;

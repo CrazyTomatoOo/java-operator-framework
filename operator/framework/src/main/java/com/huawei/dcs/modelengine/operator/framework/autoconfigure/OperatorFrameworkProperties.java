@@ -8,8 +8,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+
 import java.time.Duration;
 
 /**
@@ -35,38 +37,83 @@ public class OperatorFrameworkProperties {
     @Valid
     private final Events events = new Events();
 
+    /**
+     * Gets whether the operator framework is enabled.
+     *
+     * @return whether the operator framework is enabled
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    /**
+     * Sets whether the operator framework is enabled.
+     *
+     * @param enabled whether the operator framework is enabled
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    /**
+     * Gets the runtime mode of the operator.
+     *
+     * @return the runtime mode of the operator
+     */
     public Mode getMode() {
         return mode;
     }
 
+    /**
+     * Sets the runtime mode of the operator.
+     *
+     * @param mode the runtime mode of the operator
+     */
     public void setMode(Mode mode) {
         this.mode = mode;
     }
 
+    /**
+     * Gets the controller worker and informer settings.
+     *
+     * @return the controller worker and informer settings
+     */
     public Controller getController() {
         return controller;
     }
 
+    /**
+     * Gets the lease leader-election settings.
+     *
+     * @return the lease leader-election settings
+     */
     public LeaderElection getLeaderElection() {
         return leaderElection;
     }
 
+    /**
+     * Gets the exception retry settings.
+     *
+     * @return the exception retry settings
+     */
     public Retry getRetry() {
         return retry;
     }
 
+    /**
+     * Gets the per-resource reconciliation rate limit settings.
+     *
+     * @return the per-resource reconciliation rate limit settings
+     */
     public RateLimit getRateLimit() {
         return rateLimit;
     }
 
+    /**
+     * Gets the Kubernetes Event publication settings.
+     *
+     * @return the Kubernetes Event publication settings
+     */
     public Events getEvents() {
         return events;
     }
@@ -91,42 +138,93 @@ public class OperatorFrameworkProperties {
         @NotNull
         private Duration startupRetryDelay = Duration.ofSeconds(5);
 
+        /**
+         * Gets the namespace the controller watches.
+         *
+         * @return the namespace the controller watches
+         */
         public String getNamespace() {
             return namespace;
         }
 
+        /**
+         * Sets the namespace the controller watches.
+         *
+         * @param namespace the namespace the controller watches
+         */
         public void setNamespace(String namespace) {
             this.namespace = namespace;
         }
 
+        /**
+         * Gets whether the controller watches all namespaces.
+         *
+         * @return whether the controller watches all namespaces
+         */
         public boolean isClusterScoped() {
             return clusterScoped;
         }
 
+        /**
+         * Sets whether the controller watches all namespaces.
+         *
+         * @param clusterScoped whether the controller watches all namespaces
+         */
         public void setClusterScoped(boolean clusterScoped) {
             this.clusterScoped = clusterScoped;
         }
 
+        /**
+         * Gets the number of reconciliation worker threads.
+         *
+         * @return the number of reconciliation worker threads
+         */
         public int getWorkerThreads() {
             return workerThreads;
         }
 
+        /**
+         * Sets the number of reconciliation worker threads.
+         *
+         * @param workerThreads the number of reconciliation worker threads
+         */
         public void setWorkerThreads(int workerThreads) {
             this.workerThreads = workerThreads;
         }
 
+        /**
+         * Gets the informer resync period.
+         *
+         * @return the informer resync period
+         */
         public Duration getResyncPeriod() {
             return resyncPeriod;
         }
 
+        /**
+         * Sets the informer resync period.
+         *
+         * @param resyncPeriod the informer resync period
+         */
         public void setResyncPeriod(Duration resyncPeriod) {
             this.resyncPeriod = resyncPeriod;
         }
 
+        /**
+         * Gets whether reconciliation is skipped when only the resource generation is unchanged.
+         *
+         * @return whether reconciliation is skipped when only the resource generation is unchanged
+         */
         public boolean isGenerationChangeFilter() {
             return generationChangeFilter;
         }
 
+        /**
+         * Sets whether reconciliation is skipped when only the resource generation is unchanged.
+         *
+         * @param generationChangeFilter whether reconciliation is skipped when only the resource generation is
+         *        unchanged
+         */
         public void setGenerationChangeFilter(boolean generationChangeFilter) {
             this.generationChangeFilter = generationChangeFilter;
         }
@@ -134,28 +232,56 @@ public class OperatorFrameworkProperties {
         /**
          * Whether the Kubernetes-Event watch narrows with involvedObject field selectors. Disable
          * when the API server (or the fabric8 crud mock server) cannot match those selectors.
+         *
+         * @return whether the event watch narrows with involvedObject field selectors
          */
         public boolean isFilterEventsByInvolvedObject() {
             return filterEventsByInvolvedObject;
         }
 
+        /**
+         * Sets whether the Kubernetes-Event watch narrows with involvedObject field selectors.
+         *
+         * @param filterEventsByInvolvedObject whether the Kubernetes-Event watch narrows with involvedObject field
+         *        selectors
+         */
         public void setFilterEventsByInvolvedObject(boolean filterEventsByInvolvedObject) {
             this.filterEventsByInvolvedObject = filterEventsByInvolvedObject;
         }
 
+        /**
+         * Gets the delay before retrying a failed controller startup.
+         *
+         * @return the delay before retrying a failed controller startup
+         */
         public Duration getStartupRetryDelay() {
             return startupRetryDelay;
         }
 
+        /**
+         * Sets the delay before retrying a failed controller startup.
+         *
+         * @param startupRetryDelay the delay before retrying a failed controller startup
+         */
         public void setStartupRetryDelay(Duration startupRetryDelay) {
             this.startupRetryDelay = startupRetryDelay;
         }
 
+        /**
+         * Checks that the namespace is blank when the controller is cluster-scoped.
+         *
+         * @return whether the namespace scope combination is valid
+         */
         @AssertTrue(message = "controller namespace must be blank when cluster-scoped is true")
         public boolean isNamespaceScopeValid() {
             return !clusterScoped || namespace == null || namespace.isBlank();
         }
 
+        /**
+         * Checks that the resync period is non-negative and the startup retry delay is positive.
+         *
+         * @return whether the controller timing settings are valid
+         */
         @AssertTrue(message = "controller resync-period must be non-negative and startup-retry-delay positive")
         public boolean isTimingValid() {
             return resyncPeriod == null || startupRetryDelay == null
@@ -175,59 +301,129 @@ public class OperatorFrameworkProperties {
         @NotNull
         private Duration retryPeriod = Duration.ofSeconds(2);
 
+        /**
+         * Gets whether leader election is enabled.
+         *
+         * @return whether leader election is enabled
+         */
         public boolean isEnabled() {
             return enabled;
         }
 
+        /**
+         * Sets whether leader election is enabled.
+         *
+         * @param enabled whether leader election is enabled
+         */
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
 
+        /**
+         * Gets the name of the leader-election lease.
+         *
+         * @return the name of the leader-election lease
+         */
         public String getLeaseName() {
             return leaseName;
         }
 
+        /**
+         * Sets the name of the leader-election lease.
+         *
+         * @param leaseName the name of the leader-election lease
+         */
         public void setLeaseName(String leaseName) {
             this.leaseName = leaseName;
         }
 
+        /**
+         * Gets the namespace of the leader-election lease.
+         *
+         * @return the namespace of the leader-election lease
+         */
         public String getNamespace() {
             return namespace;
         }
 
+        /**
+         * Sets the namespace of the leader-election lease.
+         *
+         * @param namespace the namespace of the leader-election lease
+         */
         public void setNamespace(String namespace) {
             this.namespace = namespace;
         }
 
+        /**
+         * Gets the duration non-leaders wait before forcing a leader change.
+         *
+         * @return the leader-election lease duration
+         */
         public Duration getLeaseDuration() {
             return leaseDuration;
         }
 
+        /**
+         * Sets the duration non-leaders wait before forcing a leader change.
+         *
+         * @param leaseDuration the leader-election lease duration
+         */
         public void setLeaseDuration(Duration leaseDuration) {
             this.leaseDuration = leaseDuration;
         }
 
+        /**
+         * Gets the deadline for the leader to renew the lease.
+         *
+         * @return the leader-election renew deadline
+         */
         public Duration getRenewDeadline() {
             return renewDeadline;
         }
 
+        /**
+         * Sets the deadline for the leader to renew the lease.
+         *
+         * @param renewDeadline the leader-election renew deadline
+         */
         public void setRenewDeadline(Duration renewDeadline) {
             this.renewDeadline = renewDeadline;
         }
 
+        /**
+         * Gets the interval between leader-election retry attempts.
+         *
+         * @return the leader-election retry period
+         */
         public Duration getRetryPeriod() {
             return retryPeriod;
         }
 
+        /**
+         * Sets the interval between leader-election retry attempts.
+         *
+         * @param retryPeriod the leader-election retry period
+         */
         public void setRetryPeriod(Duration retryPeriod) {
             this.retryPeriod = retryPeriod;
         }
 
+        /**
+         * Checks that the timing settings satisfy retry-period &lt; renew-deadline &lt; lease-duration.
+         *
+         * @return whether the leader-election timing settings are valid
+         */
         @AssertTrue(message = "leader-election must satisfy retry-period < renew-deadline < lease-duration")
         public boolean isTimingValid() {
             return isTimingMissing() || isTimingOrdered();
         }
 
+        /**
+         * Checks that the lease name and namespace are valid DNS labels.
+         *
+         * @return whether the leader-election lease name and namespace are valid
+         */
         @AssertTrue(message = "leader-election lease-name and namespace must be DNS labels")
         public boolean isNamesValid() {
             return isDnsLabel(leaseName) && isDnsLabel(namespace);
@@ -260,30 +456,65 @@ public class OperatorFrameworkProperties {
         @Min(1)
         private int maxAttempts = 5;
 
+        /**
+         * Gets the delay before the first retry attempt.
+         *
+         * @return the initial retry delay
+         */
         public Duration getInitialDelay() {
             return initialDelay;
         }
 
+        /**
+         * Sets the delay before the first retry attempt.
+         *
+         * @param initialDelay the initial retry delay
+         */
         public void setInitialDelay(Duration initialDelay) {
             this.initialDelay = initialDelay;
         }
 
+        /**
+         * Gets the maximum delay between retry attempts.
+         *
+         * @return the maximum retry delay
+         */
         public Duration getMaxDelay() {
             return maxDelay;
         }
 
+        /**
+         * Sets the maximum delay between retry attempts.
+         *
+         * @param maxDelay the maximum retry delay
+         */
         public void setMaxDelay(Duration maxDelay) {
             this.maxDelay = maxDelay;
         }
 
+        /**
+         * Gets the maximum number of retry attempts.
+         *
+         * @return the maximum number of retry attempts
+         */
         public int getMaxAttempts() {
             return maxAttempts;
         }
 
+        /**
+         * Sets the maximum number of retry attempts.
+         *
+         * @param maxAttempts the maximum number of retry attempts
+         */
         public void setMaxAttempts(int maxAttempts) {
             this.maxAttempts = maxAttempts;
         }
 
+        /**
+         * Checks that the delays are positive and the max delay is not less than the initial delay.
+         *
+         * @return whether the retry delay range is valid
+         */
         @AssertTrue(message = "retry delays must be positive and max-delay must not be less than initial-delay")
         public boolean isRangeValid() {
             return initialDelay == null || maxDelay == null || initialDelay.compareTo(Duration.ZERO) > 0
@@ -296,14 +527,29 @@ public class OperatorFrameworkProperties {
         @NotNull
         private Duration minimumInterval = Duration.ofSeconds(5);
 
+        /**
+         * Gets the minimum interval between reconciliations of the same resource.
+         *
+         * @return the minimum reconciliation interval
+         */
         public Duration getMinimumInterval() {
             return minimumInterval;
         }
 
+        /**
+         * Sets the minimum interval between reconciliations of the same resource.
+         *
+         * @param minimumInterval the minimum reconciliation interval
+         */
         public void setMinimumInterval(Duration minimumInterval) {
             this.minimumInterval = minimumInterval;
         }
 
+        /**
+         * Checks that the minimum interval is non-negative.
+         *
+         * @return whether the minimum reconciliation interval is valid
+         */
         @AssertTrue(message = "rate-limit.minimum-interval must be non-negative")
         public boolean isMinimumIntervalValid() {
             return minimumInterval == null || !minimumInterval.isNegative();
@@ -319,38 +565,83 @@ public class OperatorFrameworkProperties {
         @Min(1)
         private int maxCacheEntries = 1000;
 
+        /**
+         * Gets whether Kubernetes Event publication is enabled.
+         *
+         * @return whether Kubernetes Event publication is enabled
+         */
         public boolean isEnabled() {
             return enabled;
         }
 
+        /**
+         * Sets whether Kubernetes Event publication is enabled.
+         *
+         * @param enabled whether Kubernetes Event publication is enabled
+         */
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
 
+        /**
+         * Gets the component name reported on published events.
+         *
+         * @return the component name reported on published events
+         */
         public String getComponent() {
             return component;
         }
 
+        /**
+         * Sets the component name reported on published events.
+         *
+         * @param component the component name reported on published events
+         */
         public void setComponent(String component) {
             this.component = component;
         }
 
+        /**
+         * Gets the time window over which duplicate events are aggregated.
+         *
+         * @return the event aggregation window
+         */
         public Duration getAggregationWindow() {
             return aggregationWindow;
         }
 
+        /**
+         * Sets the time window over which duplicate events are aggregated.
+         *
+         * @param aggregationWindow the event aggregation window
+         */
         public void setAggregationWindow(Duration aggregationWindow) {
             this.aggregationWindow = aggregationWindow;
         }
 
+        /**
+         * Gets the maximum number of entries in the event aggregation cache.
+         *
+         * @return the maximum number of event cache entries
+         */
         public int getMaxCacheEntries() {
             return maxCacheEntries;
         }
 
+        /**
+         * Sets the maximum number of entries in the event aggregation cache.
+         *
+         * @param maxCacheEntries the maximum number of event cache entries
+         */
         public void setMaxCacheEntries(int maxCacheEntries) {
             this.maxCacheEntries = maxCacheEntries;
         }
 
+        /**
+         * Checks that the aggregation window is positive.
+         *
+         * @return whether the event aggregation window is valid
+         */
         @AssertTrue(message = "events.aggregation-window must be positive")
         public boolean isAggregationWindowValid() {
             return aggregationWindow == null || aggregationWindow.compareTo(Duration.ZERO) > 0;

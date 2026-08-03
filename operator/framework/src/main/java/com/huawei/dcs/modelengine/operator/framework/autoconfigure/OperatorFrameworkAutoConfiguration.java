@@ -4,7 +4,6 @@
 
 package com.huawei.dcs.modelengine.operator.framework.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkHealthIndicator;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
@@ -23,10 +22,13 @@ import com.huawei.dcs.modelengine.operator.framework.internal.policy.ReconcileRe
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.AdmissionWebhookController;
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.ConversionWebhookController;
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.WebhookCallbackRegistry;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -40,6 +42,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+
 import java.time.Clock;
 import java.time.Duration;
 

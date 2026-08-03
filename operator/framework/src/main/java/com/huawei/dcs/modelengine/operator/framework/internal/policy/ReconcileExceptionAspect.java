@@ -5,6 +5,7 @@
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,6 +26,12 @@ public final class ReconcileExceptionAspect {
     private final OperatorFrameworkMetrics metrics;
     private final SpringCallbackIdentifier identifiers;
 
+    /**
+     * Creates the aspect with the metrics sink and the bean factory used to identify callbacks.
+     *
+     * @param metrics the metrics recorder for terminal failures
+     * @param beanFactory the bean factory used to resolve callback bean names
+     */
     public ReconcileExceptionAspect(
             OperatorFrameworkMetrics metrics,
             ConfigurableListableBeanFactory beanFactory) {
@@ -32,6 +39,13 @@ public final class ReconcileExceptionAspect {
         identifiers = new SpringCallbackIdentifier(beanFactory);
     }
 
+    /**
+     * Logs a callback failure and counts terminal reconciler failures, then rethrows.
+     *
+     * @param joinPoint the intercepted callback invocation
+     * @return the callback result when it succeeds
+     * @throws Throwable the failure thrown by the callback, rethrown after logging
+     */
     @Around(ReconcileObservationAspect.CALLBACKS)
     public Object report(ProceedingJoinPoint joinPoint) throws Throwable {
         try {

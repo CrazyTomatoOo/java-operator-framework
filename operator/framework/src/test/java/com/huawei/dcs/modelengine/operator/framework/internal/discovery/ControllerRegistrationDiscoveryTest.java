@@ -9,19 +9,20 @@ import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRe
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Secret;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 class ControllerRegistrationDiscoveryTest {
     @Test
@@ -166,6 +167,13 @@ class ControllerRegistrationDiscoveryTest {
     }
 
     static class ConfigMapReconciler implements Reconciler<ConfigMap> {
+        /**
+         * Reconciles the resource by doing nothing.
+         *
+         * @param resource the resource to reconcile
+         * @param context the reconciliation context
+         * @return a completed result
+         */
         @Override
         public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
             return ReconcileResult.done();
@@ -178,6 +186,13 @@ class ControllerRegistrationDiscoveryTest {
     static final class CountingConfigMapReconciler extends ConfigMapReconciler {
         private final AtomicInteger calls = new AtomicInteger();
 
+        /**
+         * Reconciles the resource and counts the call.
+         *
+         * @param resource the resource to reconcile
+         * @param context the reconciliation context
+         * @return a completed result
+         */
         @Override
         public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
             calls.incrementAndGet();

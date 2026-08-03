@@ -7,13 +7,14 @@ package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.support.GenericApplicationContext;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -80,6 +81,13 @@ class WebhookCallbackRegistryTest {
     }
 
     static final class TypedValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Allows every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.allow();
@@ -88,6 +96,13 @@ class WebhookCallbackRegistryTest {
 
     @SuppressWarnings("rawtypes")
     static final class RawValidator implements AdmissionValidator {
+        /**
+         * Allows every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(HasMetadata current, AdmissionContext context) {
             return AdmissionDecision.allow();

@@ -5,9 +5,11 @@
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
+
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -25,28 +27,72 @@ public final class Mappers {
     private Mappers() {
     }
 
+    /**
+     * Maps a secondary resource to the primary resources listed as its controller owners.
+     *
+     * @param <S> the secondary resource type
+     * @param <T> the primary resource type
+     * @return a mapper resolving primary keys from owner references
+     */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> ownerReferences() {
         return event -> ownerKeys(event, null, null);
     }
 
+    /**
+     * Maps a secondary resource to its controller owners of the given primary type.
+     *
+     * @param <S> the secondary resource type
+     * @param <T> the primary resource type
+     * @param primaryType the primary resource class used to filter owner references
+     * @return a mapper resolving primary keys from matching owner references
+     */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> ownerReferences(
             Class<T> primaryType) {
         Objects.requireNonNull(primaryType, "primaryType must not be null");
         return event -> ownerKeys(event, HasMetadata.getApiVersion(primaryType), HasMetadata.getKind(primaryType));
     }
 
+    /**
+     * Maps a secondary resource to the primary resource named by the given label.
+     *
+     * @param <S> the secondary resource type
+     * @param <T> the primary resource type
+     * @param key the label key holding the primary resource name
+     * @return a mapper resolving the primary key from the label value
+     */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byLabel(String key) {
         return byMetadata(key, ObjectMeta::getLabels);
     }
 
+    /**
+     * Maps a secondary resource to the primary resource named by the given annotation.
+     *
+     * @param <S> the secondary resource type
+     * @param <T> the primary resource type
+     * @param key the annotation key holding the primary resource name
+     * @return a mapper resolving the primary key from the annotation value
+     */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byAnnotation(String key) {
         return byMetadata(key, ObjectMeta::getAnnotations);
     }
 
+    /**
+     * Maps a Kubernetes {@code Event} to the primary resource it refers to.
+     *
+     * @param <T> the primary resource type
+     * @return a mapper resolving the primary key from the event's involved object
+     */
     public static <T extends HasMetadata> ResourceMapper<Event, T> involvedObject() {
         return event -> involvedObjectKeys(event, null, null);
     }
 
+    /**
+     * Maps a Kubernetes {@code Event} to its involved object when it matches the given primary type.
+     *
+     * @param <T> the primary resource type
+     * @param primaryType the primary resource class used to filter involved objects
+     * @return a mapper resolving the primary key from matching involved objects
+     */
     public static <T extends HasMetadata> ResourceMapper<Event, T> involvedObject(Class<T> primaryType) {
         Objects.requireNonNull(primaryType, "primaryType must not be null");
         return event -> involvedObjectKeys(

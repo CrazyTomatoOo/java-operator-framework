@@ -9,11 +9,14 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResu
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+
 import org.springframework.stereotype.Component;
+
 import java.time.Duration;
 import java.util.Locale;
 import java.util.Map;
@@ -41,6 +44,14 @@ public class EchoReconciler implements Reconciler<ConfigMap> {
         this.events = events;
     }
 
+    /**
+     * Creates or updates the owned {@code <name>-echo} ConfigMap with the upper-cased message, and
+     * requeues briefly while the echo-target index has not caught up with the child yet.
+     *
+     * @param resource the labeled ConfigMap under reconciliation
+     * @param context the reconciliation context carrying caches and triggers
+     * @return {@code done} when nothing changed, or a short requeue while waiting for the index
+     */
     @Override
     public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
         if (isDelete(context) || !isEnabled(resource)) {

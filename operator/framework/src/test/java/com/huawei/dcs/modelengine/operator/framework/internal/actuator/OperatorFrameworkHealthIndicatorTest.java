@@ -10,7 +10,9 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValida
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.controller.OperatorFrameworkLifecycle;
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.WebhookCallbackRegistry;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.health.Status;
@@ -18,13 +20,12 @@ import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.support.GenericApplicationContext;
-
-import java.util.ArrayList;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 class OperatorFrameworkHealthIndicatorTest {
     @Test
@@ -104,6 +105,13 @@ class OperatorFrameworkHealthIndicatorTest {
     }
 
     static final class TypedValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Allows every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.allow();

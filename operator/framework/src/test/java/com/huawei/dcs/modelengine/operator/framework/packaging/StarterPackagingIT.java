@@ -5,7 +5,9 @@
 package com.huawei.dcs.modelengine.operator.framework.packaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +15,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarFile;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class StarterPackagingIT {
     private static final String FRAMEWORK_PATH = "com/huawei/dcs/modelengine/operator/framework/";

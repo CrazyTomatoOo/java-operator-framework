@@ -4,16 +4,18 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionReview;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,15 +23,14 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 class ConversionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -176,6 +177,13 @@ class ConversionWebhookControllerTest {
     }
 
     static final class IdentityChangingConverter implements ResourceConverter<ConfigMap> {
+        /**
+         * Converts the resource to the desired version under a different name.
+         *
+         * @param resource the resource to convert
+         * @param context the conversion context
+         * @return the converted resource
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
             var converted = new ConfigMapBuilder(resource).withApiVersion(context.desiredVersion())
@@ -188,6 +196,13 @@ class ConversionWebhookControllerTest {
         private final AtomicInteger calls = new AtomicInteger();
         private final AtomicReference<ConversionContext> context = new AtomicReference<>();
 
+        /**
+         * Converts the resource to the desired version, recording the call and context.
+         *
+         * @param resource the resource to convert
+         * @param conversionContext the conversion context
+         * @return the converted resource
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext conversionContext) {
             calls.incrementAndGet();
@@ -198,6 +213,13 @@ class ConversionWebhookControllerTest {
     }
 
     static final class WrongVersionConverter implements ResourceConverter<ConfigMap> {
+        /**
+         * Converts the resource to a version other than the desired one.
+         *
+         * @param resource the resource to convert
+         * @param context the conversion context
+         * @return the resource at the wrong version
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
             return ConversionResult.converted(new ConfigMapBuilder(resource).withApiVersion("v3").build());
@@ -205,6 +227,13 @@ class ConversionWebhookControllerTest {
     }
 
     static final class WrongKindConverter implements ResourceConverter<ConfigMap> {
+        /**
+         * Converts the resource to the desired version but changes its kind.
+         *
+         * @param resource the resource to convert
+         * @param context the conversion context
+         * @return the resource with a different kind
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
             return ConversionResult.converted(new ConfigMapBuilder(resource)
@@ -213,6 +242,14 @@ class ConversionWebhookControllerTest {
     }
 
     static final class FailingConverter implements ResourceConverter<ConfigMap> {
+        /**
+         * Always throws, to exercise error sanitization.
+         *
+         * @param resource the resource to convert
+         * @param context the conversion context
+         * @return never returns
+         * @throws Exception always
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) throws Exception {
             throw new Exception("sensitive conversion failure");

@@ -6,6 +6,7 @@ package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -39,6 +41,13 @@ public final class ReconcileRateLimitAspect {
     private final Clock clock;
     private final SpringCallbackIdentifier identifiers;
 
+    /**
+     * Creates the aspect with the configured minimum interval per resource.
+     *
+     * @param properties the framework properties carrying the rate-limit configuration
+     * @param clock the clock used for interval bookkeeping
+     * @param beanFactory the bean factory used to resolve controller bean names
+     */
     public ReconcileRateLimitAspect(
             OperatorFrameworkProperties properties,
             Clock clock,
@@ -52,6 +61,14 @@ public final class ReconcileRateLimitAspect {
         this(properties, clock, new DefaultListableBeanFactory());
     }
 
+    /**
+     * Defers reconciliation with a delayed requeue when the resource was handled within the
+     * configured minimum interval, otherwise proceeds.
+     *
+     * @param joinPoint the intercepted reconcile invocation
+     * @return a requeue-after result for a rate-limited resource, or the reconciler result
+     * @throws Throwable the failure thrown by the reconciler
+     */
     @Around("execution(* com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler+.reconcile(..))")
     public Object limit(ProceedingJoinPoint joinPoint) throws Throwable {
         DEFERRED.set(false);

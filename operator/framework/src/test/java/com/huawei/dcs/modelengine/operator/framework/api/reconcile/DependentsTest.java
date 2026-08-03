@@ -9,8 +9,8 @@ import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
-import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,11 +47,23 @@ class DependentsTest {
                 .withNewMetadata().withNamespace("ns").withName("primary").withUid("uid-1").endMetadata()
                 .build();
         DependentResource<ConfigMap, ConfigMap> empty = new DependentResource<>() {
+            /**
+             * Returns the dependent resource type.
+             *
+             * @return the ConfigMap type
+             */
             @Override
             public Class<ConfigMap> resourceType() {
                 return ConfigMap.class;
             }
 
+            /**
+             * Returns no desired state, to exercise the null check.
+             *
+             * @param primary the primary resource
+             * @param context the reconciliation context
+             * @return always null
+             */
             @Override
             public ConfigMap desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
                 return null;
@@ -76,11 +88,23 @@ class DependentsTest {
 
     /** Echoes the primary's data into an owned ConfigMap named after the primary's "child" key. */
     private static final class EchoConfigMap implements DependentResource<ConfigMap, ConfigMap> {
+        /**
+         * Returns the dependent resource type.
+         *
+         * @return the ConfigMap type
+         */
         @Override
         public Class<ConfigMap> resourceType() {
             return ConfigMap.class;
         }
 
+        /**
+         * Builds a child ConfigMap whose data echoes the primary's name.
+         *
+         * @param primary the primary resource
+         * @param context the reconciliation context
+         * @return the desired child ConfigMap
+         */
         @Override
         public ConfigMap desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
             return configMap("from-" + primary.getMetadata().getName());

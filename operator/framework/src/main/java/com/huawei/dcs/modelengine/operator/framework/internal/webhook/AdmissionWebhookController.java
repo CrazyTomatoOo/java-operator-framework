@@ -4,8 +4,6 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceReference;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
@@ -13,6 +11,9 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutato
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.StatusBuilder;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest;
@@ -20,11 +21,13 @@ import io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponse;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview;
 import io.fabric8.zjsonpatch.JsonDiff;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +50,14 @@ public final class AdmissionWebhookController {
     private final OperatorFrameworkMetrics metrics;
 
 
+    /**
+     * Handles a validating AdmissionReview by dispatching it to the named validator callback.
+     *
+     * @param name the validator route name, matching the callback bean name
+     * @param review the admission review carrying the resource under admission
+     * @return the review response with the admission decision, or 400 for an unknown name or a
+     *     malformed review
+     */
     @PostMapping(BASE_PATH + "/validate/{name}")
     public ResponseEntity<AdmissionReview> validate(
             @PathVariable String name,
@@ -62,6 +73,14 @@ public final class AdmissionWebhookController {
         }
     }
 
+    /**
+     * Handles a mutating AdmissionReview by dispatching it to the named mutator callback.
+     *
+     * @param name the mutator route name, matching the callback bean name
+     * @param review the admission review carrying the resource under admission
+     * @return the review response with the admission decision and optional JSON patch, or 400 for an
+     *     unknown name or a malformed review
+     */
     @PostMapping(BASE_PATH + "/mutate/{name}")
     public ResponseEntity<AdmissionReview> mutate(
             @PathVariable String name,

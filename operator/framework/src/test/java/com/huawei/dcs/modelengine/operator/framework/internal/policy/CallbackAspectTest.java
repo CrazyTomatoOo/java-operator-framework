@@ -18,10 +18,12 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.observation.ObservationRegistry;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -30,12 +32,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.OrderUtils;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CallbackAspectTest {
     @Test
@@ -166,6 +167,13 @@ class CallbackAspectTest {
     }
 
     static class TypedReconciler implements Reconciler<ConfigMap> {
+        /**
+         * Reconciles the resource by requesting an immediate requeue.
+         *
+         * @param resource the resource to reconcile
+         * @param context the reconciliation context
+         * @return a requeue-now result
+         */
         @Override
         public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
             return ReconcileResult.requeueNow();
@@ -173,6 +181,13 @@ class CallbackAspectTest {
     }
 
     static class TypedValidator implements AdmissionValidator<ConfigMap> {
+        /**
+         * Denies every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return a deny decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.deny("policy denied");
@@ -182,6 +197,14 @@ class CallbackAspectTest {
     static class ThrowingValidator extends TypedValidator {
         private final AtomicInteger calls = new AtomicInteger();
 
+        /**
+         * Counts the call, then throws.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return never returns
+         * @throws RuntimeException always
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) throws RuntimeException {
             calls.incrementAndGet();
@@ -190,6 +213,13 @@ class CallbackAspectTest {
     }
 
     static class TypedMutator implements AdmissionMutator<ConfigMap> {
+        /**
+         * Leaves the resource unchanged.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an unchanged result
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             return MutationResult.unchanged();
@@ -197,11 +227,25 @@ class CallbackAspectTest {
     }
 
     static class DualCallback implements AdmissionValidator<ConfigMap>, AdmissionMutator<ConfigMap> {
+        /**
+         * Allows every admission request.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an allow decision
+         */
         @Override
         public AdmissionDecision validate(ConfigMap current, AdmissionContext context) {
             return AdmissionDecision.allow();
         }
 
+        /**
+         * Leaves the resource unchanged.
+         *
+         * @param current the resource under admission
+         * @param context the admission context
+         * @return an unchanged result
+         */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
             return MutationResult.unchanged();
@@ -209,6 +253,13 @@ class CallbackAspectTest {
     }
 
     static class TypedConverter implements ResourceConverter<ConfigMap> {
+        /**
+         * Always fails the conversion.
+         *
+         * @param resource the resource to convert
+         * @param context the conversion context
+         * @return a failed result
+         */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
             return ConversionResult.failed("conversion failed");
