@@ -1,3 +1,0 @@
-mode=preserve-preexisting
-crd=echoresources.example.com
-renderer=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.live-split-20260728004000/omit-preexisting-crd.py

@@ -1,4 +1,0 @@
-archived/current combined contract passed
-Traceback (most recent call last):
-  File "<stdin>", line 63, in <module>
-AssertionError: values.yaml must default deploymentMode to combined

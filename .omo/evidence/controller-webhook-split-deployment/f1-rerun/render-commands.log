@@ -1,8 +1,0 @@
-COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns
-EXIT_CODE=0 OUTPUT=combined-default.yaml STDERR=combined-default.stderr.log
-COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set webhook.enabled=false
-EXIT_CODE=0 OUTPUT=combined-controller-only.yaml STDERR=combined-controller-only.stderr.log
-COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set deploymentMode=split
-EXIT_CODE=0 OUTPUT=split-runtime.yaml STDERR=split-runtime.stderr.log
-COMMAND: helm template f1 example/echo-operator/helm/echo-operator --namespace f1-ns --set deploymentMode=split --set webhook.certAutoGenerate=false --set webhook.createWebhookConfigurations=true --set-file webhook.caBundle=example/echo-operator/.omo-not-used
-EXIT_CODE=1 OUTPUT=split-helm-owned.yaml STDERR=split-helm-owned.stderr.log

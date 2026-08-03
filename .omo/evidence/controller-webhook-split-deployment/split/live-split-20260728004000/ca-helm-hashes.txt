@@ -1,4 +1,0 @@
-aa08a9159a634c9501498d98b3f596762e66d40a297eb368a4f6074424115124  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728004000/ca-helm-crd.pem
-aa08a9159a634c9501498d98b3f596762e66d40a297eb368a4f6074424115124  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728004000/ca-helm-mutating.pem
-aa08a9159a634c9501498d98b3f596762e66d40a297eb368a4f6074424115124  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728004000/ca-helm-secret.pem
-aa08a9159a634c9501498d98b3f596762e66d40a297eb368a4f6074424115124  /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728004000/ca-helm-validating.pem

@@ -1,2 +1,0 @@
-controller_metrics_port=59734
-webhook_metrics_port=59734

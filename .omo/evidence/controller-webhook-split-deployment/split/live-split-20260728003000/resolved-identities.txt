@@ -1,9 +1,0 @@
-release=echo-smoke-split-live-split-20260728003000
-namespace=echo-smoke-split-live-split-20260728003000
-mode=split
-controllerDeployment=echo-smoke-split-live-split-20260728003000-echo-oper-controller
-webhookDeployment=echo-smoke-split-live-split-20260728003000-echo-oper-webhook
-controllerService=echo-smoke-split-live-split-20260728003000-echo-oper-controller
-webhookService=echo-smoke-split-live-split-20260728003000-echo-operator
-controllerSA=echo-smoke-split-live-split-20260728003000-echo-oper-controller
-webhookSA=echo-smoke-split-live-split-20260728003000-echo-oper-webhook

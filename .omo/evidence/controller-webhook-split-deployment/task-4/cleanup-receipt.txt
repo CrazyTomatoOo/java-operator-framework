@@ -1,1 +1,0 @@
-The contract script creates its render directory with mktemp and removes it through its EXIT trap on every run. The manual parsed-render check used Python TemporaryDirectory for the generated CA and removed it on process exit. No temporary render directory, generated CA, background process, stage, stash, reset, clean, or commit was retained or performed.

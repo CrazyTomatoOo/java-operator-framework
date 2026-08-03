@@ -1,6 +1,0 @@
--rwx------ example/echo-operator/scripts/build-image.sh
--rwx------ example/echo-operator/scripts/build.sh
--rwx------ example/echo-operator/scripts/deploy.sh
--rwx------ example/echo-operator/scripts/local-run.sh
--rwx------ example/echo-operator/scripts/package-helm.sh
--rwx------ example/echo-operator/scripts/undeploy.sh

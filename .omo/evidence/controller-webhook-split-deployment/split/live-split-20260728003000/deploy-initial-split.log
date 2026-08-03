@@ -1,9 +1,0 @@
-Deploying split Helm release echo-smoke-split-live-split-20260728003000 to namespace echo-smoke-split-live-split-20260728003000...
-Release "echo-smoke-split-live-split-20260728003000" does not exist. Installing it now.
-NAME: echo-smoke-split-live-split-20260728003000
-LAST DEPLOYED: Tue Jul 28 00:05:58 2026
-NAMESPACE: echo-smoke-split-live-split-20260728003000
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-Deployment complete.

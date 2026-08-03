@@ -1,5 +1,0 @@
-[2026-07-28T00:03:41+08:00] invalid kube context prerequisite contract failed as required
-[2026-07-28T00:03:41+08:00] preserving the pre-existing CRD outside this isolated Helm release
-[2026-07-28T00:04:08+08:00] runtime-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
-[2026-07-28T00:04:11+08:00] split Services select only their matching component Pods
-[2026-07-28T00:04:29+08:00] admission, mutation, bidirectional conversion, reconciliation status, and deletion cleanup passed

@@ -1,6 +1,0 @@
-- Malformed ownership/TLS rows: parsed contract cases reject disabled-webhook Helm configurations, auto-generated Helm configurations, missing external Secret/CA, invalid PEM, invalid mode, split with webhook disabled, and invalid split identities with exact diagnostics.
-- Stale state: default combined is parsed against the archived BASE chart; the comparison allows only the three explicit ownership env additions and otherwise requires exact Deployment equality.
-- Dirty worktree: protected pre-existing Java/framework/docs SHA-256 inventories match before and after.
-- Flaky tests: two independent green contract runs completed with identical pass markers; each Helm subprocess is bounded to 30 seconds by the contract script.
-- Misleading success: assertions parse YAML for exact resource counts, env, selectors, ports, volumes, CRD conversion, admission configuration counts, CA bytes, and combined webhook Service targets.
-- Prompt injection, cancellation/resume, and repeated interruption: not applicable; no untrusted instructions or cancellation events were received.

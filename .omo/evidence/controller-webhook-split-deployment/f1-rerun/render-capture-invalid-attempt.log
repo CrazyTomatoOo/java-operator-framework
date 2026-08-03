@@ -1,3 +1,0 @@
-COMMAND: render capture attempt from chart working directory with relative evidence path
-RESULT: INVALID_CAPTURE — evidence path did not exist from that working directory; no Helm template command executed
-STDERR: zsh: no such file or directory: .omo/evidence/controller-webhook-split-deployment/f1-rerun/render-commands.log

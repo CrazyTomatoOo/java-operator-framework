@@ -1,3 +1,0 @@
-Warning: resource 'validatingwebhookconfigurations' is not namespace scoped in group 'admissionregistration.k8s.io'
-
-yes

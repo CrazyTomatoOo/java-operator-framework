@@ -1,2 +1,0 @@
-[2026-07-28T00:02:32+08:00] invalid kube context prerequisite contract failed as required
-[2026-07-28T00:02:32+08:00] preserving the pre-existing CRD outside this isolated Helm release

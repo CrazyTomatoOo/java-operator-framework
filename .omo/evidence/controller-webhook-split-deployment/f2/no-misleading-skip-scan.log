@@ -1,5 +1,0 @@
-framework_zero_failures=true
-example_zero_failures=true
-helm_lint_zero_failures=true
-render_contract_terminal_marker=true
-no_skip_or_not_run_markers=true

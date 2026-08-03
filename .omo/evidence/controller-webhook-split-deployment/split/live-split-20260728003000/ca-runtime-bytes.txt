@@ -1,5 +1,0 @@
-    1123 /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728003000/ca-runtime-crd.pem
-    1123 /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728003000/ca-runtime-mutating.pem
-    1123 /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728003000/ca-runtime-secret.pem
-    1123 /Volumes/work/Project/java-operator-framework/.omo/evidence/controller-webhook-split-deployment/split/live-split-20260728003000/ca-runtime-validating.pem
-    4492 total

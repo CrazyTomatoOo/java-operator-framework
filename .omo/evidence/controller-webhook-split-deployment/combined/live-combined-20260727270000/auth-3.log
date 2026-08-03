@@ -1,3 +1,0 @@
-Warning: resource 'customresourcedefinitions' is not namespace scoped in group 'apiextensions.k8s.io'
-
-no

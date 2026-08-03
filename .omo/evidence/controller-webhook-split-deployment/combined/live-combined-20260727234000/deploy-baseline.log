@@ -1,9 +1,0 @@
-Deploying combined Helm release echo-smoke-combined-live-combined-20260727234000 to namespace echo-smoke-combined-live-combined-20260727234000...
-Release "echo-smoke-combined-live-combined-20260727234000" does not exist. Installing it now.
-NAME: echo-smoke-combined-live-combined-20260727234000
-LAST DEPLOYED: Mon Jul 27 23:04:09 2026
-NAMESPACE: echo-smoke-combined-live-combined-20260727234000
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-Deployment complete.

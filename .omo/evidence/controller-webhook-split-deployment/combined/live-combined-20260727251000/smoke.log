@@ -1,5 +1,0 @@
-[2026-07-27T23:30:56+08:00] invalid kube context prerequisite contract failed as required
-[2026-07-27T23:30:56+08:00] preserving the pre-existing CRD outside this isolated Helm release
-[2026-07-27T23:31:38+08:00] immutable baseline combined chart upgraded in place without selector or Service identity drift
-[2026-07-27T23:31:58+08:00] admission, mutation, bidirectional conversion, reconciliation status, and deletion cleanup passed
-[2026-07-27T23:31:58+08:00] exact ServiceAccount authorization matrix and negative assertion passed

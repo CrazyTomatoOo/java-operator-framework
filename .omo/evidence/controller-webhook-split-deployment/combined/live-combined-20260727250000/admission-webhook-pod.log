@@ -1,9 +1,0 @@
-SLF4J(W): No SLF4J providers were found.
-SLF4J(W): Defaulting to no-operation (NOP) logger implementation
-SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
-Jul 27, 2026 3:29:23 PM com.example.echooperator.EchoOperatorMain start
-INFO: Webhook server started on port 8443
-Jul 27, 2026 3:29:23 PM com.example.echooperator.EchoOperatorMain start
-INFO: Metrics/health server started on port 8080
-Jul 27, 2026 3:29:23 PM com.example.echooperator.EchoOperatorMain lambda$start$4
-INFO: Echo Operator started

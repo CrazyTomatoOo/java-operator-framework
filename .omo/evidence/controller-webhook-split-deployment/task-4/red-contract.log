@@ -1,6 +1,0 @@
-Command: bash -n example/echo-operator/scripts/helm-contract-test.sh && example/echo-operator/scripts/helm-contract-test.sh
-Result: exit 1 before adding the combined ownership env template lines.
-
-Traceback (most recent call last):
-  File "<stdin>", line 65, in <module>
-AssertionError: default combined env CONTROLLER_ENABLED must be true, got None

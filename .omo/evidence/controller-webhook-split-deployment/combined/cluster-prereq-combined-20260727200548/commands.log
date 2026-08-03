@@ -1,3 +1,0 @@
-+ env KUBECONFIG=/var/folders/l9/f_bwssk92970slrgk7h686z40000gn/T//echo-operator-smoke.cluster-prereq-combined-20260727200548/definitely-invalid-kubeconfig SMOKE_PRECHECK_ONLY=true example/echo-operator/scripts/smoke-test.sh 
-+ kubectl config current-context 
-+ kubectl cluster-info 

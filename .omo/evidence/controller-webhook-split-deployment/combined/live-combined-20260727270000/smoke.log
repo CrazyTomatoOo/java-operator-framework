@@ -1,8 +1,0 @@
-[2026-07-27T23:49:00+08:00] invalid kube context prerequisite contract failed as required
-[2026-07-27T23:49:00+08:00] preserving the pre-existing CRD outside this isolated Helm release
-[2026-07-27T23:49:41+08:00] immutable baseline combined chart upgraded in place without selector or Service identity drift
-[2026-07-27T23:50:02+08:00] admission, mutation, bidirectional conversion, reconciliation status, and deletion cleanup passed
-[2026-07-27T23:50:02+08:00] exact ServiceAccount authorization matrix and negative assertion passed
-[2026-07-27T23:50:15+08:00] runtime-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
-[2026-07-27T23:50:30+08:00] helm-owned external TLS CA bytes are equal across Secret, CRD, and admission configurations
-[2026-07-27T23:50:30+08:00] in-place runtime to Helm ownership transition converged to one owner of each admission configuration
