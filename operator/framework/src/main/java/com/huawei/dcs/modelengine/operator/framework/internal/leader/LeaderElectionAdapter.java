@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage;
 /**
  * Leader election abstraction driven by start and stop leading callbacks.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public interface LeaderElectionAdapter {

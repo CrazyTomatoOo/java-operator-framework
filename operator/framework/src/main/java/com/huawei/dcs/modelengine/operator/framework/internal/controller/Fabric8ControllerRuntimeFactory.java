@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Creates a new set of Fabric8 controller resources for every runtime term.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeFactory {

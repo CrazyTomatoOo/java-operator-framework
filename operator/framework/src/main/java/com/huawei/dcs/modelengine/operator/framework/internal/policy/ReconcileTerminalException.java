@@ -7,7 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 /**
  * Signals that the configured reconciliation attempts have been exhausted.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class ReconcileTerminalException extends RuntimeException {

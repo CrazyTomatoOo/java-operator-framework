@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * Admission callbacks served by the framework at
  * {@code /operator-framework/webhooks/{validate|mutate}/{beanName}}.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 final class EchoWebhooks {

@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * Builds an immutable controller registration.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class ControllerBuilder<T extends HasMetadata> {

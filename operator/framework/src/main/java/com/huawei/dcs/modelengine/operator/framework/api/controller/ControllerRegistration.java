@@ -18,7 +18,7 @@ import java.util.function.Function;
 /**
  * Immutable controller definition consumed by the operator runtime.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class ControllerRegistration<T extends HasMetadata> {

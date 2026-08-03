@@ -17,7 +17,7 @@ import java.util.Objects;
  * <p>Reconcilers manage cleanup of external resources by adding a finalizer before doing work and
  * removing it once cleanup completes. {@code isDeleting} drives the cleanup branch.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class Finalizers {

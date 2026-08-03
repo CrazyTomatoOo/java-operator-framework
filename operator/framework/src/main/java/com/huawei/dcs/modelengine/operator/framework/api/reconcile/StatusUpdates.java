@@ -19,7 +19,7 @@ import java.util.Objects;
  * itself is never mutated — safe to pass an informer-cached instance. Requires the CRD to declare
  * a {@code status} subresource.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class StatusUpdates {

@@ -13,7 +13,7 @@ import java.util.Objects;
 /**
  * Stable, transport-neutral information for an admission callback.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record AdmissionContext(

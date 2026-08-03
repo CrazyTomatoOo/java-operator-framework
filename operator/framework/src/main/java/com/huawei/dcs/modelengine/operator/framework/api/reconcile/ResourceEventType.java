@@ -7,7 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 /**
  * Kubernetes resource event types that can trigger reconciliation.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public enum ResourceEventType {

@@ -23,7 +23,7 @@ import java.util.Objects;
  * namespace, or the owner is cluster-scoped; a dependent already controlled by a different owner
  * is rejected rather than silently taken over.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-08-01
  */
 public final class Owners {

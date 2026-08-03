@@ -16,7 +16,7 @@ import java.util.function.DoubleSupplier;
 /**
  * Small bounded-tag metrics facade shared by controller, webhook, and event runtime code.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class OperatorFrameworkMetrics {

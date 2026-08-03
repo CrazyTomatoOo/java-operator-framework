@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Discovers explicit registrations and typed reconciler beans without unwrapping proxies for invocation.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class ControllerRegistrationDiscovery {

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Coalescing work queue with one in-flight callback per resource key.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 final class ReconciliationQueue {

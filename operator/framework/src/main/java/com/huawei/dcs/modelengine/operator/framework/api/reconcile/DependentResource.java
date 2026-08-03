@@ -16,7 +16,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
  *
  * @param <D> dependent resource type
  * @param <P> primary resource type
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-08-01
  */
 public interface DependentResource<D extends HasMetadata, P extends HasMetadata> {

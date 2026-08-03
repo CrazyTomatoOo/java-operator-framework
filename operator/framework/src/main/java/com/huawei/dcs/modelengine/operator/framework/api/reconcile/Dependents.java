@@ -19,7 +19,7 @@ import java.util.Objects;
  * primary lives is out of scope — remove the owner reference or delete it through the client
  * directly.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-08-01
  */
 public final class Dependents {

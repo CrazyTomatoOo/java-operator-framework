@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 /**
  * Discovers typed webhook callbacks while retaining their original Spring proxies.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class WebhookCallbackRegistry {

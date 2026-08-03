@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * The scheduling decision returned by a reconciler.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class ReconcileResult {

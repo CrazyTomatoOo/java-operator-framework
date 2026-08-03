@@ -7,7 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 /**
  * Namespace and name of a Kubernetes resource. Namespace is null for cluster-scoped resources.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record ResourceKey(String namespace, String name) {

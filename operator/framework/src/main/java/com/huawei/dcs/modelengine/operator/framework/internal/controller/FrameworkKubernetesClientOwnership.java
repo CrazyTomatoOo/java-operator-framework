@@ -11,7 +11,7 @@ import org.springframework.beans.factory.DisposableBean;
 /**
  * Closes only the Kubernetes client constructed by this framework.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class FrameworkKubernetesClientOwnership implements DisposableBean {

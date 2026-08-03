@@ -17,7 +17,7 @@ import org.springframework.core.annotation.Order;
 /**
  * Logs callback failures after execution-policy advice and counts terminal reconciler failures.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Aspect

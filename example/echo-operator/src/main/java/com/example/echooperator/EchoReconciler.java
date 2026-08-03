@@ -26,7 +26,7 @@ import java.util.Objects;
  * Echoes {@code data.message} of labeled ConfigMaps into an owned {@code <name>-echo} child.
  * The child is garbage-collected by Kubernetes when its owner is deleted.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Component

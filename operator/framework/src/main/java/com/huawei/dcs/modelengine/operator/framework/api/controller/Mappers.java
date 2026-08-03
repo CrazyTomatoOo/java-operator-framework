@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 /**
  * Common mappings from secondary resources to primary resource keys.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class Mappers {

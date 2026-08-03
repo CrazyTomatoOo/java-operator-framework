@@ -12,7 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 /**
  * Identity of one reconciler invocation, used as a rate-limit and retry key.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 record ReconcileInvocationKey(String controller, ResourceKey resourceKey) {

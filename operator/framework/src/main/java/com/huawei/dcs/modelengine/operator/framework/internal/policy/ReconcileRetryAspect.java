@@ -25,7 +25,7 @@ import java.util.function.DoubleSupplier;
 /**
  * Converts transient reconciler exceptions into delayed results without blocking worker threads.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Aspect

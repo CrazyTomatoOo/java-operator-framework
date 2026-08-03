@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage;
 /**
  * A running set of controller resources (informers, workers, queue).
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public interface ControllerRuntime {

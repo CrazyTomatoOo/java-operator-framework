@@ -36,7 +36,7 @@ import java.util.Objects;
 /**
  * Kubernetes v1 admission transport for typed Spring callback beans.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @RestController

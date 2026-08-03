@@ -7,7 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 /**
  * Role played by the triggering resource in a controller.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public enum TriggerRole {

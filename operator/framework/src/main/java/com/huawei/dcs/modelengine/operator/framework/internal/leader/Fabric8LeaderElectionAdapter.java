@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 /**
  * Fabric8 Lease-backed leader election.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter {

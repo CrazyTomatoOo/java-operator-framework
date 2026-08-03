@@ -7,7 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 /**
  * Factory that creates a controller runtime for every runtime term.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public interface ControllerRuntimeFactory {

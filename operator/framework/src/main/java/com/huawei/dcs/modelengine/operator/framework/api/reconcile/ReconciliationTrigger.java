@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Describes the event that requested reconciliation.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record ReconciliationTrigger(

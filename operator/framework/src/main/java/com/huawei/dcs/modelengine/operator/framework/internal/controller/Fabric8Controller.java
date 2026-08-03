@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * One Fabric8 informer and worker set for a controller registration.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Slf4j

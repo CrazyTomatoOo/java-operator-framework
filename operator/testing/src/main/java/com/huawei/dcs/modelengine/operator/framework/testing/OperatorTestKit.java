@@ -48,7 +48,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * ({@code properties.getController().setFilterEventsByInvolvedObject(false)}), which the in-memory
  * server cannot match.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-08-01
  */
 public final class OperatorTestKit implements AutoCloseable {

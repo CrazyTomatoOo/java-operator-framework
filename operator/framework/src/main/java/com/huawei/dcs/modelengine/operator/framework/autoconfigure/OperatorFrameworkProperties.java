@@ -17,7 +17,7 @@ import java.time.Duration;
 /**
  * Configuration for the Spring-managed operator runtime.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Validated

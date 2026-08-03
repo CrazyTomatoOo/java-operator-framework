@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Publishes framework runtime transitions through Spring Boot availability state.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public final class RuntimeReadiness implements ApplicationListener<ApplicationReadyEvent> {

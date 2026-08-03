@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * Stable identity details for a Kubernetes resource involved in reconciliation.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record ResourceReference(String apiVersion, String kind, String namespace, String name, String uid) {

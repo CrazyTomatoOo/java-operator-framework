@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * Single Actuator health contribution for all enabled operator framework modes.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @RequiredArgsConstructor

@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 /**
  * Reconciles one Kubernetes resource.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @FunctionalInterface

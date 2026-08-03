@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 /**
  * Converts a resource to the API version requested by a conversion operation.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @FunctionalInterface

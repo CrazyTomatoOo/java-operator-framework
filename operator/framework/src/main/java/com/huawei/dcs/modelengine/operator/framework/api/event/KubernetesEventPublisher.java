@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 /**
  * Publishes Kubernetes Events for a resource.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public interface KubernetesEventPublisher {

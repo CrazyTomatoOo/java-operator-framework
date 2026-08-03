@@ -20,7 +20,7 @@ import java.util.Objects;
  * of conflicting fields. Pass a freshly built desired object; never apply a mutated
  * informer-cached instance.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-08-01
  */
 public final class Applies {

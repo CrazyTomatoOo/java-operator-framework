@@ -23,7 +23,7 @@ import java.util.Objects;
  * <p>{@link #cacheFor} exposes the informer caches of owned/watched secondary types (and the
  * primary type), so reads of related resources stay off the API server too.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record ReconciliationContext<T extends HasMetadata>(

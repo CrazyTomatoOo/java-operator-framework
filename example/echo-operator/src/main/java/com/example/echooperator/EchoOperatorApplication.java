@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Spring Boot entry point for the echo operator example.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @SpringBootApplication

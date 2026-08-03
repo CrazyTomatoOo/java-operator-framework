@@ -33,7 +33,7 @@ import java.util.Objects;
 /**
  * Publishes and aggregates core/v1 Kubernetes Events within deterministic time windows.
  *
- * @author z00919064 zhangshjie
+ * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @Slf4j
