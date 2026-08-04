@@ -4,6 +4,15 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.leader;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -13,14 +22,6 @@ import io.fabric8.kubernetes.client.extended.leaderelection.resourcelock.LeaseLo
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;

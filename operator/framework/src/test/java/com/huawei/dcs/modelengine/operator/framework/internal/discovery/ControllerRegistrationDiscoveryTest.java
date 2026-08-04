@@ -4,6 +4,9 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.discovery;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
@@ -19,8 +22,6 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

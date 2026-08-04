@@ -4,12 +4,18 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ConversionResult;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.ResourceConverter;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
@@ -23,10 +29,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

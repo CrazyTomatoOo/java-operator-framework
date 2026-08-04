@@ -4,13 +4,14 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
-import io.fabric8.kubernetes.client.KubernetesClient;
-
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import io.fabric8.kubernetes.client.KubernetesClient;
+
+import org.junit.jupiter.api.Test;
 
 class FrameworkKubernetesClientOwnershipTest {
     @Test

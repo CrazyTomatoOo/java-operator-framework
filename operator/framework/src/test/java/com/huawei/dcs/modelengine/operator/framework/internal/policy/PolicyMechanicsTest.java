@@ -4,6 +4,13 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.policy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
@@ -19,12 +26,6 @@ import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Duration;

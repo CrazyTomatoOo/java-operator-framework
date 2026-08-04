@@ -4,6 +4,9 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.event;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -12,8 +15,6 @@ import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Clock;
 import java.time.Duration;

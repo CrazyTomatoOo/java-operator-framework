@@ -4,6 +4,8 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationTrigger;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
@@ -14,7 +16,6 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 

@@ -4,6 +4,13 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
@@ -19,12 +26,6 @@ import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.ArrayDeque;

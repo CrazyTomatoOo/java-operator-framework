@@ -4,6 +4,8 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceReference;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
@@ -19,7 +21,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;

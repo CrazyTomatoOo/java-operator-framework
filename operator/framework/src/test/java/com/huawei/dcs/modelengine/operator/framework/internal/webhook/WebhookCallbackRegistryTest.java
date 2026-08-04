@@ -4,6 +4,9 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.webhook;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
@@ -15,8 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.support.GenericApplicationContext;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WebhookCallbackRegistryTest {
     @Test

@@ -4,6 +4,9 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -11,8 +14,6 @@ import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 // ponytail: fabric8 mock CRUD mode rejects apply-patch+yaml (415), so stub the PATCH and assert
 // the request this helper controls (content type, fieldManager, force); merge semantics are the

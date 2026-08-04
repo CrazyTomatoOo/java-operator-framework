@@ -4,12 +4,13 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;

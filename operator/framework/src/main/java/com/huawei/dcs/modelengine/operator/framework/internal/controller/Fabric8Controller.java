@@ -4,8 +4,8 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.controller;
 
-import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder.WatchSelector;
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerRegistration;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.Mappers;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ResourceEvent;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ResourceMapper;
@@ -31,8 +31,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;

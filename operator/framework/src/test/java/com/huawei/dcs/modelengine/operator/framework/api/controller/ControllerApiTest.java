@@ -4,6 +4,11 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.DependentResource;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext;
@@ -16,10 +21,6 @@ import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.List;

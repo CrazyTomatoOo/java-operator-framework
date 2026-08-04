@@ -4,6 +4,11 @@
 
 package com.huawei.dcs.modelengine.operator.framework.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import com.huawei.dcs.modelengine.operator.framework.api.event.KubernetesEventPublisher;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
@@ -16,6 +21,7 @@ import com.huawei.dcs.modelengine.operator.framework.internal.webhook.Conversion
 import com.huawei.dcs.modelengine.operator.framework.internal.webhook.WebhookCallbackRegistry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
@@ -23,10 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 class OperatorFrameworkAutoConfigurationTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()

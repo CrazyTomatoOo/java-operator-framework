@@ -4,6 +4,10 @@
 
 package com.huawei.dcs.modelengine.operator.framework.internal.actuator;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionDecision;
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValidator;
@@ -20,9 +24,6 @@ import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.availability.LivenessState;
 import org.springframework.boot.availability.ReadinessState;
 import org.springframework.context.support.GenericApplicationContext;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Map;
