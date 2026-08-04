@@ -20,14 +20,22 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
  * @since 2026-08-01
  */
 public interface DependentResource<D extends HasMetadata, P extends HasMetadata> {
-    /** Type of the dependent resource; used to register the owned watch. */
+    /**
+     * Type of the dependent resource used to register the owned watch.
+     *
+     * @return the dependent resource type
+     */
     Class<D> resourceType();
 
     /**
      * Computes the desired state of the dependent from the primary. The returned object must be
      * freshly built and must carry the target namespace/name; {@link Dependents#apply} adds the
-     * owner reference. May read related resources from {@code context.cache()}/
+     * owner reference. May read related resources from {@code context.cache()} /
      * {@code context.cacheFor(Class)} instead of the API server.
+     *
+     * @param primary the primary resource
+     * @param context the reconciliation context
+     * @return the desired state of the dependent resource
      */
     D desired(P primary, ReconciliationContext<P> context);
 }

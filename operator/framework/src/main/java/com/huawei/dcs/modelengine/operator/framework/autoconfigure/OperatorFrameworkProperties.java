@@ -268,7 +268,7 @@ public class OperatorFrameworkProperties {
         }
 
         /**
-         * Checks that the namespace is blank when the controller is cluster-scoped.
+         * Checks that the namespace is null or blank when the controller is cluster-scoped.
          *
          * @return whether the namespace scope combination is valid
          */

@@ -22,6 +22,7 @@ import java.util.function.Function;
 /**
  * Builds an immutable controller registration.
  *
+ * @param <T> primary resource type
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -73,6 +74,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @param period the time between resync events
      * @return this builder
+     * @throws NullPointerException if {@code period} is null
      * @throws IllegalArgumentException if the period is negative
      */
     public ControllerBuilder<T> resyncPeriod(Duration period) {
@@ -90,6 +92,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @param <S> the owned resource type
      * @param resourceType the owned resource class
      * @return this builder
+     * @throws NullPointerException if {@code resourceType} is null
      */
     public <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
         ownedResources.add(Objects.requireNonNull(resourceType, "resourceType must not be null"));
@@ -102,6 +105,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @param dependent the dependent resource whose type is added as owned
      * @return this builder
+     * @throws NullPointerException if {@code dependent} is null
      */
     public ControllerBuilder<T> manages(DependentResource<? extends HasMetadata, T> dependent) {
         Objects.requireNonNull(dependent, "dependent must not be null");
@@ -116,6 +120,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @param resourceType the secondary resource class
      * @param mapper maps a secondary resource event to primary resource keys
      * @return this builder
+     * @throws NullPointerException if {@code resourceType} or {@code mapper} is null
      * @throws IllegalArgumentException if the name is blank or already registered
      */
     public <S extends HasMetadata> ControllerBuilder<T> watches(
@@ -147,6 +152,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @param labels the label selector
      * @return this builder
+     * @throws NullPointerException if {@code labels} is null
      */
     public ControllerBuilder<T> labelSelector(Map<String, String> labels) {
         Objects.requireNonNull(labels, "labels must not be null");
@@ -160,6 +166,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @param fields the field selector
      * @return this builder
+     * @throws NullPointerException if {@code fields} is null
      */
     public ControllerBuilder<T> fieldSelector(Map<String, String> fields) {
         Objects.requireNonNull(fields, "fields must not be null");
@@ -174,6 +181,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @param key the unique index key
      * @param extractor computes the indexed field value from a resource
      * @return this builder
+     * @throws NullPointerException if {@code key} or {@code extractor} is null
      * @throws IllegalArgumentException if the key is already registered
      */
     public ControllerBuilder<T> indexField(String key, Function<T, String> extractor) {
@@ -230,8 +238,19 @@ public final class ControllerBuilder<T extends HasMetadata> {
         return indexFields;
     }
 
-    /** Equality-match label and field selectors for the primary watch; empty maps mean no filtering. */
+    /**
+     * Equality-match label and field selectors for the primary watch; empty maps mean no filtering.
+     *
+     * @param labels label equality selectors
+     * @param fields field equality selectors
+     */
     public record WatchSelector(Map<String, String> labels, Map<String, String> fields) {
+        /**
+         * Copies nullable selector maps into immutable maps.
+         *
+         * @param labels label equality selectors, or {@code null}
+         * @param fields field equality selectors, or {@code null}
+         */
         public WatchSelector {
             labels = labels == null ? Map.of() : Map.copyOf(labels);
             fields = fields == null ? Map.of() : Map.copyOf(fields);

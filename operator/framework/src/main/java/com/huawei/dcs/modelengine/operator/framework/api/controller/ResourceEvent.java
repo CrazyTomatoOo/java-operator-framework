@@ -14,6 +14,10 @@ import java.util.Optional;
 /**
  * Immutable description of a Kubernetes resource event.
  *
+ * @param <S> resource type
+ * @param type event type
+ * @param resource current resource state
+ * @param previousResource previous resource state, when available
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -21,6 +25,14 @@ public record ResourceEvent<S extends HasMetadata>(
         ResourceEventType type,
         S resource,
         Optional<S> previousResource) {
+    /**
+     * Validates the event details.
+     *
+     * @param type event type
+     * @param resource current resource state
+     * @param previousResource previous resource state, when available
+     * @throws NullPointerException if any argument is null
+     */
     public ResourceEvent {
         Objects.requireNonNull(type, "type must not be null");
         Objects.requireNonNull(resource, "resource must not be null");

@@ -47,6 +47,7 @@ public final class ReconcileResult {
      *
      * @param delay the time to wait before the next reconciliation
      * @return a result requesting a delayed requeue
+     * @throws NullPointerException if {@code delay} is null
      * @throws IllegalArgumentException if the delay is zero or negative
      */
     public static ReconcileResult requeueAfter(Duration delay) {

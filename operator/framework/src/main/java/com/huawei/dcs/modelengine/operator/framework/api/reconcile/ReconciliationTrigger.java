@@ -9,6 +9,9 @@ import java.util.Objects;
 /**
  * Describes the event that requested reconciliation.
  *
+ * @param eventType event type that triggered reconciliation
+ * @param role role of the triggering resource
+ * @param resource triggering resource identity
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -16,6 +19,14 @@ public record ReconciliationTrigger(
         ResourceEventType eventType,
         TriggerRole role,
         ResourceReference resource) {
+    /**
+     * Validates the triggering event details.
+     *
+     * @param eventType event type that triggered reconciliation
+     * @param role role of the triggering resource
+     * @param resource triggering resource identity
+     * @throws NullPointerException if any argument is null
+     */
     public ReconciliationTrigger {
         Objects.requireNonNull(eventType, "eventType must not be null");
         Objects.requireNonNull(role, "role must not be null");

@@ -11,10 +11,25 @@ import java.util.Objects;
 /**
  * Stable identity details for a Kubernetes resource involved in reconciliation.
  *
+ * @param apiVersion resource API version
+ * @param kind resource kind
+ * @param namespace resource namespace, or {@code null} for a cluster-scoped resource
+ * @param name resource name
+ * @param uid resource UID, or {@code null} when unavailable
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 public record ResourceReference(String apiVersion, String kind, String namespace, String name, String uid) {
+    /**
+     * Validates the resource identity details.
+     *
+     * @param apiVersion resource API version
+     * @param kind resource kind
+     * @param namespace resource namespace, or {@code null} for a cluster-scoped resource
+     * @param name resource name
+     * @param uid resource UID, or {@code null} when unavailable
+     * @throws IllegalArgumentException if a required value is null or blank, or an optional value is blank
+     */
     public ResourceReference {
         requireText(apiVersion, "apiVersion");
         requireText(kind, "kind");
@@ -32,6 +47,7 @@ public record ResourceReference(String apiVersion, String kind, String namespace
      *
      * @param resource the resource to describe
      * @return a reference holding the resource's identity details
+     * @throws NullPointerException if {@code resource} or its metadata is null
      */
     public static ResourceReference from(HasMetadata resource) {
         Objects.requireNonNull(resource, "resource must not be null");

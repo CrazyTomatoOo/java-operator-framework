@@ -25,10 +25,11 @@ public final class Finalizers {
     }
 
     /**
-     * True when the resource carries a deletion timestamp (being garbage-collected).
+     * True when the resource has a deletion timestamp, meaning deletion has been requested.
      *
      * @param resource the resource to check
-     * @return true if the resource is being deleted
+     * @return true if deletion has been requested
+     * @throws NullPointerException if {@code resource} or its metadata is null
      */
     public static boolean isDeleting(HasMetadata resource) {
         Objects.requireNonNull(resource.getMetadata(), "metadata");
@@ -41,6 +42,7 @@ public final class Finalizers {
      * @param resource the resource to check
      * @param finalizer the finalizer name
      * @return true if the resource already carries the finalizer
+     * @throws NullPointerException if {@code resource} or its metadata is null
      */
     public static boolean present(HasMetadata resource, String finalizer) {
         Objects.requireNonNull(resource.getMetadata(), "metadata");
@@ -51,10 +53,12 @@ public final class Finalizers {
     /**
      * Server-side JSON patch adding the finalizer when absent; returns the patched resource.
      *
+     * @param <T> resource type
      * @param client the Kubernetes client used to submit the patch
      * @param resource the resource to add the finalizer to
      * @param finalizer the finalizer name
      * @return the patched resource
+     * @throws IllegalArgumentException if {@code finalizer} is null or blank
      */
     public static <T extends HasMetadata> T add(KubernetesClient client, T resource, String finalizer) {
         requireName(finalizer);
@@ -71,10 +75,12 @@ public final class Finalizers {
     /**
      * Server-side JSON patch removing the finalizer when present; returns the patched resource.
      *
+     * @param <T> resource type
      * @param client the Kubernetes client used to submit the patch
      * @param resource the resource to remove the finalizer from
      * @param finalizer the finalizer name
      * @return the patched resource
+     * @throws IllegalArgumentException if {@code finalizer} is null or blank
      */
     public static <T extends HasMetadata> T remove(KubernetesClient client, T resource, String finalizer) {
         requireName(finalizer);

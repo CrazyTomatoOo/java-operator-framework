@@ -18,6 +18,7 @@ import java.util.function.Function;
 /**
  * Immutable controller definition consumed by the operator runtime.
  *
+ * @param <T> primary resource type
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -125,11 +126,28 @@ public final class ControllerRegistration<T extends HasMetadata> {
         return indexFields;
     }
 
-    /** Public, read-only descriptor for a secondary resource watch. */
+    /**
+     * Public, read-only descriptor for a secondary resource watch.
+     *
+     * @param <S> secondary resource type
+     * @param <T> primary resource type
+     * @param name unique watch name
+     * @param resourceType secondary resource class
+     * @param mapper maps secondary events to primary resource keys
+     */
     public record SecondaryWatch<S extends HasMetadata, T extends HasMetadata>(
             String name,
             Class<S> resourceType,
             ResourceMapper<S, T> mapper) {
+        /**
+         * Validates the watch descriptor.
+         *
+         * @param name unique watch name
+         * @param resourceType secondary resource class
+         * @param mapper maps secondary events to primary resource keys
+         * @throws IllegalArgumentException if the name is null or blank
+         * @throws NullPointerException if the resource type or mapper is null
+         */
         public SecondaryWatch {
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("name must not be blank");

@@ -9,10 +9,19 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 /**
  * Mutates an admission request without depending on a transport protocol.
  *
+ * @param <T> resource type
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
 @FunctionalInterface
 public interface AdmissionMutator<T extends HasMetadata> {
+    /**
+     * Mutates the current resource for an admission request.
+     *
+     * @param current the current resource state
+     * @param context the admission context
+     * @return the mutation result
+     * @throws Exception if mutation fails
+     */
     MutationResult<T> mutate(T current, AdmissionContext context) throws Exception;
 }

@@ -13,6 +13,11 @@ import java.util.Objects;
 /**
  * Stable, transport-neutral information for an admission callback.
  *
+ * @param uid admission request UID
+ * @param operation admission operation
+ * @param resource resource identity
+ * @param dryRun whether the request is a dry run
+ * @param user requesting user identity
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -22,6 +27,17 @@ public record AdmissionContext(
         ResourceReference resource,
         boolean dryRun,
         UserIdentity user) {
+    /**
+     * Validates the admission context.
+     *
+     * @param uid admission request UID
+     * @param operation admission operation
+     * @param resource resource identity
+     * @param dryRun whether the request is a dry run
+     * @param user requesting user identity
+     * @throws IllegalArgumentException if the UID or operation is null or blank
+     * @throws NullPointerException if the resource or user is null
+     */
     public AdmissionContext {
         requireText(uid, "uid");
         requireText(operation, "operation");
@@ -29,8 +45,24 @@ public record AdmissionContext(
         Objects.requireNonNull(user, "user must not be null");
     }
 
-    /** Immutable identity supplied by the Kubernetes API server. */
+    /**
+     * Immutable identity supplied by the Kubernetes API server.
+     *
+     * @param username authenticated username
+     * @param uid authenticated user UID
+     * @param groups authenticated user groups
+     * @param extra additional user attributes
+     */
     public record UserIdentity(String username, String uid, List<String> groups, Map<String, List<String>> extra) {
+        /**
+         * Validates the username and copies collection values into immutable collections.
+         *
+         * @param username authenticated username
+         * @param uid authenticated user UID
+         * @param groups authenticated user groups, or {@code null}
+         * @param extra additional user attributes, or {@code null}
+         * @throws IllegalArgumentException if {@code username} is null or blank
+         */
         public UserIdentity {
             requireText(username, "username");
             groups = groups == null ? List.of() : List.copyOf(groups);

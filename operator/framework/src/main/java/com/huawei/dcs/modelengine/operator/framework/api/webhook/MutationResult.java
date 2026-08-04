@@ -10,6 +10,7 @@ import java.util.Optional;
 /**
  * Result returned by an admission mutator.
  *
+ * @param <T> resource type
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -40,6 +41,7 @@ public final class MutationResult<T> {
      * @param <T> the resource type
      * @param resource the mutated resource
      * @return a mutated result carrying the new resource state
+     * @throws NullPointerException if {@code resource} is null
      */
     public static <T> MutationResult<T> mutated(T resource) {
         Objects.requireNonNull(resource, "resource must not be null");
@@ -52,7 +54,7 @@ public final class MutationResult<T> {
      * @param <T> the resource type
      * @param message the reason for denying the request
      * @return a denied result
-     * @throws IllegalArgumentException if the message is blank
+     * @throws IllegalArgumentException if the message is null or blank
      */
     public static <T> MutationResult<T> denied(String message) {
         if (message == null || message.isBlank()) {

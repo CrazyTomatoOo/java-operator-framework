@@ -10,6 +10,7 @@ import java.util.Optional;
 /**
  * Result returned by a resource converter.
  *
+ * @param <T> resource type
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -28,6 +29,7 @@ public final class ConversionResult<T> {
      * @param <T> the resource type
      * @param resource the converted resource
      * @return a successful conversion result
+     * @throws NullPointerException if {@code resource} is null
      */
     public static <T> ConversionResult<T> converted(T resource) {
         return new ConversionResult<>(Objects.requireNonNull(resource, "resource must not be null"), null);
@@ -39,7 +41,7 @@ public final class ConversionResult<T> {
      * @param <T> the resource type
      * @param message the reason the conversion failed
      * @return a failed conversion result
-     * @throws IllegalArgumentException if the message is blank
+     * @throws IllegalArgumentException if the message is null or blank
      */
     public static <T> ConversionResult<T> failed(String message) {
         if (message == null || message.isBlank()) {

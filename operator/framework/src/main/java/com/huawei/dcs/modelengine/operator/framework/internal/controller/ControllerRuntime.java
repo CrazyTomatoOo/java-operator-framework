@@ -13,17 +13,40 @@ import java.util.concurrent.CompletionStage;
  * @since 2026-07-30
  */
 public interface ControllerRuntime {
+    /**
+     * Starts informers and worker threads.
+     */
     void start();
 
+    /**
+     * Reports whether all informers are synchronized and the runtime can serve requests.
+     *
+     * @return {@code true} when the runtime is ready
+     */
     boolean isReady();
 
+    /**
+     * Reports whether the runtime has started and is not stopping.
+     *
+     * @return {@code true} when the runtime is running
+     */
     default boolean isRunning() {
         return isReady();
     }
 
+    /**
+     * Returns the number of reconciliation requests waiting in the queue.
+     *
+     * @return the current queue depth
+     */
     default int queueDepth() {
         return 0;
     }
 
+    /**
+     * Stops the runtime and its controller resources.
+     *
+     * @return a stage that completes when the runtime has stopped
+     */
     CompletionStage<Void> stop();
 }

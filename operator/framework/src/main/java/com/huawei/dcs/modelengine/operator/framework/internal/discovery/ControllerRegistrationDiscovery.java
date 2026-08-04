@@ -53,7 +53,9 @@ public final class ControllerRegistrationDiscovery {
         if (explicit.isEmpty()) {
             throw new IllegalStateException("controller mode requires a Reconciler or ControllerRegistration bean");
         }
-        return explicit.values().stream().map(NamedRegistration::registration).toList();
+        return explicit.values().stream()
+                .<ControllerRegistration<?>>map(NamedRegistration::registration)
+                .toList();
     }
 
     private Map<Class<?>, NamedRegistration> explicitRegistrations() {

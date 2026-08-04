@@ -45,6 +45,7 @@ public final class Mappers {
      * @param <T> the primary resource type
      * @param primaryType the primary resource class used to filter owner references
      * @return a mapper resolving primary keys from matching owner references
+     * @throws NullPointerException if {@code primaryType} is null
      */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> ownerReferences(
             Class<T> primaryType) {
@@ -59,6 +60,7 @@ public final class Mappers {
      * @param <T> the primary resource type
      * @param key the label key holding the primary resource name
      * @return a mapper resolving the primary key from the label value
+     * @throws IllegalArgumentException if {@code key} is null or blank
      */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byLabel(String key) {
         return byMetadata(key, ObjectMeta::getLabels);
@@ -71,6 +73,7 @@ public final class Mappers {
      * @param <T> the primary resource type
      * @param key the annotation key holding the primary resource name
      * @return a mapper resolving the primary key from the annotation value
+     * @throws IllegalArgumentException if {@code key} is null or blank
      */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byAnnotation(String key) {
         return byMetadata(key, ObjectMeta::getAnnotations);
@@ -92,6 +95,7 @@ public final class Mappers {
      * @param <T> the primary resource type
      * @param primaryType the primary resource class used to filter involved objects
      * @return a mapper resolving the primary key from matching involved objects
+     * @throws NullPointerException if {@code primaryType} is null
      */
     public static <T extends HasMetadata> ResourceMapper<Event, T> involvedObject(Class<T> primaryType) {
         Objects.requireNonNull(primaryType, "primaryType must not be null");

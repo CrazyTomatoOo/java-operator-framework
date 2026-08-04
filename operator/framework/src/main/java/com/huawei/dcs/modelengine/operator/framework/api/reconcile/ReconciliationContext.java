@@ -23,6 +23,11 @@ import java.util.Objects;
  * <p>{@link #cacheFor} exposes the informer caches of owned/watched secondary types (and the
  * primary type), so reads of related resources stay off the API server too.
  *
+ * @param <T> primary resource type
+ * @param resourceKey namespace and name of the primary resource
+ * @param triggers events that triggered this reconciliation
+ * @param cache primary-type informer cache, or {@code null} for {@link #withoutCache}
+ * @param caches informer caches for primary and secondary resource types
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -31,6 +36,15 @@ public record ReconciliationContext<T extends HasMetadata>(
         List<ReconciliationTrigger> triggers,
         Indexer<T> cache,
         Map<Class<? extends HasMetadata>, Indexer<?>> caches) {
+    /**
+     * Validates the reconciliation context and copies the trigger list.
+     *
+     * @param resourceKey namespace and name of the primary resource
+     * @param triggers events that triggered this reconciliation
+     * @param cache primary-type informer cache, or {@code null} for {@link #withoutCache}
+     * @param caches informer caches for primary and secondary resource types
+     * @throws NullPointerException if {@code resourceKey}, {@code triggers}, or {@code caches} is null
+     */
     public ReconciliationContext {
         Objects.requireNonNull(resourceKey, "resourceKey must not be null");
         triggers = List.copyOf(Objects.requireNonNull(triggers, "triggers must not be null"));
@@ -45,18 +59,22 @@ public record ReconciliationContext<T extends HasMetadata>(
      * @param resourceKey the namespace and name of the primary resource
      * @param triggers the events that triggered this reconciliation
      * @param cache the primary-type informer cache
+     * @throws NullPointerException if {@code resourceKey} or {@code triggers} is null
      */
     public ReconciliationContext(ResourceKey resourceKey, List<ReconciliationTrigger> triggers, Indexer<T> cache) {
         this(resourceKey, triggers, cache, Map.of());
     }
 
     /**
-     * Informer cache for an owned/watched secondary type (or the primary type), avoiding a server
-     * round-trip. Throws when the type has no informer — declare it via owns()/watches(). When the
-     * same type is both primary and owned, the owned (unfiltered) informer wins.
+     * Returns the informer cache for an owned/watched secondary type (or the primary type), avoiding
+     * a server round-trip. The type must be declared via owns()/watches(). When the same type is
+     * both primary and owned, the owned (unfiltered) informer wins.
      *
+     * @param <S> requested resource type
      * @param type the owned/watched secondary type (or the primary type)
      * @return the informer cache for the type
+     * @throws NullPointerException if {@code type} is null
+     * @throws IllegalStateException if no informer is registered for the type
      */
     @SuppressWarnings("unchecked")
     public <S extends HasMetadata> Indexer<S> cacheFor(Class<S> type) {
@@ -71,6 +89,7 @@ public record ReconciliationContext<T extends HasMetadata>(
     /**
      * Test/standalone factory: cache is null. Do not call byIndex/getByKey on the result.
      *
+     * @param <T> primary resource type
      * @param resourceKey the namespace and name of the primary resource
      * @param triggers the events that triggered this reconciliation
      * @return a context with no informer cache

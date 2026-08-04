@@ -13,7 +13,17 @@ import java.util.concurrent.CompletionStage;
  * @since 2026-07-30
  */
 public interface LeaderElectionAdapter {
+    /**
+     * Starts leader election with callbacks for gaining and losing leadership.
+     *
+     * @param onStartLeading callback invoked when leadership is acquired
+     * @param onStopLeading callback invoked when leadership is lost
+     * @return a stage that completes when leader election has started
+     */
     CompletionStage<Void> start(Runnable onStartLeading, Runnable onStopLeading);
 
+    /**
+     * Stops leader election and releases any leadership lease.
+     */
     void stop();
 }

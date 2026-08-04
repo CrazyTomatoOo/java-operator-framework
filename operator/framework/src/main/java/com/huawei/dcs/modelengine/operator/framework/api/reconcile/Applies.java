@@ -30,10 +30,13 @@ public final class Applies {
     /**
      * Server-side-applies the desired state under the given field manager; returns the server result.
      *
+     * @param <T> resource type
      * @param client the Kubernetes client used to submit the apply
      * @param desired the freshly built desired state; never an informer-cached instance
      * @param fieldManager the explicit field manager name
      * @return the server result after applying {@code desired}
+     * @throws NullPointerException if {@code desired} is null
+     * @throws IllegalArgumentException if {@code fieldManager} is blank
      */
     public static <T extends HasMetadata> T apply(KubernetesClient client, T desired, String fieldManager) {
         return operation(client, desired, fieldManager).serverSideApply();
@@ -42,10 +45,13 @@ public final class Applies {
     /**
      * Like {@link #apply}, but forces conflicts, taking ownership of fields owned by other managers.
      *
+     * @param <T> resource type
      * @param client the Kubernetes client used to submit the apply
      * @param desired the freshly built desired state; never an informer-cached instance
      * @param fieldManager the explicit field manager name
      * @return the server result after applying {@code desired}
+     * @throws NullPointerException if {@code desired} is null
+     * @throws IllegalArgumentException if {@code fieldManager} is blank
      */
     public static <T extends HasMetadata> T applyForcibly(KubernetesClient client, T desired, String fieldManager) {
         return operation(client, desired, fieldManager).forceConflicts().serverSideApply();

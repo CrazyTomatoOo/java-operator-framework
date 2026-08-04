@@ -14,7 +14,7 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Creates a new set of Fabric8 controller resources for every runtime term.
+ * Creates a new set of Fabric8 controller resources for every runtime instance.
  *
  * @author z00919064 zhangshijie
  * @since 2026-07-30

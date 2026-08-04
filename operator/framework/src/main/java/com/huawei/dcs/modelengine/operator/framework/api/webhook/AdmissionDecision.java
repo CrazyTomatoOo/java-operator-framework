@@ -37,7 +37,7 @@ public final class AdmissionDecision {
      *
      * @param message the reason for denying the request
      * @return a deny decision
-     * @throws IllegalArgumentException if the message is blank
+     * @throws IllegalArgumentException if the message is null or blank
      */
     public static AdmissionDecision deny(String message) {
         if (message == null || message.isBlank()) {

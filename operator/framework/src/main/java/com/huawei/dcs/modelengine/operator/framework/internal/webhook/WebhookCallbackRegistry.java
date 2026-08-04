@@ -197,7 +197,13 @@ public final class WebhookCallbackRegistry {
         }
     }
 
-    /** One named callback and its resolved resource type. */
+    /**
+     * One named callback and its resolved resource type.
+     *
+     * @param name callback bean name
+     * @param bean callback bean
+     * @param resourceType resolved resource type
+     */
     public record Callback(String name, Object bean, Class<? extends HasMetadata> resourceType) {
     }
 }

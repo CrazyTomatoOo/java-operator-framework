@@ -29,10 +29,12 @@ public final class StatusUpdates {
     /**
      * Patches the status subresource with the given status; returns the server result.
      *
+     * @param <T> resource type
      * @param client the Kubernetes client used to submit the patch
      * @param resource the resource whose status subresource is patched
      * @param status the desired status object, serialized as JSON
      * @return the server result after patching the status
+     * @throws NullPointerException if {@code resource} or {@code status} is null
      */
     public static <T extends HasMetadata> T update(KubernetesClient client, T resource, Object status) {
         Objects.requireNonNull(resource, "resource");
