@@ -8,6 +8,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
+import io.fabric8.kubernetes.client.utils.Serialization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,14 +32,14 @@ public final class Owners {
     }
 
     /**
-     * Sets (or idempotently refreshes) the controller owner reference from {@code owner} on
-     * {@code dependent}; returns the dependent. {@code blockOwnerDeletion} is set, so the owner
-     * must have delete permission on the dependent's kind.
+     * Sets (or idempotently refreshes) the controller owner reference from {@code owner} on a
+     * defensive copy of {@code dependent}; returns that copy. {@code blockOwnerDeletion} is set,
+     * so the owner must have delete permission on the dependent's kind.
      *
      * @param <T> dependent resource type
      * @param owner the owning (controller) resource
-     * @param dependent the dependent resource to stamp the owner reference on
-     * @return the dependent with the controller owner reference set
+     * @param dependent the dependent resource to copy and stamp the owner reference on
+     * @return a defensive copy of the dependent with the controller owner reference set
      * @throws NullPointerException if {@code owner}, its metadata, or {@code dependent} metadata is null
      * @throws IllegalArgumentException if the owner is invalid or namespaces are incompatible
      * @throws IllegalStateException if the dependent is already controlled by another owner
@@ -46,8 +47,10 @@ public final class Owners {
     public static <T extends HasMetadata> T setController(HasMetadata owner, T dependent) {
         Objects.requireNonNull(dependent, "dependent");
         var ownerMeta = requireValidOwner(owner);
-        var dependentMeta = Objects.requireNonNull(dependent.getMetadata(), "dependent metadata");
-        requireSameNamespace(ownerMeta, dependentMeta);
+        var sourceMeta = Objects.requireNonNull(dependent.getMetadata(), "dependent metadata");
+        requireSameNamespace(ownerMeta, sourceMeta);
+        var copy = Serialization.clone(dependent);
+        var dependentMeta = Objects.requireNonNull(copy.getMetadata(), "dependent metadata");
         var refs = new ArrayList<OwnerReference>();
         if (dependentMeta.getOwnerReferences() != null) {
             refs.addAll(dependentMeta.getOwnerReferences());
@@ -56,7 +59,7 @@ public final class Owners {
         refs.removeIf(ref -> Boolean.TRUE.equals(ref.getController()));
         refs.add(controllerReference(owner, ownerMeta));
         dependentMeta.setOwnerReferences(refs);
-        return dependent;
+        return copy;
     }
 
     private static ObjectMeta requireValidOwner(HasMetadata owner) {

@@ -18,9 +18,10 @@ class OwnersTest {
         var owner = owner("primary", "uid-1");
         var dependent = dependent("ns");
 
-        Owners.setController(owner, dependent);
+        var stamped = Owners.setController(owner, dependent);
 
-        assertThat(dependent.getMetadata().getOwnerReferences()).singleElement().satisfies(ref -> {
+        assertThat(dependent.getMetadata().getOwnerReferences()).isEmpty();
+        assertThat(stamped.getMetadata().getOwnerReferences()).singleElement().satisfies(ref -> {
             assertThat(ref.getController()).isTrue();
             assertThat(ref.getBlockOwnerDeletion()).isTrue();
             assertThat(ref.getApiVersion()).isEqualTo(owner.getApiVersion());
@@ -34,11 +35,11 @@ class OwnersTest {
     void refreshSameOwnerIsIdempotent() {
         var owner = owner("primary", "uid-1");
         var dependent = dependent("ns");
-        Owners.setController(owner, dependent);
+        var stamped = Owners.setController(owner, dependent);
+        stamped = Owners.setController(owner, stamped);
 
-        Owners.setController(owner, dependent);
-
-        assertThat(dependent.getMetadata().getOwnerReferences()).hasSize(1);
+        assertThat(dependent.getMetadata().getOwnerReferences()).isEmpty();
+        assertThat(stamped.getMetadata().getOwnerReferences()).hasSize(1);
     }
 
     @Test
@@ -50,18 +51,19 @@ class OwnersTest {
                 .withController(false)
                 .build()));
 
-        Owners.setController(owner, dependent);
+        var stamped = Owners.setController(owner, dependent);
 
-        assertThat(dependent.getMetadata().getOwnerReferences()).hasSize(2);
+        assertThat(dependent.getMetadata().getOwnerReferences()).hasSize(1);
+        assertThat(stamped.getMetadata().getOwnerReferences()).hasSize(2);
     }
 
     @Test
     void rejectsForeignController() {
         var dependent = dependent("ns");
-        Owners.setController(owner("first", "uid-1"), dependent);
+        var stamped = Owners.setController(owner("first", "uid-1"), dependent);
 
         assertThrows(IllegalStateException.class,
-                () -> Owners.setController(owner("second", "uid-2"), dependent));
+                () -> Owners.setController(owner("second", "uid-2"), stamped));
     }
 
     @Test
@@ -78,9 +80,10 @@ class OwnersTest {
         owner.getMetadata().setNamespace(null);
         var dependent = dependent("other-ns");
 
-        Owners.setController(owner, dependent);
+        var stamped = Owners.setController(owner, dependent);
 
-        assertThat(dependent.getMetadata().getOwnerReferences()).hasSize(1);
+        assertThat(dependent.getMetadata().getOwnerReferences()).isEmpty();
+        assertThat(stamped.getMetadata().getOwnerReferences()).hasSize(1);
     }
 
     @Test

@@ -25,11 +25,14 @@ class AppliesTest {
 
     @Test
     void applySendsApplyPatchWithExplicitFieldManager() throws InterruptedException {
+        var cached = desired("v1");
+        cached.setApiVersion(null);
         server.expect().patch().withPath("/api/v1/namespaces/ns/configmaps/cm?fieldManager=test-operator")
                 .andReturn(200, desired("v1")).once();
 
-        var applied = Applies.apply(client, desired("v1"), "test-operator");
+        var applied = Applies.apply(client, cached, "test-operator");
 
+        assertThat(cached.getApiVersion()).as("informer-cached instance must stay untouched").isNull();
         assertThat(applied.getData()).containsEntry("k", "v1");
         assertThat(server.getLastRequest().getHeader("Content-Type")).contains("apply-patch+yaml");
     }

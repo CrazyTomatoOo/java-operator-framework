@@ -10,8 +10,8 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
  * A dependent resource managed on behalf of a primary resource.
  *
  * <p>Implementations compute the full desired state of one owned resource from the primary.
- * Submit the result through {@link Dependents#apply}, which marks it with the controller owner
- * reference and server-side-applies it. Declare the dependent on the controller with
+ * Submit the result through the dependent-resource submission helper {@link Dependents}, which
+ * marks it with the controller owner reference and server-side-applies it. Declare the dependent on
  * {@code ControllerBuilder.manages(dependent)} so its events also trigger reconciliation.
  *
  * @param <D> dependent resource type

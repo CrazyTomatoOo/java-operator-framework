@@ -66,8 +66,11 @@ class ReconcileApiTest {
         var context = new ReconciliationContext<ConfigMap>(key, List.of(), cache, Map.of(ConfigMap.class, cache));
         assertSame(cache, context.cacheFor(ConfigMap.class));
         assertThrows(IllegalStateException.class, () -> context.cacheFor(Secret.class));
-        assertThrows(IllegalStateException.class,
-                () -> ReconciliationContext.<ConfigMap>withoutCache(key, List.of()).cacheFor(ConfigMap.class));
+        var withoutCache = ReconciliationContext.<ConfigMap>withoutCache(key, List.of());
+        var exception = assertThrows(IllegalStateException.class,
+                () -> withoutCache.cacheFor(ConfigMap.class));
+        assertEquals("no informer cache for ConfigMap; context was created with withoutCache()",
+                exception.getMessage());
     }
 
     @Test

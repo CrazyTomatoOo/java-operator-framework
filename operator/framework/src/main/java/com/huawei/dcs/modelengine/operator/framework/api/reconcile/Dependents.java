@@ -27,9 +27,8 @@ public final class Dependents {
     }
 
     /**
-     * Computes the dependent's desired state, sets the controller owner reference to
-     * {@code primary}, and server-side-applies it under {@code fieldManager}; returns the server
-     * result.
+     * Computes the dependent's desired state, adds the controller owner reference to a defensive copy,
+     * and server-side-applies it under {@code fieldManager}; returns the server result.
      *
      * @param <D> dependent resource type
      * @param <P> primary resource type
@@ -51,6 +50,7 @@ public final class Dependents {
         Objects.requireNonNull(context, "context");
         var desired = Objects.requireNonNull(
                 dependent.desired(primary, context), "desired must not be null");
-        return Applies.apply(client, Owners.setController(primary, desired), fieldManager);
+        var owned = Owners.setController(primary, desired);
+        return Applies.apply(client, owned, fieldManager);
     }
 }

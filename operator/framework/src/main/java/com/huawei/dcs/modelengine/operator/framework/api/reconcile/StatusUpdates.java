@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
 import io.fabric8.kubernetes.client.utils.Serialization;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -39,7 +40,7 @@ public final class StatusUpdates {
     public static <T extends HasMetadata> T update(KubernetesClient client, T resource, Object status) {
         Objects.requireNonNull(resource, "resource");
         Objects.requireNonNull(status, "status");
-        var body = "{\"status\":" + Serialization.asJson(status) + "}";
+        var body = Serialization.asJson(Map.of("status", status));
         return client.resource(resource)
                 .subresource("status").patch(PatchContext.of(PatchType.JSON_MERGE), body);
     }

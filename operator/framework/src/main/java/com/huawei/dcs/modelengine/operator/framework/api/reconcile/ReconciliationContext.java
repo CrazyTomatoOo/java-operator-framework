@@ -67,20 +67,26 @@ public record ReconciliationContext<T extends HasMetadata>(
 
     /**
      * Returns the informer cache for an owned/watched secondary type (or the primary type), avoiding
-     * a server round-trip. The type must be declared via owns()/watches(). When the same type is
+     * a server round-trip. If this context was created with {@link #withoutCache}, cache access is
+     * unavailable. Otherwise, the type must be declared via owns()/watches(). When the same type is
      * both primary and owned, the owned (unfiltered) informer wins.
      *
      * @param <S> requested resource type
      * @param type the owned/watched secondary type (or the primary type)
      * @return the informer cache for the type
      * @throws NullPointerException if {@code type} is null
-     * @throws IllegalStateException if no informer is registered for the type
+     * @throws IllegalStateException if this context has no informer cache for the type
      */
     @SuppressWarnings("unchecked")
     public <S extends HasMetadata> Indexer<S> cacheFor(Class<S> type) {
-        var indexer = caches.get(Objects.requireNonNull(type, "type must not be null"));
+        var requestedType = Objects.requireNonNull(type, "type must not be null");
+        var indexer = caches.get(requestedType);
         if (indexer == null) {
-            throw new IllegalStateException("no informer cache for " + type.getSimpleName()
+            if (cache == null && caches.isEmpty()) {
+                throw new IllegalStateException("no informer cache for " + requestedType.getSimpleName()
+                        + "; context was created with withoutCache()");
+            }
+            throw new IllegalStateException("no informer cache for " + requestedType.getSimpleName()
                     + "; declare it via owns()/watches() on the controller builder");
         }
         return (Indexer<S>) indexer;

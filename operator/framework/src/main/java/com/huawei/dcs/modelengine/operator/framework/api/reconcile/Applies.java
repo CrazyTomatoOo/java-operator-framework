@@ -7,6 +7,7 @@ package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.ServerSideApplicable;
+import io.fabric8.kubernetes.client.utils.Serialization;
 
 import java.util.Objects;
 
@@ -17,8 +18,8 @@ import java.util.Objects;
  * create-or-update is one call and fields owned by other managers stay untouched. The field
  * manager must be explicit — fabric8 otherwise defaults to {@code fabric8}, and managers sharing
  * one name silently take over each other's fields. Use {@link #applyForcibly} to take ownership
- * of conflicting fields. Pass a freshly built desired object; never apply a mutated
- * informer-cached instance.
+ * of conflicting fields. The desired resource is copied before submission, so informer-cached
+ * instances are not mutated.
  *
  * @author z00919064 zhangshijie
  * @since 2026-08-01
@@ -32,7 +33,7 @@ public final class Applies {
      *
      * @param <T> resource type
      * @param client the Kubernetes client used to submit the apply
-     * @param desired the freshly built desired state; never an informer-cached instance
+     * @param desired the desired state; copied before submission to protect informer-cached instances
      * @param fieldManager the explicit field manager name
      * @return the server result after applying {@code desired}
      * @throws NullPointerException if {@code desired} is null
@@ -47,7 +48,7 @@ public final class Applies {
      *
      * @param <T> resource type
      * @param client the Kubernetes client used to submit the apply
-     * @param desired the freshly built desired state; never an informer-cached instance
+     * @param desired the desired state; copied before submission to protect informer-cached instances
      * @param fieldManager the explicit field manager name
      * @return the server result after applying {@code desired}
      * @throws NullPointerException if {@code desired} is null
@@ -63,6 +64,6 @@ public final class Applies {
         if (fieldManager == null || fieldManager.isBlank()) {
             throw new IllegalArgumentException("fieldManager must not be blank");
         }
-        return client.resource(desired).fieldManager(fieldManager);
+        return client.resource(Serialization.clone(desired)).fieldManager(fieldManager);
     }
 }

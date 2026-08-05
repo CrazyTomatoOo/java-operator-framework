@@ -8,7 +8,11 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
+import io.fabric8.kubernetes.client.utils.Serialization;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -66,9 +70,11 @@ public final class Finalizers {
             return resource;
         }
         var finalizers = resource.getMetadata().getFinalizers();
-        var body = finalizers == null || finalizers.isEmpty()
-                ? "[{\"op\":\"add\",\"path\":\"/metadata/finalizers\",\"value\":[\"" + escape(finalizer) + "\"]}]"
-                : "[{\"op\":\"add\",\"path\":\"/metadata/finalizers/-\",\"value\":\"" + escape(finalizer) + "\"}]";
+        var hasNoFinalizers = finalizers == null || finalizers.isEmpty();
+        var path = hasNoFinalizers ? "/metadata/finalizers" : "/metadata/finalizers/-";
+        var value = hasNoFinalizers ? List.of(finalizer) : finalizer;
+        var operation = Map.of("op", "add", "path", path, "value", value);
+        var body = Serialization.asJson(List.of(operation));
         return client.resource(resource).patch(PatchContext.of(PatchType.JSON), body);
     }
 
@@ -85,10 +91,20 @@ public final class Finalizers {
     public static <T extends HasMetadata> T remove(KubernetesClient client, T resource, String finalizer) {
         requireName(finalizer);
         var finalizers = resource.getMetadata().getFinalizers();
-        if (finalizers == null || !finalizers.contains(finalizer)) {
+        if (finalizers == null) {
             return resource;
         }
-        var body = "[{\"op\":\"remove\",\"path\":\"/metadata/finalizers/" + finalizers.indexOf(finalizer) + "\"}]";
+        var operations = new ArrayList<Map<String, Object>>();
+        for (var index = finalizers.size() - 1; index >= 0; index--) {
+            if (finalizer.equals(finalizers.get(index))) {
+                operations.add(Map.of("op", "remove",
+                        "path", "/metadata/finalizers/" + index));
+            }
+        }
+        if (operations.isEmpty()) {
+            return resource;
+        }
+        var body = Serialization.asJson(operations);
         return client.resource(resource).patch(PatchContext.of(PatchType.JSON), body);
     }
 
@@ -98,7 +114,4 @@ public final class Finalizers {
         }
     }
 
-    private static String escape(String value) {
-        return value.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
 }

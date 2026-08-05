@@ -23,7 +23,8 @@ class FinalizersTest {
         var plain = new ConfigMapBuilder()
                 .withNewMetadata().withNamespace("ns").withName("plain").endMetadata().build();
         var withFinalizer = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("f").addToFinalizers("example.com/cleanup").endMetadata()
+                .withNewMetadata().withNamespace("ns").withName("f")
+                .addToFinalizers("example.com/cleanup").endMetadata()
                 .build();
         var deleting = new ConfigMapBuilder()
                 .withNewMetadata().withNamespace("ns").withName("d")
@@ -61,6 +62,19 @@ class FinalizersTest {
 
         // removing a missing finalizer is a no-op, never throws
         assertThat(Finalizers.remove(client, resource, "absent")).isSameAs(resource);
+    }
+    @Test
+    void removePatchesAllDuplicateOccurrences() {
+        var resource = new ConfigMapBuilder()
+                .withNewMetadata().withNamespace("ns").withName("duplicates").endMetadata()
+                .build();
+        resource.getMetadata().setFinalizers(java.util.List.of(
+                "example.com/cleanup", "example.com/other", "example.com/cleanup"));
+        var created = client.resource(resource).create();
+
+        Finalizers.remove(client, created, "example.com/cleanup");
+
+        assertThat(serverFinalizers("duplicates")).containsExactly("example.com/other");
     }
 
     @Test

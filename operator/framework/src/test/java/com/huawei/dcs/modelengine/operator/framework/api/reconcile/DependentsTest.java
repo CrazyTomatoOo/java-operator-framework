@@ -41,6 +41,19 @@ class DependentsTest {
         assertThat(sent).contains("\"uid\":\"uid-1\"");
         assertThat(sent).contains("\"name\":\"primary\"");
     }
+    @Test
+    void applyDoesNotMutateDesiredResource() throws InterruptedException {
+        server.expect().patch().withPath(PATH)
+                .andReturn(200, configMap("applied")).once();
+        var primary = new ConfigMapBuilder()
+                .withNewMetadata().withNamespace("ns").withName("primary").withUid("uid-1").endMetadata()
+                .build();
+        var cached = configMap("cached");
+
+        Dependents.apply(client, new EchoConfigMap(cached), primary, context(), "test-operator");
+
+        assertThat(cached.getMetadata().getOwnerReferences()).isEmpty();
+    }
 
     @Test
     void rejectsNullDesired() {
@@ -89,6 +102,15 @@ class DependentsTest {
 
     /** Echoes the primary's data into an owned ConfigMap named after the primary's "child" key. */
     private static final class EchoConfigMap implements DependentResource<ConfigMap, ConfigMap> {
+        private final ConfigMap fixedDesired;
+
+        private EchoConfigMap() {
+            this(null);
+        }
+
+        private EchoConfigMap(ConfigMap fixedDesired) {
+            this.fixedDesired = fixedDesired;
+        }
         /**
          * Returns the dependent resource type.
          *
@@ -108,7 +130,9 @@ class DependentsTest {
          */
         @Override
         public ConfigMap desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
-            return configMap("from-" + primary.getMetadata().getName());
+            return fixedDesired == null
+                    ? configMap("from-" + primary.getMetadata().getName())
+                    : fixedDesired;
         }
     }
 }
