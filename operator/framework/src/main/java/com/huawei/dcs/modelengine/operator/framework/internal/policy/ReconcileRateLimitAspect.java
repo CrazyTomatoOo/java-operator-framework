@@ -97,7 +97,9 @@ public final class ReconcileRateLimitAspect {
         }
     }
 
-    /** Clears resource timing state when the controller runtime lifecycle ends. */
+    /**
+     * Clears resource timing state when the controller runtime lifecycle ends.
+     */
     public void clear() {
         lastInvocations.clear();
         lastSweep = null;

@@ -67,24 +67,32 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
         return liveness.get() == LivenessState.CORRECT;
     }
 
-    /** Marks the framework runtime ready; readiness flips once the application is also ready. */
+    /**
+     * Marks the framework runtime ready; readiness flips once the application is also ready.
+     */
     public void ready() {
         frameworkReady.set(true);
         refreshReadiness();
     }
 
-    /** Marks the framework runtime not ready, refusing traffic immediately. */
+    /**
+     * Marks the framework runtime not ready, refusing traffic immediately.
+     */
     public void notReady() {
         frameworkReady.set(false);
         publishReadiness(ReadinessState.REFUSING_TRAFFIC);
     }
 
-    /** Marks the framework runtime live. */
+    /**
+     * Marks the framework runtime live.
+     */
     public void live() {
         publishLiveness(LivenessState.CORRECT);
     }
 
-    /** Marks the framework runtime broken, so Kubernetes restarts the pod. */
+    /**
+     * Marks the framework runtime broken, so Kubernetes restarts the pod.
+     */
     public void broken() {
         publishLiveness(LivenessState.BROKEN);
     }

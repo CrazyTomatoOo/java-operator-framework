@@ -36,7 +36,9 @@ public final class FrameworkKubernetesClientOwnership implements DisposableBean 
         return ownedClient == client;
     }
 
-    /** Closes the owned client, if any, and releases the ownership. */
+    /**
+     * Closes the owned client, if any, and releases the ownership.
+     */
     @Override
     public synchronized void destroy() {
         if (ownedClient != null) {

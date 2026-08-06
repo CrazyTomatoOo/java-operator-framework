@@ -136,7 +136,9 @@ public final class OperatorFrameworkMetrics {
         return new GaugeHandle(registry, meter);
     }
 
-    /** Removes a runtime gauge when its owning runtime is stopped. */
+    /**
+     * Removes a runtime gauge when its owning runtime is stopped.
+     */
     public static final class GaugeHandle implements AutoCloseable {
         private static final GaugeHandle NOOP = new GaugeHandle(null, null);
 
@@ -148,7 +150,9 @@ public final class OperatorFrameworkMetrics {
             this.meter = meter;
         }
 
-        /** Removes the gauge from the registry; safe to call more than once. */
+        /**
+         * Removes the gauge from the registry; safe to call more than once.
+         */
         @Override
         public void close() {
             if (registry != null) {
