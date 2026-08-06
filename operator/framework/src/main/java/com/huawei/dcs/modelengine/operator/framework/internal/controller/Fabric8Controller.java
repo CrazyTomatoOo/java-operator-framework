@@ -287,7 +287,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     private void workerLoop() {
         try {
             while (!stopping || !queue.isDrained()) {
-                reconcile(queue.poll(POLL_TIMEOUT));
+                queue.poll(POLL_TIMEOUT).ifPresent(this::reconcile);
             }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -295,9 +295,6 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     }
 
     private void reconcile(ReconciliationQueue.Work work) {
-        if (work == null) {
-            return;
-        }
         try {
             var resource = resourceFor(work.key());
             if (resource == null) {
@@ -310,7 +307,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             if (result.isDone()) {
                 deletedResources.remove(work.key());
             }
-        // ponytail: catch Throwable so a single bad reconcile (e.g. StackOverflowError) cannot kill
+        // catch Throwable so a single bad reconcile (e.g. StackOverflowError) cannot kill
         // the worker thread; the aspect chain has already classified/logged the callback failure
         } catch (Throwable exception) {
             deletedResources.remove(work.key());
@@ -429,7 +426,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
          */
         @Override
         public void onUpdate(S previous, S resource) {
-            // ponytail: event count increments are aggregation churn; new reasons arrive as ADDs
+            // event count increments are aggregation churn; new reasons arrive as ADDs
             if (role == TriggerRole.KUBERNETES_EVENT && !GenerationFilter.isResync(previous, resource)) {
                 return;
             }

@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -42,9 +43,9 @@ final class ReconciliationQueue {
         }
     }
 
-    Work poll(DurationMillis timeout) throws InterruptedException {
+    Optional<Work> poll(DurationMillis timeout) throws InterruptedException {
         var key = keys.poll(timeout.value(), TimeUnit.MILLISECONDS);
-        return key == null ? null : begin(key);
+        return key == null ? Optional.empty() : begin(key);
     }
 
     synchronized void complete(ResourceKey key) {
@@ -73,14 +74,14 @@ final class ReconciliationQueue {
         return pending.isEmpty() && inFlight.isEmpty();
     }
 
-    private synchronized Work begin(ResourceKey key) {
+    private synchronized Optional<Work> begin(ResourceKey key) {
         queued.remove(key);
         var triggers = pending.remove(key);
         if (triggers == null) {
-            return null;
+            return Optional.empty();
         }
         inFlight.add(key);
-        return new Work(key, List.copyOf(triggers));
+        return Optional.of(new Work(key, List.copyOf(triggers)));
     }
 
     private void append(List<ReconciliationTrigger> triggers, ReconciliationTrigger trigger) {

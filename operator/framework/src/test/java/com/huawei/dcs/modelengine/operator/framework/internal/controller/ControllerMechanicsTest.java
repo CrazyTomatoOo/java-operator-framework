@@ -29,7 +29,7 @@ class ControllerMechanicsTest {
 
         queue.offer(key, first);
         queue.offer(key, second);
-        var work = queue.poll(new ReconciliationQueue.DurationMillis(10));
+        var work = queue.poll(new ReconciliationQueue.DurationMillis(10)).orElseThrow();
 
         assertThat(work.key()).isEqualTo(key);
         assertThat(work.triggers()).containsExactly(first, second);
@@ -43,13 +43,13 @@ class ControllerMechanicsTest {
         var queue = new ReconciliationQueue();
         var key = new ResourceKey("operators", "sample");
         queue.offer(key, trigger(ResourceEventType.ADDED));
-        var first = queue.poll(new ReconciliationQueue.DurationMillis(10));
+        var first = queue.poll(new ReconciliationQueue.DurationMillis(10)).orElseThrow();
 
         queue.offer(key, trigger(ResourceEventType.UPDATED));
-        assertThat(queue.poll(new ReconciliationQueue.DurationMillis(10))).isNull();
+        assertThat(queue.poll(new ReconciliationQueue.DurationMillis(10))).isEmpty();
         queue.complete(first.key());
 
-        var second = queue.poll(new ReconciliationQueue.DurationMillis(10));
+        var second = queue.poll(new ReconciliationQueue.DurationMillis(10)).orElseThrow();
         assertThat(second.triggers()).extracting(ReconciliationTrigger::eventType)
                 .containsExactly(ResourceEventType.UPDATED);
         queue.complete(second.key());
