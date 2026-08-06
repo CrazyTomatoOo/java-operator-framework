@@ -80,7 +80,7 @@ class ControllerConfiguration {
 }
 ```
 
-`owns` maps owner references. `watches` uses the supplied `ResourceMapper`; built-in mappers support owner references, labels, annotations, and Kubernetes Event involved objects. `watchesKubernetesEvents()` subscribes to `core/v1` Events that refer to the primary resource: the informer is filtered server-side by `involvedObject.kind`/`involvedObject.apiVersion`, and aggregated Event updates (`count` increments) do not trigger reconciliation — only new Events, deletions, and resyncs do. Kubernetes Events are best-effort; do not use them as correctness-critical state and avoid publish/subscribe feedback loops.
+`owns` maps owner references. Prefer the typed `Mappers.ownerReferences(Class)` when the primary type is known; the no-argument variant matches every controller owner kind. `watches` uses the supplied `ResourceMapper`; built-in label and annotation mappers inspect both current and previous metadata on updates. They use the secondary namespace for bare names; a cluster-scoped secondary can use `namespace/name` to target a namespaced primary. Built-in mappers also support labels, annotations, and Kubernetes Event involved objects. `watchesKubernetesEvents()` subscribes to `core/v1` Events that refer to the primary resource: the informer is filtered server-side by `involvedObject.kind`/`involvedObject.apiVersion`, and aggregated Event updates (`count` increments) do not trigger reconciliation — only new Events, deletions, and resyncs do. Kubernetes Events are best-effort; do not use them as correctness-critical state and avoid publish/subscribe feedback loops.
 
 ## Configuration
 

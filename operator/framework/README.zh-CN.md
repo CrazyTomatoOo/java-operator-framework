@@ -80,7 +80,7 @@ class ControllerConfiguration {
 }
 ```
 
-`owns` 通过 Owner Reference 映射资源；`watches` 使用传入的 `ResourceMapper`，内置映射器支持 Owner Reference、标签、注解与 Kubernetes Event 的 involved object。`watchesKubernetesEvents()` 订阅指向主资源的 `core/v1` Event：informer 在服务端按 `involvedObject.kind`/`involvedObject.apiVersion` 过滤，聚合事件的 `count` 递增不会触发 reconcile，只有新 Event、删除和 resync 会触发。Kubernetes Event 是尽力而为机制，不能作为正确性关键状态；同时发布和订阅时必须避免反馈循环。
+`owns` 通过 Owner Reference 映射资源；已知主资源类型时建议使用带类型过滤的 `Mappers.ownerReferences(Class)`，无参版本会匹配所有 controller owner 类型。`watches` 使用传入的 `ResourceMapper`；内置标签和注解映射器在更新时同时检查当前与先前状态，裸名称使用次级资源的 namespace，cluster-scoped 次级资源可使用 `namespace/name` 指向 namespaced 主资源。内置映射器还支持标签、注解与 Kubernetes Event 的 involved object。`watchesKubernetesEvents()` 订阅指向主资源的 `core/v1` Event：informer 在服务端按 `involvedObject.kind`/`involvedObject.apiVersion` 过滤，聚合事件的 `count` 递增不会触发 reconcile，只有新 Event、删除和 resync 会触发。Kubernetes Event 是尽力而为机制，不能作为正确性关键状态；同时发布和订阅时必须避免反馈循环。
 
 ## 配置
 

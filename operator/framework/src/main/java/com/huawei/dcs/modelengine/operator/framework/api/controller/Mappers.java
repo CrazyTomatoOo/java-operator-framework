@@ -30,6 +30,10 @@ public final class Mappers {
     /**
      * Maps a secondary resource to the primary resources listed as its controller owners.
      *
+     * <p>This overload matches every controller owner reference regardless of API version or kind.
+     * Prefer {@link #ownerReferences(Class)} when the primary type is known, especially when a
+     * secondary resource can have owners of different types.
+     *
      * @param <S> the secondary resource type
      * @param <T> the primary resource type
      * @return a mapper resolving primary keys from owner references
@@ -56,6 +60,11 @@ public final class Mappers {
     /**
      * Maps a secondary resource to the primary resource named by the given label.
      *
+     * <p>Both current and previous metadata are inspected for update events, so a label move
+     * reconciles both the old and new primary keys. For a cluster-scoped secondary, use a
+     * {@code namespace/name} value when the target primary is namespaced; a bare value maps to a
+     * cluster-scoped primary.
+     *
      * @param <S> the secondary resource type
      * @param <T> the primary resource type
      * @param key the label key holding the primary resource name
@@ -68,6 +77,11 @@ public final class Mappers {
 
     /**
      * Maps a secondary resource to the primary resource named by the given annotation.
+     *
+     * <p>Both current and previous metadata are inspected for update events, so an annotation
+     * move reconciles both the old and new primary keys. For a cluster-scoped secondary, use a
+     * {@code namespace/name} value when the target primary is namespaced; a bare value maps to a
+     * cluster-scoped primary.
      *
      * @param <S> the secondary resource type
      * @param <T> the primary resource type
@@ -177,9 +191,27 @@ public final class Mappers {
         if (name == null || name.isBlank()) {
             return List.of();
         }
-        return List.of(new ResourceKey(metadata.getNamespace(), name));
+        return List.of(resourceKey(metadata, name));
     }
 
+    private static ResourceKey resourceKey(ObjectMeta metadata, String value) {
+        var separator = value.indexOf('/');
+        if (separator > 0 && separator < value.length() - 1) {
+            return new ResourceKey(value.substring(0, separator), value.substring(separator + 1));
+        }
+        return new ResourceKey(metadata.getNamespace(), value);
+    }
+
+    /**
+     * Returns both current and previous resource states for mapping.
+     *
+     * <p>Including both states lets an update that changes an owner, label, or annotation
+     * reconcile the primary identified by the old state as well as the new state.
+     *
+     * @param <S> the secondary resource type
+     * @param event the resource event
+     * @return the current state followed by the previous state when present
+     */
     private static <S extends HasMetadata> Stream<S> resources(ResourceEvent<S> event) {
         return Stream.concat(Stream.of(event.resource()), event.previousResource().stream());
     }

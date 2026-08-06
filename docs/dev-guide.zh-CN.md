@@ -192,6 +192,7 @@ public class OperatorConfiguration {
 - `generationFilter(boolean)` 覆盖全局 Generation Filter。
 - `resyncPeriod(Duration)` 覆盖全局 resync；零表示禁用周期性 resync。
 - `owns(Deployment.class)` 监听从属资源，并通过 Owner Reference 映射主资源键。
+- 已知主资源类型时建议使用带类型过滤的 `Mappers.ownerReferences(Class)`；无参 Mapper 会匹配所有 controller owner 类型。标签和注解映射器会同时检查当前与先前状态；裸值使用次级资源的 namespace，cluster-scoped 次级资源可使用 `namespace/name` 指向 namespaced 主资源。
 - `watches(name, type, mapper)` 监听任意从资源；同一注册内的监听名称必须唯一。
 - `watchesKubernetesEvents()` 监听 `core/v1` Event，并通过 `involvedObject`（服务端按 kind/apiVersion 过滤）映射主资源键。聚合事件的 `count` 递增不会触发 reconcile，只有新 Event、删除和 resync 会触发。
 

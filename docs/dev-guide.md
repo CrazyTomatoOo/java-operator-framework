@@ -192,6 +192,7 @@ The referenced reconciler must be a Spring Bean so AOP retry/rate-limit/observat
 - `generationFilter(boolean)` overrides the global generation filter.
 - `resyncPeriod(Duration)` overrides global resync; zero disables periodic resync.
 - `owns(Deployment.class)` watches owned resources and maps Owner References to primary keys.
+- Prefer `Mappers.ownerReferences(Class)` when the primary type is known; the no-argument mapper matches every controller owner kind. Label and annotation mappers inspect both current and previous metadata; bare values use the secondary namespace, while a cluster-scoped secondary may use `namespace/name` for a namespaced primary.
 - `watches(name, type, mapper)` watches arbitrary secondary resources. Watch names must be unique in one registration.
 - `watchesKubernetesEvents()` watches `core/v1` Events and maps `involvedObject` (filtered server-side by kind/apiVersion) to a primary key. Aggregated Event `count` increments do not trigger reconciliation; only new Events, deletions, and resyncs do.
 

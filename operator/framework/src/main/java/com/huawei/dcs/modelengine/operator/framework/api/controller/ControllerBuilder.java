@@ -10,9 +10,9 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +21,9 @@ import java.util.function.Function;
 
 /**
  * Builds an immutable controller registration.
+ *
+ * <p>Builder mutations and {@link #build()} are serialized. Each registration is created from
+ * immutable collection snapshots, so later builder changes do not affect it.
  *
  * @param <T> primary resource type
  * @author z00919064 zhangshijie
@@ -64,7 +67,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @param enabled {@code true} to ignore events that do not change the generation
      * @return this builder
      */
-    public ControllerBuilder<T> generationFilter(boolean enabled) {
+    public synchronized ControllerBuilder<T> generationFilter(boolean enabled) {
         generationFilter = enabled;
         return this;
     }
@@ -77,7 +80,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @throws NullPointerException if {@code period} is null
      * @throws IllegalArgumentException if the period is negative
      */
-    public ControllerBuilder<T> resyncPeriod(Duration period) {
+    public synchronized ControllerBuilder<T> resyncPeriod(Duration period) {
         Objects.requireNonNull(period, "period must not be null");
         if (period.isNegative()) {
             throw new IllegalArgumentException("period must not be negative");
@@ -94,7 +97,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @return this builder
      * @throws NullPointerException if {@code resourceType} is null
      */
-    public <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
+    public synchronized <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
         ownedResources.add(Objects.requireNonNull(resourceType, "resourceType must not be null"));
         return this;
     }
@@ -107,7 +110,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @return this builder
      * @throws NullPointerException if {@code dependent} is null
      */
-    public ControllerBuilder<T> manages(DependentResource<? extends HasMetadata, T> dependent) {
+    public synchronized ControllerBuilder<T> manages(DependentResource<? extends HasMetadata, T> dependent) {
         Objects.requireNonNull(dependent, "dependent must not be null");
         return owns(dependent.resourceType());
     }
@@ -123,7 +126,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @throws NullPointerException if {@code resourceType} or {@code mapper} is null
      * @throws IllegalArgumentException if the name is blank or already registered
      */
-    public <S extends HasMetadata> ControllerBuilder<T> watches(
+    public synchronized <S extends HasMetadata> ControllerBuilder<T> watches(
             String name,
             Class<S> resourceType,
             ResourceMapper<S, T> mapper) {
@@ -142,7 +145,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @return this builder
      */
-    public ControllerBuilder<T> watchesKubernetesEvents() {
+    public synchronized ControllerBuilder<T> watchesKubernetesEvents() {
         kubernetesEvents = true;
         return this;
     }
@@ -150,11 +153,14 @@ public final class ControllerBuilder<T extends HasMetadata> {
     /**
      * Restricts the primary watch to resources matching the given label equality selector.
      *
+     * <p>Calling this method again replaces the previous label selector while retaining the current
+     * field selector.
+     *
      * @param labels the label selector
      * @return this builder
      * @throws NullPointerException if {@code labels} is null
      */
-    public ControllerBuilder<T> labelSelector(Map<String, String> labels) {
+    public synchronized ControllerBuilder<T> labelSelector(Map<String, String> labels) {
         Objects.requireNonNull(labels, "labels must not be null");
         var current = watchSelector == null ? WatchSelector.empty() : watchSelector;
         watchSelector = new WatchSelector(Map.copyOf(labels), current.fields());
@@ -164,11 +170,14 @@ public final class ControllerBuilder<T extends HasMetadata> {
     /**
      * Restricts the primary watch to resources matching the given field equality selector.
      *
+     * <p>Calling this method again replaces the previous field selector while retaining the current
+     * label selector.
+     *
      * @param fields the field selector
      * @return this builder
      * @throws NullPointerException if {@code fields} is null
      */
-    public ControllerBuilder<T> fieldSelector(Map<String, String> fields) {
+    public synchronized ControllerBuilder<T> fieldSelector(Map<String, String> fields) {
         Objects.requireNonNull(fields, "fields must not be null");
         var current = watchSelector == null ? WatchSelector.empty() : watchSelector;
         watchSelector = new WatchSelector(current.labels(), Map.copyOf(fields));
@@ -184,7 +193,7 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @throws NullPointerException if {@code key} or {@code extractor} is null
      * @throws IllegalArgumentException if the key is already registered
      */
-    public ControllerBuilder<T> indexField(String key, Function<T, String> extractor) {
+    public synchronized ControllerBuilder<T> indexField(String key, Function<T, String> extractor) {
         Objects.requireNonNull(key, "key must not be null");
         Objects.requireNonNull(extractor, "extractor must not be null");
         if (indexFields.putIfAbsent(key, extractor) != null) {
@@ -198,44 +207,33 @@ public final class ControllerBuilder<T extends HasMetadata> {
      *
      * @return the controller registration
      */
-    public ControllerRegistration<T> build() {
-        return new ControllerRegistration<>(this);
+    public synchronized ControllerRegistration<T> build() {
+        return new ControllerRegistration<>(snapshot());
     }
 
-    Class<T> resourceType() {
-        return resourceType;
+    private Snapshot<T> snapshot() {
+        return new Snapshot<>(
+                resourceType,
+                reconciler,
+                Optional.ofNullable(generationFilter),
+                Optional.ofNullable(resyncPeriod),
+                List.copyOf(ownedResources),
+                List.copyOf(secondaryWatches.values()),
+                kubernetesEvents,
+                Optional.ofNullable(watchSelector),
+                Map.copyOf(indexFields));
     }
 
-    Reconciler<T> reconciler() {
-        return reconciler;
-    }
-
-    Optional<Boolean> generationFilter() {
-        return Optional.ofNullable(generationFilter);
-    }
-
-    Optional<Duration> resyncPeriod() {
-        return Optional.ofNullable(resyncPeriod);
-    }
-
-    Set<Class<? extends HasMetadata>> ownedResources() {
-        return ownedResources;
-    }
-
-    Collection<ControllerRegistration.SecondaryWatch<? extends HasMetadata, T>> secondaryWatches() {
-        return secondaryWatches.values();
-    }
-
-    boolean kubernetesEvents() {
-        return kubernetesEvents;
-    }
-
-    WatchSelector watchSelector() {
-        return watchSelector;
-    }
-
-    Map<String, Function<T, String>> indexFields() {
-        return indexFields;
+    record Snapshot<T extends HasMetadata>(
+            Class<T> resourceType,
+            Reconciler<T> reconciler,
+            Optional<Boolean> generationFilter,
+            Optional<Duration> resyncPeriod,
+            List<Class<? extends HasMetadata>> ownedResources,
+            List<ControllerRegistration.SecondaryWatch<? extends HasMetadata, T>> secondaryWatches,
+            boolean kubernetesEvents,
+            Optional<WatchSelector> watchSelector,
+            Map<String, Function<T, String>> indexFields) {
     }
 
     /**

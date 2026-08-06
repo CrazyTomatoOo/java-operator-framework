@@ -17,6 +17,8 @@ import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.EventBuilder;
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 
@@ -38,12 +40,15 @@ class ControllerApiTest {
 
         var registration = builder.build();
         builder.owns(ConfigMap.class);
-
+        builder.watches("after-build", Secret.class, Mappers.byLabel("primary"))
+                .indexField("after-build", resource -> resource.getMetadata().getName());
         assertEquals(ConfigMap.class, registration.resourceType());
         assertEquals(Boolean.TRUE, registration.generationFilter().orElseThrow());
         assertEquals(Duration.ZERO, registration.resyncPeriod().orElseThrow());
         assertEquals(List.of(Secret.class), registration.ownedResources());
         assertEquals("secrets", registration.secondaryWatches().getFirst().name());
+        assertEquals(1, registration.secondaryWatches().size());
+        assertTrue(registration.indexFields().isEmpty());
         assertTrue(registration.watchesKubernetesEvents());
         assertThrows(UnsupportedOperationException.class, () -> registration.ownedResources().clear());
     }
@@ -98,6 +103,24 @@ class ControllerApiTest {
     }
 
     @Test
+    void mapsClusterScopedSecondaryWithQualifiedPrimaryName() {
+        var secondary = new NamespaceBuilder().withNewMetadata().withName("secondary")
+                .addToLabels("primary", "operators/label-owner")
+                .addToAnnotations("operator.example/primary", "operators/annotation-owner")
+                .endMetadata().build();
+        assertEquals(List.of(new ResourceKey("operators", "label-owner")),
+                Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(secondary)));
+        assertEquals(List.of(new ResourceKey("operators", "annotation-owner")),
+                Mappers.<Namespace, ConfigMap>byAnnotation("operator.example/primary")
+                        .map(ResourceEvent.added(secondary)));
+
+        var clusterPrimary = new NamespaceBuilder().withNewMetadata().withName("cluster-secondary")
+                .addToLabels("primary", "cluster-owner").endMetadata().build();
+        assertEquals(List.of(new ResourceKey(null, "cluster-owner")),
+                Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(clusterPrimary)));
+    }
+
+    @Test
     void ownerReferenceMapperFiltersByPrimaryGvkAndController() {
         var matching = new OwnerReferenceBuilder().withApiVersion("v1").withKind("ConfigMap")
                 .withName("matching").withController(true).build();
@@ -145,10 +168,12 @@ class ControllerApiTest {
     }
 
     @Test
-    void watchSelectorStoresLabelAndFieldSelectorsIndependently() {
+    void watchSelectorReplacesEachDimensionIndependently() {
         var registration = ControllerBuilder
                 .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+                .labelSelector(Map.of("old", "value"))
                 .labelSelector(Map.of("app", "my-op"))
+                .fieldSelector(Map.of("metadata.name", "old"))
                 .fieldSelector(Map.of("metadata.namespace", "operators"))
                 .build();
 

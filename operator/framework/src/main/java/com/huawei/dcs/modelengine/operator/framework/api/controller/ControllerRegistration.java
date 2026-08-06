@@ -33,16 +33,17 @@ public final class ControllerRegistration<T extends HasMetadata> {
     private final Optional<ControllerBuilder.WatchSelector> watchSelector;
     private final Map<String, Function<T, String>> indexFields;
 
-    ControllerRegistration(ControllerBuilder<T> builder) {
-        resourceType = builder.resourceType();
-        reconciler = builder.reconciler();
-        generationFilter = builder.generationFilter();
-        resyncPeriod = builder.resyncPeriod();
-        ownedResources = List.copyOf(builder.ownedResources());
-        secondaryWatches = List.copyOf(builder.secondaryWatches());
-        kubernetesEvents = builder.kubernetesEvents();
-        watchSelector = Optional.ofNullable(builder.watchSelector());
-        indexFields = Map.copyOf(builder.indexFields());
+    ControllerRegistration(ControllerBuilder.Snapshot<T> snapshot) {
+        Objects.requireNonNull(snapshot, "snapshot must not be null");
+        resourceType = snapshot.resourceType();
+        reconciler = snapshot.reconciler();
+        generationFilter = snapshot.generationFilter();
+        resyncPeriod = snapshot.resyncPeriod();
+        ownedResources = List.copyOf(snapshot.ownedResources());
+        secondaryWatches = List.copyOf(snapshot.secondaryWatches());
+        kubernetesEvents = snapshot.kubernetesEvents();
+        watchSelector = snapshot.watchSelector();
+        indexFields = Map.copyOf(snapshot.indexFields());
     }
 
     /**
