@@ -28,8 +28,12 @@ public final class MutationResult<T> {
     /**
      * Creates a result that leaves the resource unmodified.
      *
+     * <p>Use this only when the callback made no change. If the callback changed the object in
+     * place, return {@link #mutated(Object)} even when the same object instance is supplied; the
+     * explicit status distinguishes that case from {@code unchanged()}.
+     *
      * @param <T> the resource type
-     * @return an unchanged result
+     * @return an unchanged result with no resource
      */
     public static <T> MutationResult<T> unchanged() {
         return new MutationResult<>(Status.UNCHANGED, null, null);
@@ -37,6 +41,10 @@ public final class MutationResult<T> {
 
     /**
      * Creates a result that replaces the resource with a mutated version.
+     *
+     * <p>The {@code resource} may be the same instance received by the mutator when it was changed
+     * in place. The explicit {@link Status#MUTATED} status distinguishes this result from
+     * {@link #unchanged()}, and the transport computes the patch from the original request snapshot.
      *
      * @param <T> the resource type
      * @param resource the mutated resource

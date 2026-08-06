@@ -207,7 +207,7 @@ The fixed HTTP routes are:
 - `POST /operator-framework/webhooks/mutate/{beanName}`
 - `POST /operator-framework/webhooks/convert/{beanName}`
 
-Validation returns `AdmissionDecision.allow()` or `AdmissionDecision.deny(message)`. Mutation returns `MutationResult.unchanged()`, `MutationResult.mutated(resource)`, or `MutationResult.denied(message)`; the transport computes and Base64-encodes the JSON Patch. Conversion returns `ConversionResult.converted(resource)` or `ConversionResult.failed(message)`. The context objects expose stable request identity/version data rather than transport objects.
+Validation returns `AdmissionDecision.allow()` or `AdmissionDecision.deny(message)`. Mutation returns `MutationResult.unchanged()`, `MutationResult.mutated(resource)`, or `MutationResult.denied(message)`; the transport computes and Base64-encodes the JSON Patch. Conversion returns `ConversionResult.converted(resource)` or `ConversionResult.failed(message)`. Context objects expose stable request identity/version data rather than transport objects; admission callbacks also receive operation-specific `AdmissionReview` options as an immutable JSON-compatible map.
 
 ## External TLS and Kubernetes registration
 

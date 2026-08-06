@@ -14,7 +14,9 @@ import java.util.Collection;
  * Maps a secondary resource event to primary resource keys.
  *
  * @param <S> secondary resource type
- * @param <T> primary resource type
+ * @param <T> primary resource type associated with the returned keys. This parameter is intentionally
+ *     not used by the mapping method because it preserves the compile-time association with the
+ *     controller while the method returns resource identities rather than primary resource objects.
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
@@ -22,6 +24,9 @@ import java.util.Collection;
 public interface ResourceMapper<S extends HasMetadata, T extends HasMetadata> {
     /**
      * Maps a secondary resource event to the keys of affected primary resources.
+     *
+     * <p>The returned keys identify resources of the primary type {@code T}; this mapper does
+     * not fetch or return those resource objects.
      *
      * @param event the secondary resource event
      * @return the affected primary resource keys

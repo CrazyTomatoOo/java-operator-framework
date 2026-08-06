@@ -207,7 +207,7 @@ ResourceConverter<MyResource> converter() {
 - `POST /operator-framework/webhooks/mutate/{beanName}`
 - `POST /operator-framework/webhooks/convert/{beanName}`
 
-校验返回 `AdmissionDecision.allow()` 或 `AdmissionDecision.deny(message)`。变更返回 `MutationResult.unchanged()`、`MutationResult.mutated(resource)` 或 `MutationResult.denied(message)`；传输层会计算并 Base64 编码 JSON Patch。转换返回 `ConversionResult.converted(resource)` 或 `ConversionResult.failed(message)`。Context 对象暴露稳定的请求身份/版本信息，而不暴露传输对象。
+校验返回 `AdmissionDecision.allow()` 或 `AdmissionDecision.deny(message)`。变更返回 `MutationResult.unchanged()`、`MutationResult.mutated(resource)` 或 `MutationResult.denied(message)`；传输层会计算并 Base64 编码 JSON Patch。转换返回 `ConversionResult.converted(resource)` 或 `ConversionResult.failed(message)`。Context 对象暴露稳定的请求身份/版本信息，而不暴露传输对象；Admission 回调还可以通过不可变的 JSON 兼容 Map 获取操作相关的 `AdmissionReview` options。
 
 ## 外部 TLS 与 Kubernetes 注册
 

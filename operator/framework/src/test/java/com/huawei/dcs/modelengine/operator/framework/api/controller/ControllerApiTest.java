@@ -91,6 +91,8 @@ class ControllerApiTest {
         assertEquals(
                 List.of(new ResourceKey("operators", "label-owner"), new ResourceKey("operators", "previous-owner")),
                 labels.map(ResourceEvent.updated(previous, secondary)));
+        assertEquals(List.of(new ResourceKey("operators", "label-owner")),
+                labels.map(ResourceEvent.updated(null, secondary)));
         assertEquals(List.of(new ResourceKey("operators", "annotation-owner")),
                 annotations.map(ResourceEvent.added(secondary)));
     }

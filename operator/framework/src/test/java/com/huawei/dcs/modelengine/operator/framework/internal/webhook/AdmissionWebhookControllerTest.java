@@ -36,6 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 class AdmissionWebhookControllerTest {
@@ -76,6 +77,7 @@ class AdmissionWebhookControllerTest {
         var callback = context.getBean(AllowValidator.class);
         assertThat(callback.context.get().uid()).isEqualTo("request-1");
         assertThat(callback.context.get().user().username()).isEqualTo("alice");
+        assertThat(callback.context.get().options()).containsEntry("propagationPolicy", "Foreground");
         assertThat(result.getResponse().getContentAsString()).doesNotContain("sensitive callback detail");
     }
 
@@ -197,6 +199,7 @@ class AdmissionWebhookControllerTest {
         request.setUid("request-1");
         request.setOperation("UPDATE");
         request.setDryRun(true);
+        request.setOptions(Map.of("propagationPolicy", "Foreground"));
         request.setObject(resource);
         request.setUserInfo(new UserInfoBuilder().withUsername("alice").withUid("user-1")
                 .withGroups("developers").build());

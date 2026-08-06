@@ -45,12 +45,16 @@ class WebhookApiTest {
         var groups = new java.util.ArrayList<>(List.of("developers"));
         var identity = new AdmissionContext.UserIdentity(
                 "alice", "user-1", groups, Map.of("scopes", List.of("write")));
-        var context = new AdmissionContext("request-1", "UPDATE", reference, true, identity);
+        var context = new AdmissionContext(
+                "request-1", "UPDATE", reference, true,
+                Map.<String, Object>of("propagationPolicy", "Foreground"), identity);
 
         groups.add("admins");
         assertEquals("request-1", context.uid());
         assertEquals(List.of("developers"), context.user().groups());
         assertThrows(UnsupportedOperationException.class, () -> context.user().groups().add("other"));
+        assertEquals(Map.of("propagationPolicy", "Foreground"), context.options());
+        assertThrows(UnsupportedOperationException.class, () -> context.options().put("fieldManager", "test"));
         assertEquals("v1", new ConversionContext("v1", "v2").sourceVersion());
         assertEquals("v2", new ConversionContext("v1", "v2").desiredVersion());
         assertThrows(IllegalArgumentException.class, () -> new ConversionContext("", "v2"));

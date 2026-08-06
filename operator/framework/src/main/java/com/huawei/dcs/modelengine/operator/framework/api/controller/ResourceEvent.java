@@ -4,6 +4,7 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.controller;
 
+import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationTrigger;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceEventType;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -12,7 +13,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Immutable description of a Kubernetes resource event.
+ * Immutable description of a Kubernetes resource event observed by a controller.
+ *
+ * <p>A {@code ResourceEvent} is the informer-level event supplied to a {@link ResourceMapper} before
+ * the controller converts it into a {@link ReconciliationTrigger}. It carries the current
+ * resource and, for update events, the previous state. The resulting trigger is the
+ * normalized resource-identity event queued for reconciliation.
  *
  * @param <S> resource type
  * @param type event type
@@ -54,12 +60,12 @@ public record ResourceEvent<S extends HasMetadata>(
      * Creates an event for an updated resource.
      *
      * @param <S> the resource type
-     * @param previousResource the resource state before the update
+     * @param previousResource the resource state before the update, or {@code null} if unavailable
      * @param resource the current resource state
-     * @return an {@code UPDATED} event
+     * @return an {@code UPDATED} event with an empty previous-resource value when unavailable
      */
     public static <S extends HasMetadata> ResourceEvent<S> updated(S previousResource, S resource) {
-        return new ResourceEvent<>(ResourceEventType.UPDATED, resource, Optional.of(previousResource));
+        return new ResourceEvent<>(ResourceEventType.UPDATED, resource, Optional.ofNullable(previousResource));
     }
 
     /**

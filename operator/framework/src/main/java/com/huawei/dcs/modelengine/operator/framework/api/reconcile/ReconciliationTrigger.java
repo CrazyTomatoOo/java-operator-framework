@@ -4,10 +4,17 @@
 
 package com.huawei.dcs.modelengine.operator.framework.api.reconcile;
 
+import com.huawei.dcs.modelengine.operator.framework.api.controller.ResourceEvent;
+
 import java.util.Objects;
 
 /**
- * Describes the event that requested reconciliation.
+ * Describes the normalized event queued to request reconciliation.
+ *
+ * <p>For secondary watches, the controller creates this value after mapping an informer
+ * {@link ResourceEvent}. Primary events may create it directly from the informer callback.
+ * Unlike {@code ResourceEvent}, this trigger keeps only the triggering resource identity,
+ * event type, and role; resource snapshots remain available only to the mapper.
  *
  * @param eventType event type that triggered reconciliation
  * @param role role of the triggering resource

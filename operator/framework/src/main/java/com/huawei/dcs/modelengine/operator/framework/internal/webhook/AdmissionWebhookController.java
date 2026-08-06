@@ -12,6 +12,7 @@ import com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionValida
 import com.huawei.dcs.modelengine.operator.framework.api.webhook.MutationResult;
 import com.huawei.dcs.modelengine.operator.framework.internal.actuator.OperatorFrameworkMetrics;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -214,7 +215,7 @@ public final class AdmissionWebhookController {
         var identity = new AdmissionContext.UserIdentity(
                 user.getUsername(), user.getUid(), list(user.getGroups()), extra(user.getExtra()));
         return new AdmissionContext(request.getUid(), request.getOperation(), ResourceReference.from(current),
-                Boolean.TRUE.equals(request.getDryRun()), identity);
+                Boolean.TRUE.equals(request.getDryRun()), options(request.getOptions()), identity);
     }
 
     private AdmissionReview response(String uid, boolean allowed, String message, String patch) {
@@ -265,6 +266,11 @@ public final class AdmissionWebhookController {
 
     private Map<String, List<String>> extra(Map<String, List<String>> values) {
         return values == null ? Map.of() : values;
+    }
+
+    private Map<String, Object> options(Object value) {
+        return value == null ? Map.of()
+                : objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {});
     }
 
     private void requireText(String value, String field) {
