@@ -15,7 +15,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 
 import org.junit.jupiter.api.Test;
 
-// ponytail: SSA stub like AppliesTest — assert the request this helper controls; merge semantics
+// SSA stub like AppliesTest — assert the request this helper controls; merge semantics
 // are the apiserver's job.
 @EnableKubernetesMockClient(crud = false)
 class DependentsTest {

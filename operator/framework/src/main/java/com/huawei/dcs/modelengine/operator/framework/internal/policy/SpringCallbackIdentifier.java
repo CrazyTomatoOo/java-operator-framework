@@ -33,7 +33,7 @@ final class SpringCallbackIdentifier {
     }
 
     Identity identify(ProceedingJoinPoint joinPoint) {
-        // ponytail: identity is fixed by target class + kind; cache skips the per-call bean-factory scan
+        // identity is fixed by target class + kind; cache skips the per-call bean-factory scan
         var key = new CacheKey(joinPoint.getTarget().getClass(), callbackKind(joinPoint));
         return identities.computeIfAbsent(key, ignored -> resolve(joinPoint));
     }

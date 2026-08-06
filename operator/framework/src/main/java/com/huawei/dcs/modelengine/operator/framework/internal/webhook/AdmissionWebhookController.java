@@ -127,7 +127,7 @@ public final class AdmissionWebhookController {
         try {
             requireResourceType(invocation.current(), callback);
             var result = invokeMutator(callback, invocation);
-            // ponytail: enum names already match the metric outcomes (MUTATED/DENIED/UNCHANGED)
+            // enum names already match the metric outcomes (MUTATED/DENIED/UNCHANGED)
             outcome = result.status().name().toLowerCase(java.util.Locale.ROOT);
             return mutationResponse(invocation, result, callback);
         } catch (ResourceTypeMismatchException exception) {

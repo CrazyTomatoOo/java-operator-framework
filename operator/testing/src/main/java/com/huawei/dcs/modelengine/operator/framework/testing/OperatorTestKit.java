@@ -110,7 +110,7 @@ public final class OperatorTestKit implements AutoCloseable {
         return runtime;
     }
 
-    // ponytail: CacheImpl is fabric8's impl-jar indexer — the only concrete one shipped
+    // CacheImpl is fabric8's impl-jar indexer — the only concrete one shipped
     /**
      * Direct-invocation test context for {@code primary} with a working primary cache (the primary
      * itself is cached), so reconcilers can exercise by-index/get-by-key paths without a runtime.

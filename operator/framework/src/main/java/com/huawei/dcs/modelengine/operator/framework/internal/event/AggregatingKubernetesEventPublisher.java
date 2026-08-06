@@ -112,7 +112,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         var now = clock.instant();
         var request = new EventRequest(type, involvedObject, reason, message);
         var name = eventName(involvedObject, type, reason, message, now);
-        // ponytail: hold the cache lock only for get/put, not for the network create/update;
+        // hold the cache lock only for get/put, not for the network create/update;
         // concurrent creates of the same name reconcile via the 409 -> mergeExisting path
         Event existing;
         synchronized (this) {

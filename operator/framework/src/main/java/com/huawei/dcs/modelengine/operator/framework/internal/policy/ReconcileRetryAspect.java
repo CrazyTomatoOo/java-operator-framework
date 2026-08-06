@@ -55,7 +55,7 @@ public final class ReconcileRetryAspect {
         this(properties, new OperatorFrameworkMetrics(null), new DefaultListableBeanFactory(), () -> 1.0);
     }
 
-    // ponytail: jitter factor seam lets tests pin deterministic delays while production spreads retries
+    // jitter factor seam lets tests pin deterministic delays while production spreads retries
     /**
      * Creates the aspect with an explicit jitter factor, allowing tests to pin deterministic delays.
      *
@@ -126,7 +126,7 @@ public final class ReconcileRetryAspect {
             var multiplier = attempt >= Long.SIZE ? Long.MAX_VALUE : 1L << (attempt - 1);
             var base = properties.getInitialDelay().multipliedBy(multiplier);
             var capped = base.compareTo(properties.getMaxDelay()) > 0 ? properties.getMaxDelay() : base;
-            // ponytail: ±20% jitter prevents thundering-herd retries when many resources fail together
+            // ±20% jitter prevents thundering-herd retries when many resources fail together
             return Duration.ofMillis((long) (capped.toMillis() * jitterFactor.getAsDouble()));
         } catch (ArithmeticException exception) {
             return properties.getMaxDelay();

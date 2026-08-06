@@ -585,7 +585,7 @@ class Fabric8ControllerTest {
 
     @Test
     void eventInformerWithInvolvedObjectFieldFilterStartsAndStaysHealthy() throws Exception {
-        // ponytail: the in-memory mock cannot match involvedObject field selectors, so this
+        // the in-memory mock cannot match involvedObject field selectors, so this
         // only exercises the filter-enabled informer wiring, not event delivery
         var registration = ControllerBuilder.forResource(ConfigMap.class,
                 (resource, context) -> ReconcileResult.done()).watchesKubernetesEvents().build();

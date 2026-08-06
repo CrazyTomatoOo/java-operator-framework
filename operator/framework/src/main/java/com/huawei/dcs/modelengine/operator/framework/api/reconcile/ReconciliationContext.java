@@ -48,7 +48,7 @@ public record ReconciliationContext<T extends HasMetadata>(
     public ReconciliationContext {
         Objects.requireNonNull(resourceKey, "resourceKey must not be null");
         triggers = List.copyOf(Objects.requireNonNull(triggers, "triggers must not be null"));
-        // ponytail: no defensive copy — the runtime map is populated once in configureInformers,
+        // no defensive copy — the runtime map is populated once in configureInformers,
         // before any context is created, and never mutated afterwards
         caches = Objects.requireNonNull(caches, "caches must not be null");
     }

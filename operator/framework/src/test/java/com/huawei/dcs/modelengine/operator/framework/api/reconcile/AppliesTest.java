@@ -15,7 +15,7 @@ import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 
 import org.junit.jupiter.api.Test;
 
-// ponytail: fabric8 mock CRUD mode rejects apply-patch+yaml (415), so stub the PATCH and assert
+// fabric8 mock CRUD mode rejects apply-patch+yaml (415), so stub the PATCH and assert
 // the request this helper controls (content type, fieldManager, force); merge semantics are the
 // apiserver's job.
 @EnableKubernetesMockClient(crud = false)

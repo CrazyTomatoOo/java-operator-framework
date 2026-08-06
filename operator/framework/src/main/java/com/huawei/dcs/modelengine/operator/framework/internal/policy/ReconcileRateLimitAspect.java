@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 400)
 public final class ReconcileRateLimitAspect {
-    // ponytail: load-bearing handoff to ReconcileRetryAspect (order +300, outer). When this aspect
+    // load-bearing handoff to ReconcileRetryAspect (order +300, outer). When this aspect
     // (order +400, inner) defers without proceeding, the flag stops retry resetting its failure
     // counter for a scheduling delay. Removal needs an aspect reorder (breaks the documented chain)
     // or a marker in ReconcileResult (leaks rate-limit state into the value object).
@@ -88,7 +88,7 @@ public final class ReconcileRateLimitAspect {
         return joinPoint.proceed();
     }
 
-    // ponytail: sweep at most once per minimum window instead of every reconcile (was O(resources)/call)
+    // sweep at most once per minimum window instead of every reconcile (was O(resources)/call)
     private void sweepExpired(Instant now) {
         if (lastSweep == null || Duration.between(lastSweep, now).compareTo(minimum) >= 0) {
             lastInvocations.entrySet().removeIf(entry ->
