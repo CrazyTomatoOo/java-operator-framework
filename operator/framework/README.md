@@ -1,6 +1,6 @@
 # Operator Framework Spring Boot Starter
 
-A Spring Boot starter for Kubernetes operators built with Java 21, Spring Boot 3.5.16, and Fabric8 Kubernetes Client 7.8.0.
+A Spring Boot starter for Kubernetes operators built with Java 21, Spring Boot 3.5.15, and Fabric8 Kubernetes Client 7.3.0.
 
 Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ConfigMapReconciler implements Reconciler<ConfigMap> {
     @Override
-    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext context) {
+    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
         return ReconcileResult.done();
     }
 }
@@ -64,6 +64,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
 class ControllerConfiguration {
@@ -72,6 +73,8 @@ class ControllerConfiguration {
         return ControllerBuilder.forResource(MyResource.class, reconciler)
                 .generationFilter(true)
                 .resyncPeriod(Duration.ofMinutes(2))
+                .labelSelector(Map.of("app", "my-operator"))
+                .indexField("secretRef", resource -> resource.getSpec().getSecretRef())
                 .owns(Deployment.class)
                 .watches("configmaps", ConfigMap.class, Mappers.byLabel("operator.example/primary"))
                 .watchesKubernetesEvents()
@@ -80,7 +83,44 @@ class ControllerConfiguration {
 }
 ```
 
+`labelSelector` and `fieldSelector` narrow the primary watch with server-side equality selectors; calling either again replaces that selector while keeping the other. `indexField` registers an informer index on a primary field, enabling O(1) cache lookups during reconciliation (see Reconciliation helpers below).
+
 `owns` maps owner references. Prefer the typed `Mappers.ownerReferences(Class)` when the primary type is known; the no-argument variant matches every controller owner kind. `watches` uses the supplied `ResourceMapper`; built-in label and annotation mappers inspect both current and previous metadata on updates. They use the secondary namespace for bare names; a cluster-scoped secondary can use `namespace/name` to target a namespaced primary. Built-in mappers also support labels, annotations, and Kubernetes Event involved objects. `watchesKubernetesEvents()` subscribes to `core/v1` Events that refer to the primary resource: the informer is filtered server-side by `involvedObject.kind`/`involvedObject.apiVersion`, and aggregated Event updates (`count` increments) do not trigger reconciliation — only new Events, deletions, and resyncs do. Kubernetes Events are best-effort; do not use them as correctness-critical state and avoid publish/subscribe feedback loops.
+
+## Reconciliation helpers
+
+`ReconciliationContext<T>` carries the resource key, the normalized `triggers()` list (each a `ReconciliationTrigger` with event type, role, and triggering resource identity), and informer caches: `cache()` for the primary type and `cacheFor(Class)` for any type declared through `owns`/`manages`/`watches`. Fields registered through `ControllerBuilder.indexField` are queryable in O(1), for example `context.cache().getByIndex("secretRef", name)` — no API-server round-trip.
+
+In controller-capable modes the `KubernetesClient` is an injectable bean. Static helpers in `api.reconcile` cover the common write paths; each works on a defensive copy, so informer-cached instances are never mutated:
+
+- `Applies.apply(client, desired, fieldManager)` server-side-applies the full desired state — create-or-update in one call, and fields owned by other managers stay untouched. `applyForcibly` additionally takes ownership of conflicting fields. Always pass an explicit, unique field manager.
+- `Owners.setController(owner, dependent)` stamps the `controller=true` owner reference on a copy, enabling Kubernetes garbage collection and owner-reference watch mapping.
+- `Dependents.apply(client, dependent, primary, context, fieldManager)` computes the desired state from a `DependentResource`, adds the controller owner reference, and applies it. Register the dependent through `ControllerBuilder.manages(dependent)` so its events also trigger reconciliation.
+- `Finalizers.isDeleting`/`present`/`add`/`remove` implement the finalizer pattern for cleaning up external resources.
+- `StatusUpdates.update(client, resource, status)` JSON-merge-patches the `/status` subresource without touching the resource itself; the CRD must declare the status subresource.
+
+```java
+@Component
+final class MyResourceReconciler implements Reconciler<MyResource> {
+    private static final String FIELD_MANAGER = "my-operator";
+    private final KubernetesClient client;
+    private final DependentResource<Deployment, MyResource> deployment = new MyDeploymentDependent();
+
+    MyResourceReconciler(KubernetesClient client) {
+        this.client = client;
+    }
+
+    @Override
+    public ReconcileResult reconcile(MyResource resource, ReconciliationContext<MyResource> context) {
+        if (Finalizers.isDeleting(resource)) {
+            return ReconcileResult.done();
+        }
+        Dependents.apply(this.client, this.deployment, resource, context, FIELD_MANAGER);
+        StatusUpdates.update(this.client, resource, new MyResourceStatus("Ready"));
+        return ReconcileResult.done();
+    }
+}
+```
 
 ## Configuration
 
@@ -95,6 +135,7 @@ All framework-specific settings use the `operator.framework` prefix.
 | `operator.framework.controller.worker-threads` | `1` | Reconciliation workers per controller. |
 | `operator.framework.controller.resync-period` | `60s` | Informer resync interval; `0` disables periodic resync. |
 | `operator.framework.controller.generation-change-filter` | `true` | Ignores ordinary primary updates when generation, deletion timestamp, and finalizers are unchanged. |
+| `operator.framework.controller.filter-events-by-involved-object` | `true` | Narrows the Kubernetes-Event watch server-side by `involvedObject.kind`/`apiVersion`; disable when the API server cannot match those fields (for example the in-memory test server). |
 | `operator.framework.controller.startup-retry-delay` | `5s` | Delay before retrying controller or leader-election startup/readiness failures. |
 | `operator.framework.leader-election.enabled` | `false` | Enables Fabric8 Lease-based leader election. |
 | `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease name; the application-name fallback is sanitized for Kubernetes. |
@@ -266,6 +307,30 @@ Readiness reflects informer synchronization for an active controller leader and 
 ## Supported package boundary
 
 Only `com.huawei.dcs.modelengine.operator.framework.api.*` is a supported application API. `...autoconfigure.*` exists for Spring Boot loading/configuration, and `...internal.*` is implementation detail. Production classes are restricted to these three roots; applications must not depend on `internal` classes.
+
+## Testing
+
+The `operator-framework-testing` module provides `OperatorTestKit`: an in-memory Kubernetes API server plus client that can start a real controller runtime from a `ControllerRegistration`, or build cache-backed `ReconciliationContext` instances for direct reconciler invocation.
+
+```xml
+<dependency>
+  <groupId>com.huawei.dcs.modelengine</groupId>
+  <artifactId>operator-framework-testing</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <scope>test</scope>
+</dependency>
+```
+
+```java
+try (var kit = OperatorTestKit.create()) {
+    var runtime = kit.controller(registration);
+    runtime.start();
+    kit.client().configMaps().inNamespace("default").resource(configMap).create();
+    // await effects through kit.client()
+}
+```
+
+Controllers watching Kubernetes Events must set `operator.framework.controller.filter-events-by-involved-object=false`, because the in-memory server cannot match `involvedObject` field selectors. Build the module with `mvn -f operator/testing/pom.xml clean verify`.
 
 ## Build and quality gates
 

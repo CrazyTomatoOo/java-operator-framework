@@ -1,6 +1,6 @@
 # Operator Framework Spring Boot Starter
 
-一个基于 Java 21、Spring Boot 3.5.16 与 Fabric8 Kubernetes Client 7.8.0 的 Kubernetes Operator Spring Boot Starter。
+一个基于 Java 21、Spring Boot 3.5.15 与 Fabric8 Kubernetes Client 7.3.0 的 Kubernetes Operator Spring Boot Starter。
 
 英文文档：[README.md](README.md)
 
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ConfigMapReconciler implements Reconciler<ConfigMap> {
     @Override
-    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext context) {
+    public ReconcileResult reconcile(ConfigMap resource, ReconciliationContext<ConfigMap> context) {
         return ReconcileResult.done();
     }
 }
@@ -64,6 +64,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
+import java.util.Map;
 
 @Configuration(proxyBeanMethods = false)
 class ControllerConfiguration {
@@ -72,6 +73,8 @@ class ControllerConfiguration {
         return ControllerBuilder.forResource(MyResource.class, reconciler)
                 .generationFilter(true)
                 .resyncPeriod(Duration.ofMinutes(2))
+                .labelSelector(Map.of("app", "my-operator"))
+                .indexField("secretRef", resource -> resource.getSpec().getSecretRef())
                 .owns(Deployment.class)
                 .watches("configmaps", ConfigMap.class, Mappers.byLabel("operator.example/primary"))
                 .watchesKubernetesEvents()
@@ -80,7 +83,44 @@ class ControllerConfiguration {
 }
 ```
 
+`labelSelector` 与 `fieldSelector` 使用服务端等值选择器收窄主资源监听；重复调用会替换对应选择器并保留另一个。`indexField` 在主资源字段上注册 Informer 索引，使调和期间可以 O(1) 查询缓存（见下文「调和辅助工具」）。
+
 `owns` 通过 Owner Reference 映射资源；已知主资源类型时建议使用带类型过滤的 `Mappers.ownerReferences(Class)`，无参版本会匹配所有 controller owner 类型。`watches` 使用传入的 `ResourceMapper`；内置标签和注解映射器在更新时同时检查当前与先前状态，裸名称使用次级资源的 namespace，cluster-scoped 次级资源可使用 `namespace/name` 指向 namespaced 主资源。内置映射器还支持标签、注解与 Kubernetes Event 的 involved object。`watchesKubernetesEvents()` 订阅指向主资源的 `core/v1` Event：informer 在服务端按 `involvedObject.kind`/`involvedObject.apiVersion` 过滤，聚合事件的 `count` 递增不会触发 reconcile，只有新 Event、删除和 resync 会触发。Kubernetes Event 是尽力而为机制，不能作为正确性关键状态；同时发布和订阅时必须避免反馈循环。
+
+## 调和辅助工具
+
+`ReconciliationContext<T>` 携带资源键、归一化的 `triggers()` 列表（每项是一个包含事件类型、角色与触发资源身份的 `ReconciliationTrigger`）以及 Informer 缓存：`cache()` 对应主资源类型，`cacheFor(Class)` 对应通过 `owns`/`manages`/`watches` 声明的类型。通过 `ControllerBuilder.indexField` 注册的字段支持 O(1) 查询，例如 `context.cache().getByIndex("secretRef", name)`，无需回源 API Server。
+
+在支持控制器的模式中，`KubernetesClient` 是可注入的 Bean。`api.reconcile` 包中的静态工具类覆盖常见写路径；它们都在防御性副本上操作，绝不会修改 Informer 缓存中的实例：
+
+- `Applies.apply(client, desired, fieldManager)` 以 Server-Side Apply 提交完整期望状态——一次调用完成创建或更新，其他 manager 拥有的字段不受影响。`applyForcibly` 会额外接管冲突字段的所有权。请始终传入显式且唯一的 field manager。
+- `Owners.setController(owner, dependent)` 在副本上写入 `controller=true` 的 Owner Reference，从而启用 Kubernetes 垃圾回收与 Owner Reference 监听映射。
+- `Dependents.apply(client, dependent, primary, context, fieldManager)` 从 `DependentResource` 计算期望状态、添加 controller Owner Reference 并完成 Apply。通过 `ControllerBuilder.manages(dependent)` 注册后，从属资源的事件也会触发调和。
+- `Finalizers.isDeleting`/`present`/`add`/`remove` 实现用于清理外部资源的 Finalizer 模式。
+- `StatusUpdates.update(client, resource, status)` 以 JSON Merge Patch 更新 `/status` 子资源，不修改资源本身；CRD 必须声明 status 子资源。
+
+```java
+@Component
+final class MyResourceReconciler implements Reconciler<MyResource> {
+    private static final String FIELD_MANAGER = "my-operator";
+    private final KubernetesClient client;
+    private final DependentResource<Deployment, MyResource> deployment = new MyDeploymentDependent();
+
+    MyResourceReconciler(KubernetesClient client) {
+        this.client = client;
+    }
+
+    @Override
+    public ReconcileResult reconcile(MyResource resource, ReconciliationContext<MyResource> context) {
+        if (Finalizers.isDeleting(resource)) {
+            return ReconcileResult.done();
+        }
+        Dependents.apply(this.client, this.deployment, resource, context, FIELD_MANAGER);
+        StatusUpdates.update(this.client, resource, new MyResourceStatus("Ready"));
+        return ReconcileResult.done();
+    }
+}
+```
 
 ## 配置
 
@@ -95,6 +135,7 @@ class ControllerConfiguration {
 | `operator.framework.controller.worker-threads` | `1` | 每个控制器的调和工作线程数。 |
 | `operator.framework.controller.resync-period` | `60s` | Informer resync 周期；`0` 表示禁用周期性 resync。 |
 | `operator.framework.controller.generation-change-filter` | `true` | 当 generation、删除时间戳和 finalizer 均未变化时忽略普通主资源更新。 |
+| `operator.framework.controller.filter-events-by-involved-object` | `true` | 按 `involvedObject.kind`/`apiVersion` 在服务端收窄 Kubernetes Event 监听；当 API Server 无法匹配这些字段时禁用（例如内存测试服务器）。 |
 | `operator.framework.controller.startup-retry-delay` | `5s` | 控制器或选主启动/就绪失败后的重试间隔。 |
 | `operator.framework.leader-election.enabled` | `false` | 启用基于 Fabric8 Lease 的选主。 |
 | `operator.framework.leader-election.lease-name` | `${spring.application.name}-leader` | Lease 名称；应用名称回退值会按 Kubernetes 规则清理。 |
@@ -266,6 +307,30 @@ management:
 ## 支持的包边界
 
 只有 `com.huawei.dcs.modelengine.operator.framework.api.*` 是受支持的应用 API。`...autoconfigure.*` 仅用于 Spring Boot 加载/配置，`...internal.*` 是实现细节。生产类被限制在这三个根包中，应用不得依赖 `internal` 类。
+
+## 测试
+
+`operator-framework-testing` 模块提供 `OperatorTestKit`：内存 Kubernetes API Server 与客户端，可以从 `ControllerRegistration` 启动真实控制器运行时，或构建带缓存的 `ReconciliationContext` 以直接调用 Reconciler。
+
+```xml
+<dependency>
+  <groupId>com.huawei.dcs.modelengine</groupId>
+  <artifactId>operator-framework-testing</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <scope>test</scope>
+</dependency>
+```
+
+```java
+try (var kit = OperatorTestKit.create()) {
+    var runtime = kit.controller(registration);
+    runtime.start();
+    kit.client().configMaps().inNamespace("default").resource(configMap).create();
+    // await effects through kit.client()
+}
+```
+
+监听 Kubernetes Event 的控制器必须设置 `operator.framework.controller.filter-events-by-involved-object=false`，因为内存 API Server 无法匹配 `involvedObject` 字段选择器。使用 `mvn -f operator/testing/pom.xml clean verify` 构建该模块。
 
 ## 构建与质量门禁
 
