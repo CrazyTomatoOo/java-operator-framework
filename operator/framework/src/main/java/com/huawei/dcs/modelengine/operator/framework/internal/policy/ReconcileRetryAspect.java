@@ -129,7 +129,9 @@ public final class ReconcileRetryAspect {
         }
     }
 
-    /** Clears retry attempts when the controller runtime lifecycle ends. */
+    /**
+     * Clears retry attempts when the controller runtime lifecycle ends.
+     */
     public void clear() {
         attempts.clear();
     }
