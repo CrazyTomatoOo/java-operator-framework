@@ -20,13 +20,13 @@
     <!-- Import order: Huawei grouping (com.huawei -> com -> io/lombok/jakarta -> org/net -> java) -->
     <module name="AvoidStarImport"/>
     <module name="UnusedImports"/>
-    <module name="ImportOrder">
-      <property name="option" value="top"/>
-      <property name="ordered" value="true"/>
-      <property name="separated" value="true"/>
-      <property name="caseSensitive" value="false"/>
-      <property name="groups" value="android,com.huawei,com,io,lombok,jakarta,net,org,javacard,java,javax,javafx"/>
-      <property name="sortStaticImportsAlphabetically" value="true"/>
+    <module name="CustomImportOrder">
+      <property name="customImportOrderRules" value="SAME_PACKAGE(2),SPECIAL_IMPORTS,THIRD_PARTY_PACKAGE,STANDARD_JAVA_PACKAGE"/>
+      <property name="specialImportsRegExp" value="^com\."/>
+      <property name="thirdPartyPackageRegExp" value="^(io|lombok|jakarta)\."/>
+      <property name="standardPackageRegExp" value="^(org|net)\."/>
+      <property name="sortImportsInGroupAlphabetically" value="true"/>
+      <property name="separateLineBetweenGroups" value="true"/>
     </module>
 
     <!-- Comment style: Javadoc on public/protected types and methods, with @param/@return/@throws -->
