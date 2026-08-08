@@ -28,10 +28,6 @@ public final class RuntimeLifecycleSupport {
 
     private OperatorFrameworkMetrics.GaugeHandle leadershipGauge;
 
-    RuntimeLifecycleSupport(RuntimeReadiness readiness) {
-        this(readiness, new OperatorFrameworkMetrics(null), null, null);
-    }
-
     /**
      * Creates the lifecycle support bundle.
      *
@@ -46,6 +42,10 @@ public final class RuntimeLifecycleSupport {
         this.metrics = metrics;
         this.retry = retry;
         this.rateLimit = rateLimit;
+    }
+
+    RuntimeLifecycleSupport(RuntimeReadiness readiness) {
+        this(readiness, new OperatorFrameworkMetrics(null), null, null);
     }
 
     void start(BooleanSupplier leading) {

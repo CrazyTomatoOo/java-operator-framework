@@ -112,7 +112,9 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
         return hostname == null || hostname.isBlank() ? ManagementFactory.getRuntimeMXBean().getName() : hostname;
     }
 
-    /** Cancels the running election and releases the Lease, if any. */
+    /**
+     * Cancels the running election and releases the Lease, if any.
+     */
     @Override
     public synchronized void stop() {
         if (elector != null) {
