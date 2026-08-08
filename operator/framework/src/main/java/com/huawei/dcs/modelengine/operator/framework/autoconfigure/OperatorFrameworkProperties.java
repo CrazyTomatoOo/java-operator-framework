@@ -312,6 +312,8 @@ public class OperatorFrameworkProperties {
 
         private String namespace;
 
+        private String identity;
+
         @NotNull
         private Duration leaseDuration = DEFAULT_LEASE_DURATION;
 
@@ -373,6 +375,24 @@ public class OperatorFrameworkProperties {
          */
         public void setNamespace(String namespace) {
             this.namespace = namespace;
+        }
+
+        /**
+         * Gets the holder identity written to the leader-election lease.
+         *
+         * @return the leader-election identity, or {@code null} to derive it
+         */
+        public String getIdentity() {
+            return identity;
+        }
+
+        /**
+         * Sets the holder identity written to the leader-election lease.
+         *
+         * @param identity the leader-election identity, or {@code null} to derive it
+         */
+        public void setIdentity(String identity) {
+            this.identity = identity;
         }
 
         /**

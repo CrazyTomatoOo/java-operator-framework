@@ -93,7 +93,10 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
             return configured;
         }
         var application = environment.getProperty("spring.application.name", "operator-framework");
-        var sanitized = application.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-").replaceAll("^-+|-+$", "");
+        var sanitized = application.toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]", "-")
+            .replaceAll("-{2,}", "-")
+            .replaceAll("^-+|-+$", "");
         if (sanitized.length() > MAX_LEASE_NAME_LENGTH) {
             sanitized = sanitized.substring(0, MAX_LEASE_NAME_LENGTH).replaceAll("-+$", "");
         }
@@ -108,6 +111,10 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
     }
 
     private String identity() {
+        var configured = properties.getIdentity();
+        if (configured != null && !configured.isBlank()) {
+            return configured;
+        }
         var hostname = System.getenv("HOSTNAME");
         return hostname == null || hostname.isBlank() ? ManagementFactory.getRuntimeMXBean().getName() : hostname;
     }
@@ -119,7 +126,8 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
     public synchronized void stop() {
         if (elector != null) {
             if (election != null) {
-                election.cancel(true);
+            // cancel without interrupting the renew thread so releaseOnCancel releases the Lease cleanly
+            election.cancel(false);
             }
             election = null;
             elector = null;

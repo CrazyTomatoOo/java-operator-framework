@@ -313,4 +313,24 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
                 TimeUnit.MILLISECONDS);
         }
     }
+
+    /**
+     * Captures a consistent point-in-time snapshot of the controller runtime state.
+     *
+     * @return the snapshot, never {@code null}
+     */
+    public Snapshot snapshot() {
+        var current = runtime;
+        return new Snapshot(running.get(), leading,
+            current != null && current.isRunning(),
+            current != null && current.isReady(),
+            current == null ? 0 : current.queueDepth(),
+            lastFailure);
+    }
+
+    /**
+     * Consistent point-in-time view of the controller runtime state.
+     */
+    public record Snapshot(boolean running, boolean leading, boolean workersRunning,
+        boolean informerSynced, int queueDepth, String lastFailure) {}
 }

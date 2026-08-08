@@ -56,9 +56,6 @@ public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
     }
 
     private Health.Builder status() {
-        if (!readiness.isLive()) {
-            return Health.down();
-        }
         if (!readiness.isReady()) {
             return Health.status(Status.OUT_OF_SERVICE);
         }
@@ -71,13 +68,14 @@ public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
             return Map.of("state", "stopped", "workersRunning", false, "informerSynced", false, "leadership", false,
                 "queueDepth", 0, "lastFailure", "none");
         }
+        var snapshot = current.snapshot();
         var details = new LinkedHashMap<String, Object>();
-        details.put("state", current.isRunning() ? "running" : "stopped");
-        details.put("workersRunning", current.isWorkerRunning());
-        details.put("informerSynced", current.isInformerSynced());
-        details.put("leadership", current.isLeading());
-        details.put("queueDepth", current.queueDepth());
-        details.put("lastFailure", current.lastFailure());
+        details.put("state", snapshot.running() ? "running" : "stopped");
+        details.put("workersRunning", snapshot.workersRunning());
+        details.put("informerSynced", snapshot.informerSynced());
+        details.put("leadership", snapshot.leading());
+        details.put("queueDepth", snapshot.queueDepth());
+        details.put("lastFailure", snapshot.lastFailure());
         return details;
     }
 

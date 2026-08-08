@@ -33,8 +33,8 @@ public final class RuntimeLifecycleSupport {
      *
      * @param readiness the runtime readiness state to update
      * @param metrics the metrics sink for the leadership gauge
-     * @param retry the retry policy aspect whose state is cleared when a runtime stops
-     * @param rateLimit the rate-limit aspect whose state is cleared when a runtime stops
+     * @param retry the retry policy aspect whose state is cleared when a runtime stops, or {@code null}
+     * @param rateLimit the rate-limit aspect whose state is cleared when a runtime stops, or {@code null}
      */
     public RuntimeLifecycleSupport(RuntimeReadiness readiness, OperatorFrameworkMetrics metrics,
         ReconcileRetryAspect retry, ReconcileRateLimitAspect rateLimit) {
@@ -62,6 +62,7 @@ public final class RuntimeLifecycleSupport {
     }
 
     void runtimeStopped() {
+        readiness.notReady();
         if (retry != null) {
             retry.clear();
         }

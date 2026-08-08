@@ -85,9 +85,8 @@ class OperatorFrameworkHealthIndicatorTest {
     @Test
     void reportsControllerStateAndLiveness() {
         var lifecycle = mock(OperatorFrameworkLifecycle.class);
-        when(lifecycle.isRunning()).thenReturn(true);
-        when(lifecycle.isInformerSynced()).thenReturn(true);
-        when(lifecycle.isLeading()).thenReturn(true);
+        when(lifecycle.snapshot())
+            .thenReturn(new OperatorFrameworkLifecycle.Snapshot(true, true, true, true, 0, "none"));
         var properties = new OperatorFrameworkProperties();
         properties.setMode(OperatorFrameworkProperties.Mode.CONTROLLER);
         var readiness = new RuntimeReadiness();
@@ -100,7 +99,9 @@ class OperatorFrameworkHealthIndicatorTest {
         assertThat(details.get("informerSynced")).isEqualTo(true);
         assertThat(details.get("leadership")).isEqualTo(true);
         readiness.broken();
-        assertThat(indicator.health().getStatus()).isEqualTo(Status.DOWN);
+        var health = indicator.health();
+        assertThat(health.getStatus()).isEqualTo(Status.UP);
+        assertThat(health.getDetails().get("liveness")).isEqualTo(false);
     }
 
     static final class TypedValidator implements AdmissionValidator<ConfigMap> {

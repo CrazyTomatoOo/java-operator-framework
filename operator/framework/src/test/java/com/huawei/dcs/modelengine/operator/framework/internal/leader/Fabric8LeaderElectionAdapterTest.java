@@ -52,6 +52,29 @@ class Fabric8LeaderElectionAdapterTest {
     }
 
     @Test
+    void collapsesConsecutiveSeparatorsInLeaseName() {
+        var client = mock(KubernetesClient.class);
+        when(client.getNamespace()).thenReturn("operators");
+        var environment = new MockEnvironment().withProperty("spring.application.name", "Sample!!Operator");
+        var adapter = new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), environment);
+
+        var name = adapter.config(() -> {}, () -> {}).getName();
+
+        assertThat(name).isEqualTo("sample-operator-leader").matches("[a-z0-9]([-a-z0-9]*[a-z0-9])?");
+    }
+
+    @Test
+    void honorsConfiguredLeaderElectionIdentity() {
+        var client = mock(KubernetesClient.class);
+        when(client.getNamespace()).thenReturn("operators");
+        var properties = new OperatorFrameworkProperties();
+        properties.getLeaderElection().setIdentity("stable-identity");
+        var adapter = new Fabric8LeaderElectionAdapter(client, properties, new MockEnvironment());
+
+        assertThat(adapter.config(() -> {}, () -> {}).getLock().describe()).contains("stable-identity");
+    }
+
+    @Test
     void honorsConfiguredLeaseNameAndNamespace() {
         var client = mock(KubernetesClient.class);
         when(client.getNamespace()).thenReturn("client-namespace");

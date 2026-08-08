@@ -34,6 +34,7 @@ class OperatorFrameworkPropertiesTest {
         assertThat(properties.getLeaderElection().isEnabled()).isFalse();
         assertThat(properties.getLeaderElection().getLeaseName()).isNull();
         assertThat(properties.getLeaderElection().getNamespace()).isNull();
+        assertThat(properties.getLeaderElection().getIdentity()).isNull();
         assertThat(properties.getLeaderElection().getLeaseDuration()).isEqualTo(Duration.ofSeconds(15));
         assertThat(properties.getLeaderElection().getRenewDeadline()).isEqualTo(Duration.ofSeconds(10));
         assertThat(properties.getLeaderElection().getRetryPeriod()).isEqualTo(Duration.ofSeconds(2));
