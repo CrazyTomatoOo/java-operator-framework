@@ -25,21 +25,19 @@ import org.springframework.context.annotation.Bean;
 import java.util.List;
 import java.util.Map;
 
-@SpringBootTest(
-        classes = ActuatorEndpointTest.Application.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "operator.framework.mode=webhook",
-                "management.endpoints.web.exposure.include=health,prometheus",
-                "management.endpoint.health.show-details=always",
-                "management.endpoint.health.probes.enabled=true",
-                "management.prometheus.metrics.export.enabled=true"
-        })
+@SpringBootTest(classes = ActuatorEndpointTest.Application.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+    "operator.framework.mode=webhook", "management.endpoints.web.exposure.include=health,prometheus",
+    "management.endpoint.health.show-details=always", "management.endpoint.health.probes.enabled=true",
+    "management.prometheus.metrics.export.enabled=true"
+})
 class ActuatorEndpointTest {
     @Autowired
     private TestRestTemplate rest;
+
     @Autowired
     private AdmissionValidator<ConfigMap> validator;
+
     @Autowired
     private RuntimeReadiness frameworkReadiness;
 
@@ -48,28 +46,32 @@ class ActuatorEndpointTest {
         validator.validate(resource(), admissionContext());
         assertThat(frameworkReadiness.isReady()).isTrue();
 
-        assertThat(rest.getForEntity("/actuator/health", String.class).getBody())
-                .contains("operatorFramework", "webhook", "UP");
+        assertThat(rest.getForEntity("/actuator/health", String.class).getBody()).contains("operatorFramework",
+            "webhook", "UP");
         var liveness = rest.getForEntity("/actuator/health/liveness", String.class);
         assertThat(liveness.getStatusCode().is2xxSuccessful()).as(liveness.getBody()).isTrue();
         var readiness = rest.getForEntity("/actuator/health/readiness", String.class);
         assertThat(readiness.getStatusCode().is2xxSuccessful()).as(readiness.getBody()).isTrue();
         var prometheus = rest.getForEntity("/actuator/prometheus", String.class);
         assertThat(prometheus.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(prometheus.getBody()).contains(
-                "operator_framework_callback_duration_seconds_count",
-                "operator_framework_callback_total");
+        assertThat(prometheus.getBody()).contains("operator_framework_callback_duration_seconds_count",
+            "operator_framework_callback_total");
     }
 
     private ConfigMap resource() {
-        return new ConfigMapBuilder().withApiVersion("v1").withKind("ConfigMap")
-                .withNewMetadata().withNamespace("default").withName("sample").endMetadata().build();
+        return new ConfigMapBuilder().withApiVersion("v1")
+            .withKind("ConfigMap")
+            .withNewMetadata()
+            .withNamespace("default")
+            .withName("sample")
+            .endMetadata()
+            .build();
     }
 
     private AdmissionContext admissionContext() {
         return new AdmissionContext("request-1", "CREATE",
-                new ResourceReference("v1", "ConfigMap", "default", "sample", null), false,
-                new AdmissionContext.UserIdentity("alice", null, List.of(), Map.of()));
+            new ResourceReference("v1", "ConfigMap", "default", "sample", null), false,
+            new AdmissionContext.UserIdentity("alice", null, List.of(), Map.of()));
     }
 
     @SpringBootConfiguration

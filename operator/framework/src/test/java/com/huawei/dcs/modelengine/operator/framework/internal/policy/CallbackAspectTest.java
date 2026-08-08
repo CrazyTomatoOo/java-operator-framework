@@ -44,8 +44,9 @@ class CallbackAspectTest {
     void observesSuccessAndExceptionForEveryExtensionPointWithoutRetryingWebhook() throws Exception {
         try (var context = new AnnotationConfigApplicationContext(Config.class)) {
             var resource = resource();
-            context.getBean(Reconciler.class).reconcile(
-                    resource, ReconciliationContext.<ConfigMap>withoutCache(new ResourceKey("default", "sample"), List.of()));
+            context.getBean(Reconciler.class)
+                .reconcile(resource,
+                    ReconciliationContext.<ConfigMap>withoutCache(new ResourceKey("default", "sample"), List.of()));
             context.getBean("validator", AdmissionValidator.class).validate(resource, null);
             context.getBean("mutator", AdmissionMutator.class).mutate(resource, null);
             context.getBean(ResourceConverter.class).convert(resource, new ConversionContext("v1", "v2"));
@@ -58,10 +59,31 @@ class CallbackAspectTest {
             assertMetric(registry, "mutator", "mutator", "success");
             assertMetric(registry, "converter", "converter", "failure");
             assertMetric(registry, "validator", "throwingValidator", "error");
-            var target = (ThrowingValidator) org.springframework.test.util.AopTestUtils
-                    .getTargetObject(context.getBean(ThrowingValidator.class));
+            var target = (ThrowingValidator) org.springframework.test.util.AopTestUtils.getTargetObject(
+                context.getBean(ThrowingValidator.class));
             assertThat(target.calls).hasValue(1);
         }
+    }
+
+    private void assertMetric(SimpleMeterRegistry registry, String type, String bean, String outcome) {
+        assertThat(registry.get("operator.framework.callback.total")
+            .tags("callback.type", type, "bean", bean, "outcome", outcome)
+            .counter()
+            .count()).isEqualTo(1);
+        assertThat(registry.get("operator.framework.callback.duration")
+            .tags("callback.type", type, "bean", bean, "outcome", outcome)
+            .timer()
+            .count()).isEqualTo(1);
+    }
+
+    private ConfigMap resource() {
+        return new ConfigMapBuilder().withApiVersion("v1")
+            .withKind("ConfigMap")
+            .withNewMetadata()
+            .withNamespace("default")
+            .withName("sample")
+            .endMetadata()
+            .build();
     }
 
     @Test
@@ -85,18 +107,6 @@ class CallbackAspectTest {
         assertThat(OrderUtils.getOrder(ReconcileRateLimitAspect.class)).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 400);
     }
 
-    private void assertMetric(SimpleMeterRegistry registry, String type, String bean, String outcome) {
-        assertThat(registry.get("operator.framework.callback.total")
-                .tags("callback.type", type, "bean", bean, "outcome", outcome).counter().count()).isEqualTo(1);
-        assertThat(registry.get("operator.framework.callback.duration")
-                .tags("callback.type", type, "bean", bean, "outcome", outcome).timer().count()).isEqualTo(1);
-    }
-
-    private ConfigMap resource() {
-        return new ConfigMapBuilder().withApiVersion("v1").withKind("ConfigMap")
-                .withNewMetadata().withNamespace("default").withName("sample").endMetadata().build();
-    }
-
     @Configuration(proxyBeanMethods = false)
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     static class Config {
@@ -111,23 +121,19 @@ class CallbackAspectTest {
         }
 
         @Bean
-        ReconcileObservationAspect observation(
-                OperatorFrameworkMetrics metrics,
-                ConfigurableListableBeanFactory beanFactory) {
+        ReconcileObservationAspect observation(OperatorFrameworkMetrics metrics,
+            ConfigurableListableBeanFactory beanFactory) {
             return new ReconcileObservationAspect(ObservationRegistry.NOOP, metrics, beanFactory);
         }
 
         @Bean
-        ReconcileExceptionAspect exceptions(
-                OperatorFrameworkMetrics metrics,
-                ConfigurableListableBeanFactory beanFactory) {
+        ReconcileExceptionAspect exceptions(OperatorFrameworkMetrics metrics,
+            ConfigurableListableBeanFactory beanFactory) {
             return new ReconcileExceptionAspect(metrics, beanFactory);
         }
 
         @Bean
-        ReconcileRetryAspect retry(
-                OperatorFrameworkMetrics metrics,
-                ConfigurableListableBeanFactory beanFactory) {
+        ReconcileRetryAspect retry(OperatorFrameworkMetrics metrics, ConfigurableListableBeanFactory beanFactory) {
             return new ReconcileRetryAspect(new OperatorFrameworkProperties(), metrics, beanFactory, () -> 1.0);
         }
 

@@ -41,20 +41,6 @@ public final class Finalizers {
     }
 
     /**
-     * True when the resource already carries the finalizer.
-     *
-     * @param resource the resource to check
-     * @param finalizer the finalizer name
-     * @return true if the resource already carries the finalizer
-     * @throws NullPointerException if {@code resource} or its metadata is null
-     */
-    public static boolean present(HasMetadata resource, String finalizer) {
-        Objects.requireNonNull(resource.getMetadata(), "metadata");
-        var current = resource.getMetadata().getFinalizers();
-        return current != null && current.contains(finalizer);
-    }
-
-    /**
      * Server-side JSON patch adding the finalizer when absent; returns the patched resource.
      *
      * @param <T> resource type
@@ -79,6 +65,26 @@ public final class Finalizers {
     }
 
     /**
+     * True when the resource already carries the finalizer.
+     *
+     * @param resource the resource to check
+     * @param finalizer the finalizer name
+     * @return true if the resource already carries the finalizer
+     * @throws NullPointerException if {@code resource} or its metadata is null
+     */
+    public static boolean present(HasMetadata resource, String finalizer) {
+        Objects.requireNonNull(resource.getMetadata(), "metadata");
+        var current = resource.getMetadata().getFinalizers();
+        return current != null && current.contains(finalizer);
+    }
+
+    private static void requireName(String finalizer) {
+        if (finalizer == null || finalizer.isBlank()) {
+            throw new IllegalArgumentException("finalizer must not be blank");
+        }
+    }
+
+    /**
      * Server-side JSON patch removing the finalizer when present; returns the patched resource.
      *
      * @param <T> resource type
@@ -97,8 +103,7 @@ public final class Finalizers {
         var operations = new ArrayList<Map<String, Object>>();
         for (var index = finalizers.size() - 1; index >= 0; index--) {
             if (finalizer.equals(finalizers.get(index))) {
-                operations.add(Map.of("op", "remove",
-                        "path", "/metadata/finalizers/" + index));
+                operations.add(Map.of("op", "remove", "path", "/metadata/finalizers/" + index));
             }
         }
         if (operations.isEmpty()) {
@@ -106,11 +111,5 @@ public final class Finalizers {
         }
         var body = Serialization.asJson(operations);
         return client.resource(resource).patch(PatchContext.of(PatchType.JSON), body);
-    }
-
-    private static void requireName(String finalizer) {
-        if (finalizer == null || finalizer.isBlank()) {
-            throw new IllegalArgumentException("finalizer must not be blank");
-        }
     }
 }

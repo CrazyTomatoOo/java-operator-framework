@@ -31,6 +31,23 @@ class OwnersTest {
         });
     }
 
+    private static io.fabric8.kubernetes.api.model.ConfigMap owner(String name, String uid) {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName(name)
+            .withUid(uid)
+            .endMetadata()
+            .build();
+    }
+
+    private static io.fabric8.kubernetes.api.model.ConfigMap dependent(String namespace) {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace(namespace)
+            .withName("child")
+            .endMetadata()
+            .build();
+    }
+
     @Test
     void refreshSameOwnerIsIdempotent() {
         var owner = owner("primary", "uid-1");
@@ -46,8 +63,11 @@ class OwnersTest {
     void keepsNonControllerReferences() {
         var owner = owner("primary", "uid-1");
         var dependent = dependent("ns");
-        dependent.getMetadata().setOwnerReferences(java.util.List.of(new OwnerReferenceBuilder()
-                .withApiVersion("v1").withKind("ConfigMap").withName("other").withUid("uid-9")
+        dependent.getMetadata()
+            .setOwnerReferences(java.util.List.of(new OwnerReferenceBuilder().withApiVersion("v1")
+                .withKind("ConfigMap")
+                .withName("other")
+                .withUid("uid-9")
                 .withController(false)
                 .build()));
 
@@ -62,16 +82,14 @@ class OwnersTest {
         var dependent = dependent("ns");
         var stamped = Owners.setController(owner("first", "uid-1"), dependent);
 
-        assertThrows(IllegalStateException.class,
-                () -> Owners.setController(owner("second", "uid-2"), stamped));
+        assertThrows(IllegalStateException.class, () -> Owners.setController(owner("second", "uid-2"), stamped));
     }
 
     @Test
     void rejectsNamespaceMismatch() {
         var dependent = dependent("other-ns");
 
-        assertThrows(IllegalArgumentException.class,
-                () -> Owners.setController(owner("primary", "uid-1"), dependent));
+        assertThrows(IllegalArgumentException.class, () -> Owners.setController(owner("primary", "uid-1"), dependent));
     }
 
     @Test
@@ -91,19 +109,6 @@ class OwnersTest {
         var owner = owner("primary", "uid-1");
         owner.getMetadata().setUid(null);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> Owners.setController(owner, dependent("ns")));
-    }
-
-    private static io.fabric8.kubernetes.api.model.ConfigMap owner(String name, String uid) {
-        return new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName(name).withUid(uid).endMetadata()
-                .build();
-    }
-
-    private static io.fabric8.kubernetes.api.model.ConfigMap dependent(String namespace) {
-        return new ConfigMapBuilder()
-                .withNewMetadata().withNamespace(namespace).withName("child").endMetadata()
-                .build();
+        assertThrows(IllegalArgumentException.class, () -> Owners.setController(owner, dependent("ns")));
     }
 }

@@ -20,10 +20,7 @@ import java.util.Objects;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
-public record ReconciliationTrigger(
-        ResourceEventType eventType,
-        TriggerRole role,
-        ResourceReference resource) {
+public record ReconciliationTrigger(ResourceEventType eventType, TriggerRole role, ResourceReference resource) {
     /**
      * Validates the triggering event details.
      *

@@ -47,12 +47,13 @@ class Fabric8ControllerTest {
     void reconcilesPrimarySecondaryAndKubernetesEventTriggers() throws Exception {
         var contexts = new CopyOnWriteArrayList<ReconciliationContext<?>>();
         var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
-            contexts.add(context);
-            return ReconcileResult.done();
-        }).generationFilter(true)
-                .watches("secrets", Secret.class, Mappers.byLabel("primary"))
-                .watchesKubernetesEvents()
-                .build();
+                contexts.add(context);
+                return ReconcileResult.done();
+            })
+            .generationFilter(true)
+            .watches("secrets", Secret.class, Mappers.byLabel("primary"))
+            .watchesKubernetesEvents()
+            .build();
         var primary = primary();
         client.configMaps().inNamespace("operators").resource(primary).create();
         var properties = properties();
@@ -67,26 +68,67 @@ class Fabric8ControllerTest {
             });
             contexts.clear();
 
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder(primary)
-                    .editMetadata().addToFinalizers("cleanup").endMetadata().build()).update();
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(new ConfigMapBuilder(primary).editMetadata().addToFinalizers("cleanup").endMetadata().build())
+                .update();
             awaitRole(contexts, TriggerRole.PRIMARY);
             contexts.clear();
 
-            client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                    .withNewMetadata().withName("secondary").withNamespace("operators")
-                    .addToLabels("primary", "sample").endMetadata().build()).create();
+            client.secrets()
+                .inNamespace("operators")
+                .resource(new SecretBuilder().withNewMetadata()
+                    .withName("secondary")
+                    .withNamespace("operators")
+                    .addToLabels("primary", "sample")
+                    .endMetadata()
+                    .build())
+                .create();
             awaitRole(contexts, TriggerRole.WATCHED);
             contexts.clear();
 
-            client.v1().events().inNamespace("operators").resource(new EventBuilder()
-                    .withNewMetadata().withName("related").withNamespace("operators").endMetadata()
-                    .withNewInvolvedObject().withApiVersion("v1").withKind("ConfigMap")
-                    .withName("sample").withNamespace("operators").endInvolvedObject()
-                    .build()).create();
+            client.v1()
+                .events()
+                .inNamespace("operators")
+                .resource(new EventBuilder().withNewMetadata()
+                    .withName("related")
+                    .withNamespace("operators")
+                    .endMetadata()
+                    .withNewInvolvedObject()
+                    .withApiVersion("v1")
+                    .withKind("ConfigMap")
+                    .withName("sample")
+                    .withNamespace("operators")
+                    .endInvolvedObject()
+                    .build())
+                .create();
             awaitRole(contexts, TriggerRole.KUBERNETES_EVENT);
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
+    }
+
+    private OperatorFrameworkProperties properties() {
+        var properties = new OperatorFrameworkProperties();
+        properties.getController().setNamespace("operators");
+        properties.getController().setResyncPeriod(Duration.ofHours(1));
+        return properties;
+    }
+
+    private ConfigMap primary() {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withName("sample")
+            .withNamespace("operators")
+            .withUid("primary-uid")
+            .withGeneration(1L)
+            .endMetadata()
+            .build();
+    }
+
+    private void awaitRole(List<ReconciliationContext<?>> contexts, TriggerRole role) {
+        await().atMost(Duration.ofSeconds(5))
+            .untilAsserted(() -> assertThat(contexts).anySatisfy(context -> assertThat(context.triggers()).anySatisfy(
+                trigger -> assertThat(trigger.role()).isEqualTo(role))));
     }
 
     @Test
@@ -105,11 +147,21 @@ class Fabric8ControllerTest {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
             contexts.clear();
-            var event = client.v1().events().inNamespace("operators").resource(new EventBuilder()
-                    .withNewMetadata().withName("flapping").withNamespace("operators").endMetadata()
-                    .withNewInvolvedObject().withApiVersion("v1").withKind("ConfigMap")
-                    .withName("sample").withNamespace("operators").endInvolvedObject()
-                    .build()).create();
+            var event = client.v1()
+                .events()
+                .inNamespace("operators")
+                .resource(new EventBuilder().withNewMetadata()
+                    .withName("flapping")
+                    .withNamespace("operators")
+                    .endMetadata()
+                    .withNewInvolvedObject()
+                    .withApiVersion("v1")
+                    .withKind("ConfigMap")
+                    .withName("sample")
+                    .withNamespace("operators")
+                    .endInvolvedObject()
+                    .build())
+                .create();
             awaitRole(contexts, TriggerRole.KUBERNETES_EVENT);
             contexts.clear();
 
@@ -130,16 +182,23 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        client.configMaps().inNamespace("other").resource(new ConfigMapBuilder(primary())
-                .editMetadata().withName("foreign").withNamespace("other").withUid("foreign-uid").endMetadata()
-                .build()).create();
-        var namespaced = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        client.configMaps()
+            .inNamespace("other")
+            .resource(new ConfigMapBuilder(primary()).editMetadata()
+                .withName("foreign")
+                .withNamespace("other")
+                .withUid("foreign-uid")
+                .endMetadata()
+                .build())
+            .create();
+        var namespaced =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
 
         try {
             namespaced.start();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                    .extracting(context -> context.resourceKey().namespace()).contains("operators"));
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(contexts).extracting(context -> context.resourceKey().namespace())
+                    .contains("operators"));
             Thread.sleep(200);
             assertThat(contexts).extracting(context -> context.resourceKey().namespace()).doesNotContain("other");
         } finally {
@@ -150,12 +209,13 @@ class Fabric8ControllerTest {
         var clusterProperties = properties();
         clusterProperties.getController().setNamespace(null);
         clusterProperties.getController().setClusterScoped(true);
-        var cluster = new Fabric8Controller<>(
-                client, registration, clusterProperties.getController(), Duration.ofSeconds(1));
+        var cluster =
+            new Fabric8Controller<>(client, registration, clusterProperties.getController(), Duration.ofSeconds(1));
         try {
             cluster.start();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                    .extracting(context -> context.resourceKey().namespace()).contains("operators", "other"));
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(contexts).extracting(context -> context.resourceKey().namespace())
+                    .contains("operators", "other"));
         } finally {
             cluster.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
@@ -170,33 +230,43 @@ class Fabric8ControllerTest {
         }).generationFilter(true).build();
         var primary = primary();
         client.configMaps().inNamespace("operators").resource(primary).create();
-        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
 
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts).isNotEmpty());
             contexts.clear();
 
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder(primary)
-                    .editMetadata().addToLabels("ignored", "change").endMetadata().build()).update();
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(
+                    new ConfigMapBuilder(primary).editMetadata().addToLabels("ignored", "change").endMetadata().build())
+                .update();
             Thread.sleep(200);
             assertThat(contexts).isEmpty();
 
             var deleting = client.configMaps().inNamespace("operators").withName("sample").get();
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder(deleting)
-                    .editMetadata().addToFinalizers("cleanup").endMetadata().build()).update();
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(
+                    new ConfigMapBuilder(deleting).editMetadata().addToFinalizers("cleanup").endMetadata().build())
+                .update();
             awaitRole(contexts, TriggerRole.PRIMARY);
             contexts.clear();
 
             var finalizing = client.configMaps().inNamespace("operators").withName("sample").get();
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder(finalizing)
-                    .editMetadata().withFinalizers(List.of()).endMetadata().build()).update();
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(
+                    new ConfigMapBuilder(finalizing).editMetadata().withFinalizers(List.of()).endMetadata().build())
+                .update();
             awaitRole(contexts, TriggerRole.PRIMARY);
             contexts.clear();
 
             client.configMaps().inNamespace("operators").withName("sample").delete();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                    .flatExtracting(ReconciliationContext::triggers)
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(contexts).flatExtracting(ReconciliationContext::triggers)
                     .extracting(ReconciliationTrigger::eventType)
                     .contains(ResourceEventType.DELETED));
         } finally {
@@ -208,26 +278,25 @@ class Fabric8ControllerTest {
     void retriesDeletedResourceFromSnapshot() throws Exception {
         var deletionCalls = new AtomicInteger();
         var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> {
-            var deleted = context.triggers().stream()
-                    .anyMatch(trigger -> trigger.eventType() == ResourceEventType.DELETED);
+            var deleted =
+                context.triggers().stream().anyMatch(trigger -> trigger.eventType() == ResourceEventType.DELETED);
             if (!deleted && deletionCalls.get() == 0) {
                 return ReconcileResult.done();
             }
             return deletionCalls.incrementAndGet() == 1
-                    ? ReconcileResult.requeueAfter(Duration.ofMillis(10))
-                    : ReconcileResult.done();
+                ? ReconcileResult.requeueAfter(Duration.ofMillis(10))
+                : ReconcileResult.done();
         }).build();
         var primary = primary();
         client.configMaps().inNamespace("operators").resource(primary).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
 
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
             client.configMaps().inNamespace("operators").withName("sample").delete();
-            await().atMost(Duration.ofSeconds(5))
-                    .untilAsserted(() -> assertThat(deletionCalls).hasValue(2));
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(deletionCalls).hasValue(2));
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
@@ -245,16 +314,21 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(5));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(5));
 
         try {
             runtime.start();
             assertThat(entered.await(5, TimeUnit.SECONDS)).isTrue();
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder()
-                    .withNewMetadata().withNamespace("operators").withName("queued").endMetadata().build()).create();
-            await().atMost(Duration.ofSeconds(5))
-                    .untilAsserted(() -> assertThat(runtime.queueDepth()).isPositive());
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(new ConfigMapBuilder().withNewMetadata()
+                    .withNamespace("operators")
+                    .withName("queued")
+                    .endMetadata()
+                    .build())
+                .create();
+            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(runtime.queueDepth()).isPositive());
 
             var first = runtime.stop();
             var repeated = runtime.stop();
@@ -278,36 +352,21 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).generationFilter(false).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5))
-                    .untilAsserted(() -> assertThat(calls.get()).isGreaterThanOrEqualTo(1));
-            client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder(primary())
-                    .editMetadata().addToLabels("tick", "2").endMetadata().build()).update();
+                .untilAsserted(() -> assertThat(calls.get()).isGreaterThanOrEqualTo(1));
+            client.configMaps()
+                .inNamespace("operators")
+                .resource(new ConfigMapBuilder(primary()).editMetadata().addToLabels("tick", "2").endMetadata().build())
+                .update();
             await().atMost(Duration.ofSeconds(5))
-                    .untilAsserted(() -> assertThat(calls.get()).isGreaterThanOrEqualTo(2));
+                .untilAsserted(() -> assertThat(calls.get()).isGreaterThanOrEqualTo(2));
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
-    }
-    private OperatorFrameworkProperties properties() {
-        var properties = new OperatorFrameworkProperties();
-        properties.getController().setNamespace("operators");
-        properties.getController().setResyncPeriod(Duration.ofHours(1));
-        return properties;
-    }
-
-    private ConfigMap primary() {
-        return new ConfigMapBuilder()
-                .withNewMetadata()
-                .withName("sample")
-                .withNamespace("operators")
-                .withUid("primary-uid")
-                .withGeneration(1L)
-                .endMetadata()
-                .build();
     }
 
     @Test
@@ -319,7 +378,8 @@ class Fabric8ControllerTest {
         }).indexField("by-name", r -> r.getMetadata().getName()).build();
         var primary = primary();
         client.configMaps().inNamespace("operators").resource(primary).create();
-        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
@@ -344,10 +404,17 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                .withNewMetadata().withName("secondary").withNamespace("operators")
-                .addToLabels("primary", "sample").endMetadata().build()).create();
-        var runtime = new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
+        client.secrets()
+            .inNamespace("operators")
+            .resource(new SecretBuilder().withNewMetadata()
+                .withName("secondary")
+                .withNamespace("operators")
+                .addToLabels("primary", "sample")
+                .endMetadata()
+                .build())
+            .create();
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(found).contains(true));
@@ -358,10 +425,10 @@ class Fabric8ControllerTest {
 
     @Test
     void startTwiceIsIgnoredAndStopBeforeStartCompletesImmediately() throws Exception {
-        var registration = ControllerBuilder.forResource(ConfigMap.class,
-                (resource, context) -> ReconcileResult.done()).build();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var registration =
+            ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done()).build();
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
 
         runtime.stop().toCompletableFuture().get(1, TimeUnit.SECONDS);
         assertThat(runtime.isRunning()).isFalse();
@@ -385,14 +452,27 @@ class Fabric8ControllerTest {
             names.add(resource.getMetadata().getName());
             return ReconcileResult.done();
         }).labelSelector(Map.of("expose", "yes")).build();
-        client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder()
-                .withNewMetadata().withName("visible").withNamespace("operators").withUid("visible-uid")
-                .addToLabels("expose", "yes").endMetadata().build()).create();
-        client.configMaps().inNamespace("operators").resource(new ConfigMapBuilder()
-                .withNewMetadata().withName("hidden").withNamespace("operators").withUid("hidden-uid")
-                .endMetadata().build()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        client.configMaps()
+            .inNamespace("operators")
+            .resource(new ConfigMapBuilder().withNewMetadata()
+                .withName("visible")
+                .withNamespace("operators")
+                .withUid("visible-uid")
+                .addToLabels("expose", "yes")
+                .endMetadata()
+                .build())
+            .create();
+        client.configMaps()
+            .inNamespace("operators")
+            .resource(new ConfigMapBuilder().withNewMetadata()
+                .withName("hidden")
+                .withNamespace("operators")
+                .withUid("hidden-uid")
+                .endMetadata()
+                .build())
+            .create();
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(names).contains("visible"));
@@ -411,19 +491,27 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).owns(Secret.class).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
             contexts.clear();
 
-            client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                    .withNewMetadata().withName("owned").withNamespace("operators")
-                    .withOwnerReferences(new OwnerReferenceBuilder()
-                            .withApiVersion("v1").withKind("ConfigMap").withController(true)
-                            .withName("sample").withUid("primary-uid").build())
-                    .endMetadata().build()).create();
+            client.secrets()
+                .inNamespace("operators")
+                .resource(new SecretBuilder().withNewMetadata()
+                    .withName("owned")
+                    .withNamespace("operators")
+                    .withOwnerReferences(new OwnerReferenceBuilder().withApiVersion("v1")
+                        .withKind("ConfigMap")
+                        .withController(true)
+                        .withName("sample")
+                        .withUid("primary-uid")
+                        .build())
+                    .endMetadata()
+                    .build())
+                .create();
             awaitRole(contexts, TriggerRole.OWNED);
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
@@ -438,19 +526,26 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                .withNewMetadata().withName("secondary").withNamespace("operators")
-                .addToLabels("primary", "sample").endMetadata().build()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        client.secrets()
+            .inNamespace("operators")
+            .resource(new SecretBuilder().withNewMetadata()
+                .withName("secondary")
+                .withNamespace("operators")
+                .addToLabels("primary", "sample")
+                .endMetadata()
+                .build())
+            .create();
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             awaitRole(contexts, TriggerRole.WATCHED);
             contexts.clear();
 
             client.secrets().inNamespace("operators").withName("secondary").delete();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                    .anySatisfy(context -> assertThat(context.triggers()).anySatisfy(trigger -> {
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(contexts).anySatisfy(
+                    context -> assertThat(context.triggers()).anySatisfy(trigger -> {
                         assertThat(trigger.role()).isEqualTo(TriggerRole.WATCHED);
                         assertThat(trigger.eventType()).isEqualTo(ResourceEventType.DELETED);
                     })));
@@ -469,16 +564,21 @@ class Fabric8ControllerTest {
             throw new IllegalStateException("broken mapper");
         }).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
             contexts.clear();
 
-            client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                    .withNewMetadata().withName("secondary").withNamespace("operators").endMetadata()
-                    .build()).create();
+            client.secrets()
+                .inNamespace("operators")
+                .resource(new SecretBuilder().withNewMetadata()
+                    .withName("secondary")
+                    .withNamespace("operators")
+                    .endMetadata()
+                    .build())
+                .create();
             Thread.sleep(300);
             assertThat(contexts).isEmpty();
             assertThat(runtime.isReady()).isTrue();
@@ -494,15 +594,21 @@ class Fabric8ControllerTest {
             contexts.add(context);
             return ReconcileResult.done();
         }).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
 
-            client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                    .withNewMetadata().withName("orphan").withNamespace("operators")
-                    .addToLabels("primary", "ghost").endMetadata().build()).create();
+            client.secrets()
+                .inNamespace("operators")
+                .resource(new SecretBuilder().withNewMetadata()
+                    .withName("orphan")
+                    .withNamespace("operators")
+                    .addToLabels("primary", "ghost")
+                    .endMetadata()
+                    .build())
+                .create();
             Thread.sleep(300);
             assertThat(contexts).isEmpty();
             assertThat(runtime.isReady()).isTrue();
@@ -520,16 +626,22 @@ class Fabric8ControllerTest {
             return ReconcileResult.done();
         }).generationFilter(true).watches("secrets", Secret.class, Mappers.byLabel("primary")).build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        client.secrets().inNamespace("operators").resource(new SecretBuilder()
-                .withNewMetadata().withName("secondary").withNamespace("operators")
-                .addToLabels("primary", "sample").endMetadata().build()).create();
+        client.secrets()
+            .inNamespace("operators")
+            .resource(new SecretBuilder().withNewMetadata()
+                .withName("secondary")
+                .withNamespace("operators")
+                .addToLabels("primary", "sample")
+                .endMetadata()
+                .build())
+            .create();
         var props = properties();
         props.getController().setResyncPeriod(Duration.ofMillis(100));
         var runtime = new Fabric8Controller<>(client, registration, props.getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                    .flatExtracting(ReconciliationContext::triggers)
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(contexts).flatExtracting(ReconciliationContext::triggers)
                     .extracting(ReconciliationTrigger::eventType)
                     .contains(ResourceEventType.RESYNC));
         } finally {
@@ -542,21 +654,23 @@ class Fabric8ControllerTest {
         var registry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
         var metrics = new OperatorFrameworkMetrics(registry);
         var controller = ConfigMap.class.getName();
-        var registration = ControllerBuilder.forResource(ConfigMap.class,
-                (resource, context) -> ReconcileResult.done()).build();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1), metrics);
+        var registration =
+            ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done()).build();
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1), metrics);
 
-        assertThat(registry.get("operator.framework.queue.depth")
-                .tag("controller", controller).gauge().value()).isZero();
-        assertThat(registry.get("operator.framework.informer.synced")
-                .tag("controller", controller).gauge().value()).isZero();
+        assertThat(
+            registry.get("operator.framework.queue.depth").tag("controller", controller).gauge().value()).isZero();
+        assertThat(
+            registry.get("operator.framework.informer.synced").tag("controller", controller).gauge().value()).isZero();
 
         try {
             runtime.start();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
-                    assertThat(registry.get("operator.framework.informer.synced")
-                            .tag("controller", controller).gauge().value()).isEqualTo(1.0));
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(registry.get("operator.framework.informer.synced")
+                    .tag("controller", controller)
+                    .gauge()
+                    .value()).isEqualTo(1.0));
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
@@ -569,15 +683,16 @@ class Fabric8ControllerTest {
             keys.add(context.resourceKey());
             return ReconcileResult.done();
         }).build();
-        client.namespaces().resource(new NamespaceBuilder()
-                .withNewMetadata().withName("watched-namespace").endMetadata().build()).create();
+        client.namespaces()
+            .resource(new NamespaceBuilder().withNewMetadata().withName("watched-namespace").endMetadata().build())
+            .create();
         var props = properties();
         props.getController().setClusterScoped(true);
         var runtime = new Fabric8Controller<>(client, registration, props.getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
-            await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(keys)
-                    .anySatisfy(key -> assertThat(key.namespace()).isNull()));
+            await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(keys).anySatisfy(key -> assertThat(key.namespace()).isNull()));
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
@@ -587,11 +702,12 @@ class Fabric8ControllerTest {
     void eventInformerWithInvolvedObjectFieldFilterStartsAndStaysHealthy() throws Exception {
         // the in-memory mock cannot match involvedObject field selectors, so this
         // only exercises the filter-enabled informer wiring, not event delivery
-        var registration = ControllerBuilder.forResource(ConfigMap.class,
-                (resource, context) -> ReconcileResult.done()).watchesKubernetesEvents().build();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+            .watchesKubernetesEvents()
+            .build();
         client.configMaps().inNamespace("operators").resource(primary()).create();
-        var runtime = new Fabric8Controller<>(
-                client, registration, properties().getController(), Duration.ofSeconds(1));
+        var runtime =
+            new Fabric8Controller<>(client, registration, properties().getController(), Duration.ofSeconds(1));
         try {
             runtime.start();
             await().atMost(Duration.ofSeconds(5)).until(runtime::isReady);
@@ -599,11 +715,5 @@ class Fabric8ControllerTest {
         } finally {
             runtime.stop().toCompletableFuture().get(2, TimeUnit.SECONDS);
         }
-    }
-
-    private void awaitRole(List<ReconciliationContext<?>> contexts, TriggerRole role) {
-        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(contexts)
-                .anySatisfy(context -> assertThat(context.triggers())
-                        .anySatisfy(trigger -> assertThat(trigger.role()).isEqualTo(role))));
     }
 }

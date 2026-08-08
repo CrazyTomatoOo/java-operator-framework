@@ -21,10 +21,19 @@ import java.util.List;
  */
 public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeFactory {
     private final KubernetesClient client;
+
     private final List<ControllerRegistration<?>> registrations;
+
     private final OperatorFrameworkProperties properties;
+
     private final Duration shutdownTimeout;
+
     private final OperatorFrameworkMetrics metrics;
+
+    Fabric8ControllerRuntimeFactory(KubernetesClient client, List<ControllerRegistration<?>> registrations,
+        OperatorFrameworkProperties properties, Duration shutdownTimeout) {
+        this(client, registrations, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
+    }
 
     /**
      * Creates a factory that builds a Fabric8 runtime per registration.
@@ -35,25 +44,13 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
      * @param shutdownTimeout how long to wait for workers to finish on stop
      * @param metrics the metrics sink for controller gauges and counters
      */
-    public Fabric8ControllerRuntimeFactory(
-            KubernetesClient client,
-            List<ControllerRegistration<?>> registrations,
-            OperatorFrameworkProperties properties,
-            Duration shutdownTimeout,
-            OperatorFrameworkMetrics metrics) {
+    public Fabric8ControllerRuntimeFactory(KubernetesClient client, List<ControllerRegistration<?>> registrations,
+        OperatorFrameworkProperties properties, Duration shutdownTimeout, OperatorFrameworkMetrics metrics) {
         this.client = client;
         this.registrations = List.copyOf(registrations);
         this.properties = properties;
         this.shutdownTimeout = shutdownTimeout;
         this.metrics = metrics;
-    }
-
-    Fabric8ControllerRuntimeFactory(
-            KubernetesClient client,
-            List<ControllerRegistration<?>> registrations,
-            OperatorFrameworkProperties properties,
-            Duration shutdownTimeout) {
-        this(client, registrations, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
     }
 
     /**
@@ -64,10 +61,10 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
     @Override
     public ControllerRuntime create() {
         var runtimes = registrations.stream()
-                .map(registration -> new Fabric8Controller<>(
-                        client, registration, properties.getController(), shutdownTimeout, metrics))
-                .map(ControllerRuntime.class::cast)
-                .toList();
+            .map(registration -> new Fabric8Controller<>(client, registration, properties.getController(),
+                shutdownTimeout, metrics))
+            .map(ControllerRuntime.class::cast)
+            .toList();
         return new RuntimeGroup(runtimes);
     }
 
@@ -131,9 +128,9 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
         @Override
         public java.util.concurrent.CompletionStage<Void> stop() {
             var futures = runtimes.stream()
-                    .map(ControllerRuntime::stop)
-                    .map(java.util.concurrent.CompletionStage::toCompletableFuture)
-                    .toArray(java.util.concurrent.CompletableFuture[]::new);
+                .map(ControllerRuntime::stop)
+                .map(java.util.concurrent.CompletionStage::toCompletableFuture)
+                .toArray(java.util.concurrent.CompletableFuture[]::new);
             return java.util.concurrent.CompletableFuture.allOf(futures);
         }
     }

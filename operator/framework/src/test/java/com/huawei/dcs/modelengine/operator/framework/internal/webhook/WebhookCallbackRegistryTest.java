@@ -31,6 +31,13 @@ class WebhookCallbackRegistryTest {
         }
     }
 
+    private <T> GenericApplicationContext context(String name, Class<T> type, java.util.function.Supplier<T> bean) {
+        var context = new GenericApplicationContext();
+        context.registerBean(name, type, bean);
+        context.refresh();
+        return context;
+    }
+
     @Test
     void resolvesTargetGenericWithoutUnwrappingJdkProxy() {
         var target = new TypedValidator();
@@ -48,19 +55,16 @@ class WebhookCallbackRegistryTest {
     @Test
     void rejectsRawGenericAndUnsafeRouteName() {
         try (var raw = context("raw", RawValidator.class, RawValidator::new)) {
-            assertThatThrownBy(() -> new WebhookCallbackRegistry(raw.getBeanFactory()))
-                    .isInstanceOf(ApplicationContextException.class)
-                    .hasMessageContaining("raw or unresolved");
+            assertThatThrownBy(() -> new WebhookCallbackRegistry(raw.getBeanFactory())).isInstanceOf(
+                ApplicationContextException.class).hasMessageContaining("raw or unresolved");
         }
         try (var unsafe = context("bad/name", TypedValidator.class, TypedValidator::new)) {
-            assertThatThrownBy(() -> new WebhookCallbackRegistry(unsafe.getBeanFactory()))
-                    .isInstanceOf(ApplicationContextException.class)
-                    .hasMessageContaining("safe URL segment");
+            assertThatThrownBy(() -> new WebhookCallbackRegistry(unsafe.getBeanFactory())).isInstanceOf(
+                ApplicationContextException.class).hasMessageContaining("safe URL segment");
         }
         try (var uppercase = context("echoValidator", TypedValidator.class, TypedValidator::new)) {
-            assertThatThrownBy(() -> new WebhookCallbackRegistry(uppercase.getBeanFactory()))
-                    .isInstanceOf(ApplicationContextException.class)
-                    .hasMessageContaining("lowercase RFC 1123");
+            assertThatThrownBy(() -> new WebhookCallbackRegistry(uppercase.getBeanFactory())).isInstanceOf(
+                ApplicationContextException.class).hasMessageContaining("lowercase RFC 1123");
         }
     }
 
@@ -72,13 +76,6 @@ class WebhookCallbackRegistryTest {
 
             assertThat(registry.lastFailure()).contains("validator callback 'validator' failed");
         }
-    }
-
-    private <T> GenericApplicationContext context(String name, Class<T> type, java.util.function.Supplier<T> bean) {
-        var context = new GenericApplicationContext();
-        context.registerBean(name, type, bean);
-        context.refresh();
-        return context;
     }
 
     static final class TypedValidator implements AdmissionValidator<ConfigMap> {

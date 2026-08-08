@@ -28,9 +28,13 @@ final class ReconciliationQueue {
     private static final int MAX_TRIGGER_HISTORY = 32;
 
     private final BlockingQueue<ResourceKey> keys = new LinkedBlockingQueue<>();
+
     private final Map<ResourceKey, List<ReconciliationTrigger>> pending = new LinkedHashMap<>();
+
     private final Set<ResourceKey> queued = new LinkedHashSet<>();
+
     private final Set<ResourceKey> inFlight = new LinkedHashSet<>();
+
     private boolean accepting = true;
 
     synchronized void offer(ResourceKey key, ReconciliationTrigger trigger) {
@@ -43,9 +47,26 @@ final class ReconciliationQueue {
         }
     }
 
+    private void append(List<ReconciliationTrigger> triggers, ReconciliationTrigger trigger) {
+        if (triggers.size() == MAX_TRIGGER_HISTORY) {
+            triggers.removeFirst();
+        }
+        triggers.add(trigger);
+    }
+
     Optional<Work> poll(DurationMillis timeout) throws InterruptedException {
         var key = keys.poll(timeout.value(), TimeUnit.MILLISECONDS);
         return key == null ? Optional.empty() : begin(key);
+    }
+
+    private synchronized Optional<Work> begin(ResourceKey key) {
+        queued.remove(key);
+        var triggers = pending.remove(key);
+        if (triggers == null) {
+            return Optional.empty();
+        }
+        inFlight.add(key);
+        return Optional.of(new Work(key, List.copyOf(triggers)));
     }
 
     synchronized void complete(ResourceKey key) {
@@ -59,10 +80,6 @@ final class ReconciliationQueue {
         return pending.size();
     }
 
-    synchronized void stopAccepting() {
-        accepting = false;
-    }
-
     synchronized void discardPending() {
         stopAccepting();
         keys.clear();
@@ -70,30 +87,15 @@ final class ReconciliationQueue {
         queued.clear();
     }
 
+    synchronized void stopAccepting() {
+        accepting = false;
+    }
+
     synchronized boolean isDrained() {
         return pending.isEmpty() && inFlight.isEmpty();
     }
 
-    private synchronized Optional<Work> begin(ResourceKey key) {
-        queued.remove(key);
-        var triggers = pending.remove(key);
-        if (triggers == null) {
-            return Optional.empty();
-        }
-        inFlight.add(key);
-        return Optional.of(new Work(key, List.copyOf(triggers)));
-    }
+    record Work(ResourceKey key, List<ReconciliationTrigger> triggers) {}
 
-    private void append(List<ReconciliationTrigger> triggers, ReconciliationTrigger trigger) {
-        if (triggers.size() == MAX_TRIGGER_HISTORY) {
-            triggers.removeFirst();
-        }
-        triggers.add(trigger);
-    }
-
-    record Work(ResourceKey key, List<ReconciliationTrigger> triggers) {
-    }
-
-    record DurationMillis(long value) {
-    }
+    record DurationMillis(long value) {}
 }

@@ -16,6 +16,7 @@ public final class AdmissionDecision {
     private static final AdmissionDecision ALLOWED = new AdmissionDecision(true, null);
 
     private final boolean allowed;
+
     private final String message;
 
     private AdmissionDecision(boolean allowed, String message) {

@@ -43,6 +43,15 @@ public final class Applies {
         return operation(client, desired, fieldManager).serverSideApply();
     }
 
+    private static <T extends HasMetadata> ServerSideApplicable<T> operation(KubernetesClient client, T desired,
+        String fieldManager) {
+        Objects.requireNonNull(desired, "desired");
+        if (fieldManager == null || fieldManager.isBlank()) {
+            throw new IllegalArgumentException("fieldManager must not be blank");
+        }
+        return client.resource(Serialization.clone(desired)).fieldManager(fieldManager);
+    }
+
     /**
      * Like {@link #apply}, but forces conflicts, taking ownership of fields owned by other managers.
      *
@@ -56,14 +65,5 @@ public final class Applies {
      */
     public static <T extends HasMetadata> T applyForcibly(KubernetesClient client, T desired, String fieldManager) {
         return operation(client, desired, fieldManager).forceConflicts().serverSideApply();
-    }
-
-    private static <T extends HasMetadata> ServerSideApplicable<T> operation(
-            KubernetesClient client, T desired, String fieldManager) {
-        Objects.requireNonNull(desired, "desired");
-        if (fieldManager == null || fieldManager.isBlank()) {
-            throw new IllegalArgumentException("fieldManager must not be blank");
-        }
-        return client.resource(Serialization.clone(desired)).fieldManager(fieldManager);
     }
 }

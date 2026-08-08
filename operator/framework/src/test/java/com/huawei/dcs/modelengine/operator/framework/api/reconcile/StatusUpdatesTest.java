@@ -20,17 +20,26 @@ class StatusUpdatesTest {
 
     @Test
     void updatePatchesStatusWithoutMutatingTheGivenResource() {
-        var pod = client.pods().inNamespace("ns").resource(new PodBuilder()
-                .withNewMetadata().withNamespace("ns").withName("p").endMetadata()
-                .withNewSpec().addNewContainer().withName("c").withImage("img").endContainer().endSpec()
-                .build()).create();
+        var pod = client.pods()
+            .inNamespace("ns")
+            .resource(new PodBuilder().withNewMetadata()
+                .withNamespace("ns")
+                .withName("p")
+                .endMetadata()
+                .withNewSpec()
+                .addNewContainer()
+                .withName("c")
+                .withImage("img")
+                .endContainer()
+                .endSpec()
+                .build())
+            .create();
 
         var updated = StatusUpdates.update(client, pod, new PodStatusBuilder().withPhase("Running").build());
 
         assertThat(pod.getStatus()).as("informer-cached instance must stay untouched").isNull();
         assertThat(updated.getStatus().getPhase()).isEqualTo("Running");
-        assertThat(client.pods().inNamespace("ns").withName("p").get().getStatus().getPhase())
-                .isEqualTo("Running");
+        assertThat(client.pods().inNamespace("ns").withName("p").get().getStatus().getPhase()).isEqualTo("Running");
     }
 
     @Test

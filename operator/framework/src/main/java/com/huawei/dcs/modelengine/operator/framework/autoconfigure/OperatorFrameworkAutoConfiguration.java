@@ -65,42 +65,36 @@ public class OperatorFrameworkAutoConfiguration {
     }
 
     @Bean
-    RuntimeReadiness operatorRuntimeReadiness(
-            ApplicationEventPublisher publisher,
-            OperatorFrameworkProperties properties) {
+    RuntimeReadiness operatorRuntimeReadiness(ApplicationEventPublisher publisher,
+        OperatorFrameworkProperties properties) {
         var webhookOnly = properties.getMode() == OperatorFrameworkProperties.Mode.WEBHOOK;
         return new RuntimeReadiness(publisher, webhookOnly);
     }
 
     @Bean
-    ReconcileObservationAspect reconcileObservationAspect(
-            ObjectProvider<ObservationRegistry> registry,
-            OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory) {
-        return new ReconcileObservationAspect(
-                registry.getIfAvailable(() -> ObservationRegistry.NOOP), metrics, beanFactory);
+    ReconcileObservationAspect reconcileObservationAspect(ObjectProvider<ObservationRegistry> registry,
+        OperatorFrameworkMetrics metrics, ConfigurableListableBeanFactory beanFactory) {
+        return new ReconcileObservationAspect(registry.getIfAvailable(() -> ObservationRegistry.NOOP), metrics,
+            beanFactory);
     }
 
     @Bean
-    ReconcileExceptionAspect reconcileExceptionAspect(
-            OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory) {
+    ReconcileExceptionAspect reconcileExceptionAspect(OperatorFrameworkMetrics metrics,
+        ConfigurableListableBeanFactory beanFactory) {
         return new ReconcileExceptionAspect(metrics, beanFactory);
     }
 
     @Bean("operatorFrameworkHealthIndicator")
-    HealthIndicator operatorFrameworkHealthIndicator(
-            OperatorFrameworkProperties properties,
-            ObjectProvider<OperatorFrameworkLifecycle> lifecycle,
-            ObjectProvider<WebhookCallbackRegistry> callbacks,
-            RuntimeReadiness readiness) {
+    HealthIndicator operatorFrameworkHealthIndicator(OperatorFrameworkProperties properties,
+        ObjectProvider<OperatorFrameworkLifecycle> lifecycle, ObjectProvider<WebhookCallbackRegistry> callbacks,
+        RuntimeReadiness readiness) {
         return new OperatorFrameworkHealthIndicator(properties, lifecycle, callbacks, readiness);
     }
 
     /** Controller-side beans are absent in webhook-only mode. */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnExpression("'${operator.framework.mode:combined}'.equalsIgnoreCase('controller')"
-            + " || '${operator.framework.mode:combined}'.equalsIgnoreCase('combined')")
+        + " || '${operator.framework.mode:combined}'.equalsIgnoreCase('combined')")
     static class ControllerSideConfiguration {
         @Bean
         FrameworkKubernetesClientOwnership frameworkKubernetesClientOwnership() {
@@ -122,79 +116,61 @@ public class OperatorFrameworkAutoConfiguration {
         }
 
         @Bean
-        ControllerRegistrationDiscovery controllerRegistrationDiscovery(
-                ConfigurableListableBeanFactory beanFactory) {
+        ControllerRegistrationDiscovery controllerRegistrationDiscovery(ConfigurableListableBeanFactory beanFactory) {
             return new ControllerRegistrationDiscovery(beanFactory);
         }
 
         @Bean
-        Fabric8ControllerRuntimeFactory controllerRuntimeFactory(
-                KubernetesClient client,
-                ControllerRegistrationDiscovery discovery,
-                OperatorFrameworkProperties properties,
-                Environment environment,
-                OperatorFrameworkMetrics metrics) {
+        Fabric8ControllerRuntimeFactory controllerRuntimeFactory(KubernetesClient client,
+            ControllerRegistrationDiscovery discovery, OperatorFrameworkProperties properties, Environment environment,
+            OperatorFrameworkMetrics metrics) {
             try {
-                var timeout = environment.getProperty(
-                        "spring.lifecycle.timeout-per-shutdown-phase", Duration.class, DEFAULT_SHUTDOWN_TIMEOUT);
+                var timeout = environment.getProperty("spring.lifecycle.timeout-per-shutdown-phase", Duration.class,
+                    DEFAULT_SHUTDOWN_TIMEOUT);
                 return new Fabric8ControllerRuntimeFactory(client, discovery.discover(), properties, timeout, metrics);
             } catch (RuntimeException exception) {
-                throw new ApplicationContextException("controller mode configuration is invalid: "
-                        + exception.getMessage(), exception);
+                throw new ApplicationContextException(
+                    "controller mode configuration is invalid: " + exception.getMessage(), exception);
             }
         }
 
         @Bean
-        Fabric8LeaderElectionAdapter leaderElectionAdapter(
-                KubernetesClient client,
-                OperatorFrameworkProperties properties,
-                Environment environment) {
+        Fabric8LeaderElectionAdapter leaderElectionAdapter(KubernetesClient client,
+            OperatorFrameworkProperties properties, Environment environment) {
             return new Fabric8LeaderElectionAdapter(client, properties, environment);
         }
 
         @Bean
-        OperatorFrameworkLifecycle operatorFrameworkLifecycle(
-                OperatorFrameworkProperties properties,
-                Fabric8ControllerRuntimeFactory runtimeFactory,
-                Fabric8LeaderElectionAdapter leaderElection,
-                RuntimeLifecycleSupport support) {
+        OperatorFrameworkLifecycle operatorFrameworkLifecycle(OperatorFrameworkProperties properties,
+            Fabric8ControllerRuntimeFactory runtimeFactory, Fabric8LeaderElectionAdapter leaderElection,
+            RuntimeLifecycleSupport support) {
             return new OperatorFrameworkLifecycle(properties, runtimeFactory, leaderElection, support);
         }
 
         @Bean
-        ReconcileRetryAspect reconcileRetryAspect(
-                OperatorFrameworkProperties properties,
-                OperatorFrameworkMetrics metrics,
-                ConfigurableListableBeanFactory beanFactory) {
+        ReconcileRetryAspect reconcileRetryAspect(OperatorFrameworkProperties properties,
+            OperatorFrameworkMetrics metrics, ConfigurableListableBeanFactory beanFactory) {
             return new ReconcileRetryAspect(properties, metrics, beanFactory);
         }
 
         @Bean
-        ReconcileRateLimitAspect reconcileRateLimitAspect(
-                OperatorFrameworkProperties properties,
-                Clock clock,
-                ConfigurableListableBeanFactory beanFactory) {
+        ReconcileRateLimitAspect reconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock,
+            ConfigurableListableBeanFactory beanFactory) {
             return new ReconcileRateLimitAspect(properties, clock, beanFactory);
         }
 
         @Bean
-        RuntimeLifecycleSupport runtimeLifecycleSupport(
-                RuntimeReadiness readiness,
-                OperatorFrameworkMetrics metrics,
-                ReconcileRetryAspect retry,
-                ReconcileRateLimitAspect rateLimit) {
+        RuntimeLifecycleSupport runtimeLifecycleSupport(RuntimeReadiness readiness, OperatorFrameworkMetrics metrics,
+            ReconcileRetryAspect retry, ReconcileRateLimitAspect rateLimit) {
             return new RuntimeLifecycleSupport(readiness, metrics, retry, rateLimit);
         }
 
         @Bean(destroyMethod = "close")
         @ConditionalOnProperty(prefix = "operator.framework.events", name = "enabled", matchIfMissing = true)
         @ConditionalOnMissingBean(KubernetesEventPublisher.class)
-        KubernetesEventPublisher kubernetesEventPublisher(
-                KubernetesClient client,
-                OperatorFrameworkProperties properties,
-                Environment environment,
-                OperatorFrameworkMetrics metrics,
-                Clock clock) {
+        KubernetesEventPublisher kubernetesEventPublisher(KubernetesClient client,
+            OperatorFrameworkProperties properties, Environment environment, OperatorFrameworkMetrics metrics,
+            Clock clock) {
             return new AggregatingKubernetesEventPublisher(client, properties, environment, clock, metrics);
         }
     }
@@ -202,7 +178,7 @@ public class OperatorFrameworkAutoConfiguration {
     /** MVC webhook beans are absent in controller-only mode. */
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnExpression("'${operator.framework.mode:combined}'.equalsIgnoreCase('webhook')"
-            + " || '${operator.framework.mode:combined}'.equalsIgnoreCase('combined')")
+        + " || '${operator.framework.mode:combined}'.equalsIgnoreCase('combined')")
     static class WebhookSideConfiguration {
         @Bean
         WebhookCallbackRegistry webhookCallbackRegistry(ConfigurableListableBeanFactory beanFactory) {
@@ -210,18 +186,14 @@ public class OperatorFrameworkAutoConfiguration {
         }
 
         @Bean
-        AdmissionWebhookController admissionWebhookController(
-                WebhookCallbackRegistry registry,
-                ObjectMapper objectMapper,
-                OperatorFrameworkMetrics metrics) {
+        AdmissionWebhookController admissionWebhookController(WebhookCallbackRegistry registry,
+            ObjectMapper objectMapper, OperatorFrameworkMetrics metrics) {
             return new AdmissionWebhookController(registry, objectMapper, metrics);
         }
 
         @Bean
-        ConversionWebhookController conversionWebhookController(
-                WebhookCallbackRegistry registry,
-                ObjectMapper objectMapper,
-                OperatorFrameworkMetrics metrics) {
+        ConversionWebhookController conversionWebhookController(WebhookCallbackRegistry registry,
+            ObjectMapper objectMapper, OperatorFrameworkMetrics metrics) {
             return new ConversionWebhookController(registry, objectMapper, metrics);
         }
     }

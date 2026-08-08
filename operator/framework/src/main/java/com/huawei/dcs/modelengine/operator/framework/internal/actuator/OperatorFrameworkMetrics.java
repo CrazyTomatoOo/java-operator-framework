@@ -44,8 +44,10 @@ public final class OperatorFrameworkMetrics {
             return;
         }
         var tags = Tags.of("callback.type", type, "bean", bean, "outcome", outcome);
-        Timer.builder("operator.framework.callback.duration").tags(tags).register(registry)
-                .record(nanoseconds, TimeUnit.NANOSECONDS);
+        Timer.builder("operator.framework.callback.duration")
+            .tags(tags)
+            .register(registry)
+            .record(nanoseconds, TimeUnit.NANOSECONDS);
         registry.counter("operator.framework.callback.total", tags).increment();
     }
 
@@ -56,6 +58,12 @@ public final class OperatorFrameworkMetrics {
      */
     public void retry(String controller) {
         increment("operator.framework.reconcile.retries", "controller", controller);
+    }
+
+    private void increment(String name, String tag, String value) {
+        if (registry != null) {
+            registry.counter(name, tag, value).increment();
+        }
     }
 
     /**
@@ -98,6 +106,15 @@ public final class OperatorFrameworkMetrics {
         return gauge("operator.framework.queue.depth", controller, value);
     }
 
+    private GaugeHandle gauge(String name, String controller, DoubleSupplier value) {
+        if (registry == null) {
+            return GaugeHandle.NOOP;
+        }
+        var meter =
+            Gauge.builder(name, value, DoubleSupplier::getAsDouble).tag("controller", controller).register(registry);
+        return new GaugeHandle(registry, meter);
+    }
+
     /**
      * Registers a gauge reporting whether the informer cache of a controller has synced.
      *
@@ -120,22 +137,6 @@ public final class OperatorFrameworkMetrics {
         return gauge("operator.framework.leadership", controller, value);
     }
 
-    private void increment(String name, String tag, String value) {
-        if (registry != null) {
-            registry.counter(name, tag, value).increment();
-        }
-    }
-
-    private GaugeHandle gauge(String name, String controller, DoubleSupplier value) {
-        if (registry == null) {
-            return GaugeHandle.NOOP;
-        }
-        var meter = Gauge.builder(name, value, DoubleSupplier::getAsDouble)
-                .tag("controller", controller)
-                .register(registry);
-        return new GaugeHandle(registry, meter);
-    }
-
     /**
      * Removes a runtime gauge when its owning runtime is stopped.
      */
@@ -143,6 +144,7 @@ public final class OperatorFrameworkMetrics {
         private static final GaugeHandle NOOP = new GaugeHandle(null, null);
 
         private final MeterRegistry registry;
+
         private final Meter meter;
 
         private GaugeHandle(MeterRegistry registry, Meter meter) {

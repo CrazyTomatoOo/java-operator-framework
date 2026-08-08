@@ -22,13 +22,24 @@ import java.util.Objects;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
-public record AdmissionContext(
-        String uid,
-        String operation,
-        ResourceReference resource,
-        boolean dryRun,
-        Map<String, Object> options,
+public record AdmissionContext(String uid, String operation, ResourceReference resource, boolean dryRun,
+                               Map<String, Object> options, UserIdentity user) {
+    /**
+     * Creates a context without operation-specific AdmissionReview options.
+     *
+     * @param uid admission request UID
+     * @param operation admission operation
+     * @param resource resource identity
+     * @param dryRun whether the request is a dry run
+     * @param user requesting user identity
+     * @throws IllegalArgumentException if the UID or operation is null or blank
+     * @throws NullPointerException if the resource or user is null
+     */
+    public AdmissionContext(String uid, String operation, ResourceReference resource, boolean dryRun,
         UserIdentity user) {
+        this(uid, operation, resource, dryRun, Map.of(), user);
+    }
+
     /**
      * Validates the admission context and copies options into an immutable map.
      *
@@ -49,20 +60,14 @@ public record AdmissionContext(
         Objects.requireNonNull(user, "user must not be null");
     }
 
-    /**
-     * Creates a context without operation-specific AdmissionReview options.
-     *
-     * @param uid admission request UID
-     * @param operation admission operation
-     * @param resource resource identity
-     * @param dryRun whether the request is a dry run
-     * @param user requesting user identity
-     * @throws IllegalArgumentException if the UID or operation is null or blank
-     * @throws NullPointerException if the resource or user is null
-     */
-    public AdmissionContext(
-            String uid, String operation, ResourceReference resource, boolean dryRun, UserIdentity user) {
-        this(uid, operation, resource, dryRun, Map.of(), user);
+    private static Map<String, Object> immutableOptions(Map<String, Object> values) {
+        return values == null ? Map.of() : Map.copyOf(values);
+    }
+
+    private static void requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
     }
 
     /**
@@ -96,16 +101,6 @@ public record AdmissionContext(
             var copy = new java.util.LinkedHashMap<String, List<String>>();
             values.forEach((key, value) -> copy.put(key, value == null ? List.of() : List.copyOf(value)));
             return Map.copyOf(copy);
-        }
-    }
-
-    private static Map<String, Object> immutableOptions(Map<String, Object> values) {
-        return values == null ? Map.of() : Map.copyOf(values);
-    }
-
-    private static void requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " must not be blank");
         }
     }
 }

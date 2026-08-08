@@ -41,9 +41,10 @@ public final class ConversionWebhookController {
     private static final String CALLBACK_FAILED = "webhook callback failed";
 
     private final WebhookCallbackRegistry callbacks;
-    private final ObjectMapper objectMapper;
-    private final OperatorFrameworkMetrics metrics;
 
+    private final ObjectMapper objectMapper;
+
+    private final OperatorFrameworkMetrics metrics;
 
     /**
      * Handles a ConversionReview by dispatching its objects to the named converter callback.
@@ -54,9 +55,7 @@ public final class ConversionWebhookController {
      *     malformed review
      */
     @PostMapping("/operator-framework/webhooks/convert/{name}")
-    public ResponseEntity<ConversionReview> convert(
-            @PathVariable String name,
-            @RequestBody ConversionReview review) {
+    public ResponseEntity<ConversionReview> convert(@PathVariable String name, @RequestBody ConversionReview review) {
         var callback = callbacks.converter(name);
         if (callback.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -68,6 +67,21 @@ public final class ConversionWebhookController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(convert(request, callback.orElseThrow()));
+    }
+
+    private ConversionRequest requireRequest(ConversionReview review) {
+        var request = Objects.requireNonNull(review, "review must not be null").getRequest();
+        Objects.requireNonNull(request, "conversion request must not be null");
+        requireText(request.getUid(), "conversion uid");
+        requireText(request.getDesiredAPIVersion(), "desired API version");
+        Objects.requireNonNull(request.getObjects(), "conversion objects must not be null");
+        return request;
+    }
+
+    private void requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
     }
 
     private ConversionReview convert(ConversionRequest request, WebhookCallbackRegistry.Callback callback) {
@@ -88,10 +102,8 @@ public final class ConversionWebhookController {
         }
     }
 
-    private Object convertOne(
-            Object source,
-            String desiredVersion,
-            WebhookCallbackRegistry.Callback callback) throws Exception {
+    private Object convertOne(Object source, String desiredVersion, WebhookCallbackRegistry.Callback callback)
+        throws Exception {
         var tree = objectMapper.valueToTree(source);
         var sourceVersion = requireVersion(tree);
         requireSourceType(tree, sourceVersion, callback.resourceType());
@@ -117,14 +129,12 @@ public final class ConversionWebhookController {
         }
     }
 
-    private void requireSourceType(
-            JsonNode resource,
-            String apiVersion,
-            Class<? extends HasMetadata> resourceType) throws ConversionFailedException {
+    private void requireSourceType(JsonNode resource, String apiVersion, Class<? extends HasMetadata> resourceType)
+        throws ConversionFailedException {
         var expectedKind = HasMetadata.getKind(resourceType);
         var expectedGroup = group(HasMetadata.getApiVersion(resourceType));
-        if (!Objects.equals(text(resource, "/kind"), expectedKind)
-                || !Objects.equals(group(apiVersion), expectedGroup)) {
+        if (!Objects.equals(text(resource, "/kind"), expectedKind) || !Objects.equals(group(apiVersion),
+            expectedGroup)) {
             throw new ConversionFailedException("conversion source type does not match callback");
         }
     }
@@ -134,26 +144,17 @@ public final class ConversionWebhookController {
         return separator < 0 ? "" : apiVersion.substring(0, separator);
     }
 
+    private String text(JsonNode resource, String path) {
+        var value = resource.at(path);
+        return value.isTextual() ? value.asText() : null;
+    }
+
     private void requireIdentity(JsonNode source, JsonNode converted) throws ConversionFailedException {
         for (var path : List.of("/kind", "/metadata/name", "/metadata/namespace", "/metadata/uid")) {
             if (!Objects.equals(text(source, path), text(converted, path))) {
                 throw new ConversionFailedException("converter changed resource identity");
             }
         }
-    }
-
-    private String text(JsonNode resource, String path) {
-        var value = resource.at(path);
-        return value.isTextual() ? value.asText() : null;
-    }
-
-    private ConversionRequest requireRequest(ConversionReview review) {
-        var request = Objects.requireNonNull(review, "review must not be null").getRequest();
-        Objects.requireNonNull(request, "conversion request must not be null");
-        requireText(request.getUid(), "conversion uid");
-        requireText(request.getDesiredAPIVersion(), "desired API version");
-        Objects.requireNonNull(request.getObjects(), "conversion objects must not be null");
-        return request;
     }
 
     private String requireVersion(JsonNode resource) {
@@ -165,34 +166,24 @@ public final class ConversionWebhookController {
         return version;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private ConversionResult<?> invokeConverter(WebhookCallbackRegistry.Callback callback, HasMetadata resource,
+        ConversionContext context) throws Exception {
+        return Objects.requireNonNull(((ResourceConverter) callback.bean()).convert(resource, context),
+            "converter result must not be null");
+    }
+
     private ConversionReview response(String uid, List<Object> resources, String failure) {
         var conversionResponse = new ConversionResponse();
         conversionResponse.setUid(uid);
         conversionResponse.setConvertedObjects(resources);
-        conversionResponse.setResult(new StatusBuilder()
-                .withStatus(failure == null ? "Success" : "Failure")
-                .withMessage(failure)
-                .build());
+        conversionResponse.setResult(
+            new StatusBuilder().withStatus(failure == null ? "Success" : "Failure").withMessage(failure).build());
         var review = new ConversionReview();
         review.setApiVersion("apiextensions.k8s.io/v1");
         review.setKind("ConversionReview");
         review.setResponse(conversionResponse);
         return review;
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private ConversionResult<?> invokeConverter(
-            WebhookCallbackRegistry.Callback callback,
-            HasMetadata resource,
-            ConversionContext context) throws Exception {
-        return Objects.requireNonNull(((ResourceConverter) callback.bean()).convert(resource, context),
-                "converter result must not be null");
-    }
-
-    private void requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " must not be blank");
-        }
     }
 
     private static final class ConversionFailedException extends Exception {

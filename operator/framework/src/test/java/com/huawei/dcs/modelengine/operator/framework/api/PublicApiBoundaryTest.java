@@ -20,9 +20,9 @@ class PublicApiBoundaryTest {
         var allowed = java.util.Set.of("api", "autoconfigure", "internal");
         try (var files = Files.walk(frameworkPackage)) {
             assertTrue(files.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".java"))
-                    .map(frameworkPackage::relativize)
-                    .allMatch(path -> allowed.contains(path.getName(0).toString())));
+                .filter(path -> path.toString().endsWith(".java"))
+                .map(frameworkPackage::relativize)
+                .allMatch(path -> allowed.contains(path.getName(0).toString())));
         }
     }
 

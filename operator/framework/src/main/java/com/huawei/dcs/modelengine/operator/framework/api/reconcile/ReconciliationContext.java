@@ -31,11 +31,21 @@ import java.util.Objects;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
-public record ReconciliationContext<T extends HasMetadata>(
-        ResourceKey resourceKey,
-        List<ReconciliationTrigger> triggers,
-        Indexer<T> cache,
-        Map<Class<? extends HasMetadata>, Indexer<?>> caches) {
+public record ReconciliationContext<T extends HasMetadata>(ResourceKey resourceKey,
+                                                           List<ReconciliationTrigger> triggers, Indexer<T> cache,
+                                                           Map<Class<? extends HasMetadata>, Indexer<?>> caches) {
+    /**
+     * Backward-compatible factory: no secondary caches.
+     *
+     * @param resourceKey the namespace and name of the primary resource
+     * @param triggers the events that triggered this reconciliation
+     * @param cache the primary-type informer cache
+     * @throws NullPointerException if {@code resourceKey} or {@code triggers} is null
+     */
+    public ReconciliationContext(ResourceKey resourceKey, List<ReconciliationTrigger> triggers, Indexer<T> cache) {
+        this(resourceKey, triggers, cache, Map.of());
+    }
+
     /**
      * Validates the reconciliation context and copies the trigger list.
      *
@@ -54,15 +64,16 @@ public record ReconciliationContext<T extends HasMetadata>(
     }
 
     /**
-     * Backward-compatible factory: no secondary caches.
+     * Test/standalone factory: cache is null. Do not call byIndex/getByKey on the result.
      *
+     * @param <T> primary resource type
      * @param resourceKey the namespace and name of the primary resource
      * @param triggers the events that triggered this reconciliation
-     * @param cache the primary-type informer cache
-     * @throws NullPointerException if {@code resourceKey} or {@code triggers} is null
+     * @return a context with no informer cache
      */
-    public ReconciliationContext(ResourceKey resourceKey, List<ReconciliationTrigger> triggers, Indexer<T> cache) {
-        this(resourceKey, triggers, cache, Map.of());
+    public static <T extends HasMetadata> ReconciliationContext<T> withoutCache(ResourceKey resourceKey,
+        List<ReconciliationTrigger> triggers) {
+        return new ReconciliationContext<>(resourceKey, triggers, null, Map.of());
     }
 
     /**
@@ -84,24 +95,11 @@ public record ReconciliationContext<T extends HasMetadata>(
         if (indexer == null) {
             if (cache == null && caches.isEmpty()) {
                 throw new IllegalStateException("no informer cache for " + requestedType.getSimpleName()
-                        + "; context was created with withoutCache()");
+                    + "; context was created with withoutCache()");
             }
             throw new IllegalStateException("no informer cache for " + requestedType.getSimpleName()
-                    + "; declare it via owns()/watches() on the controller builder");
+                + "; declare it via owns()/watches() on the controller builder");
         }
         return (Indexer<S>) indexer;
-    }
-
-    /**
-     * Test/standalone factory: cache is null. Do not call byIndex/getByKey on the result.
-     *
-     * @param <T> primary resource type
-     * @param resourceKey the namespace and name of the primary resource
-     * @param triggers the events that triggered this reconciliation
-     * @return a context with no informer cache
-     */
-    public static <T extends HasMetadata> ReconciliationContext<T> withoutCache(
-            ResourceKey resourceKey, List<ReconciliationTrigger> triggers) {
-        return new ReconciliationContext<>(resourceKey, triggers, null, Map.of());
     }
 }

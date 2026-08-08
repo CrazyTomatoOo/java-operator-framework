@@ -40,16 +40,11 @@ public final class Dependents {
      * @return the server result after applying the dependent's desired state
      * @throws NullPointerException if {@code dependent}, {@code context}, or the desired dependent is null
      */
-    public static <D extends HasMetadata, P extends HasMetadata> D apply(
-            KubernetesClient client,
-            DependentResource<D, P> dependent,
-            P primary,
-            ReconciliationContext<P> context,
-            String fieldManager) {
+    public static <D extends HasMetadata, P extends HasMetadata> D apply(KubernetesClient client,
+        DependentResource<D, P> dependent, P primary, ReconciliationContext<P> context, String fieldManager) {
         Objects.requireNonNull(dependent, "dependent");
         Objects.requireNonNull(context, "context");
-        var desired = Objects.requireNonNull(
-                dependent.desired(primary, context), "desired must not be null");
+        var desired = Objects.requireNonNull(dependent.desired(primary, context), "desired must not be null");
         var owned = Owners.setController(primary, desired);
         return Applies.apply(client, owned, fieldManager);
     }

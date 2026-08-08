@@ -40,16 +40,31 @@ import java.util.Objects;
 public final class AggregatingKubernetesEventPublisher implements KubernetesEventPublisher, AutoCloseable {
 
     private static final int HTTP_CONFLICT = 409;
+
     private static final int MAX_EVENT_NAME_LENGTH = 40;
+
     private static final int DIGEST_SUFFIX_LENGTH = 16;
+
     private static final int CACHE_INITIAL_CAPACITY = 16;
+
     private static final float CACHE_LOAD_FACTOR = 0.75f;
+
     private final KubernetesClient client;
+
     private final OperatorFrameworkProperties.Events properties;
+
     private final Clock clock;
+
     private final String component;
+
     private final Map<String, CachedEvent> cache;
+
     private final OperatorFrameworkMetrics metrics;
+
+    AggregatingKubernetesEventPublisher(KubernetesClient client, OperatorFrameworkProperties properties,
+        Environment environment, Clock clock) {
+        this(client, properties, environment, clock, new OperatorFrameworkMetrics(null));
+    }
 
     /**
      * Creates the aggregating event publisher.
@@ -60,12 +75,8 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
      * @param clock the clock used for aggregation windows and timestamps
      * @param metrics the metrics sink for publication outcomes
      */
-    public AggregatingKubernetesEventPublisher(
-            KubernetesClient client,
-            OperatorFrameworkProperties properties,
-            Environment environment,
-            Clock clock,
-            OperatorFrameworkMetrics metrics) {
+    public AggregatingKubernetesEventPublisher(KubernetesClient client, OperatorFrameworkProperties properties,
+        Environment environment, Clock clock, OperatorFrameworkMetrics metrics) {
         this.client = client;
         this.properties = properties.getEvents();
         this.clock = clock;
@@ -74,12 +85,28 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         this.metrics = metrics;
     }
 
-    AggregatingKubernetesEventPublisher(
-            KubernetesClient client,
-            OperatorFrameworkProperties properties,
-            Environment environment,
-            Clock clock) {
-        this(client, properties, environment, clock, new OperatorFrameworkMetrics(null));
+    private String component(Environment environment) {
+        var configured = properties.getComponent();
+        if (configured != null && !configured.isBlank()) {
+            return configured;
+        }
+        var application = environment.getProperty("spring.application.name", "operator-framework");
+        return application == null || application.isBlank() ? "operator-framework" : application;
+    }
+
+    private Map<String, CachedEvent> boundedCache(int maximum) {
+        return new LinkedHashMap<>(CACHE_INITIAL_CAPACITY, CACHE_LOAD_FACTOR, true) {
+            /**
+             * Evicts the eldest entry once the cache exceeds its maximum size.
+             *
+             * @param eldest the least recently accessed entry
+             * @return {@code true} when the eldest entry should be removed
+             */
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, CachedEvent> eldest) {
+                return size() > maximum;
+            }
+        };
     }
 
     /**
@@ -128,9 +155,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
             existing = cached == null ? null : cached.event();
         }
         try {
-            var persisted = existing == null
-                    ? create(newEvent(name, request, now))
-                    : update(existing, now);
+            var persisted = existing == null ? create(newEvent(name, request, now)) : update(existing, now);
             synchronized (this) {
                 cache.put(name, new CachedEvent(persisted));
             }
@@ -180,8 +205,6 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         }
     }
 
-
-
     private Event failed(KubernetesClientException exception) {
         throw exception;
     }
@@ -189,27 +212,28 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
     private Event newEvent(String name, EventRequest request, Instant now) {
         var involvedObject = request.involvedObject();
         var metadata = involvedObject.getMetadata();
-        var reference = new ObjectReferenceBuilder()
-                .withApiVersion(involvedObject.getApiVersion())
-                .withKind(involvedObject.getKind())
-                .withNamespace(metadata.getNamespace())
-                .withName(metadata.getName())
-                .withUid(metadata.getUid())
-                .build();
-        return new EventBuilder()
-                .withApiVersion("v1")
-                .withKind("Event")
-                .withNewMetadata().withNamespace(namespace(involvedObject)).withName(name).endMetadata()
-                .withInvolvedObject(reference)
-                .withReason(request.reason())
-                .withMessage(request.message())
-                .withType(request.type())
-                .withCount(1)
-                .withFirstTimestamp(now.toString())
-                .withLastTimestamp(now.toString())
-                .withReportingComponent(component)
-                .withSource(new EventSourceBuilder().withComponent(component).build())
-                .build();
+        var reference = new ObjectReferenceBuilder().withApiVersion(involvedObject.getApiVersion())
+            .withKind(involvedObject.getKind())
+            .withNamespace(metadata.getNamespace())
+            .withName(metadata.getName())
+            .withUid(metadata.getUid())
+            .build();
+        return new EventBuilder().withApiVersion("v1")
+            .withKind("Event")
+            .withNewMetadata()
+            .withNamespace(namespace(involvedObject))
+            .withName(name)
+            .endMetadata()
+            .withInvolvedObject(reference)
+            .withReason(request.reason())
+            .withMessage(request.message())
+            .withType(request.type())
+            .withCount(1)
+            .withFirstTimestamp(now.toString())
+            .withLastTimestamp(now.toString())
+            .withReportingComponent(component)
+            .withSource(new EventSourceBuilder().withComponent(component).build())
+            .build();
     }
 
     private Event increment(Event event, Instant now) {
@@ -217,22 +241,18 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         return new EventBuilder(event).withCount(count + 1).withLastTimestamp(now.toString()).build();
     }
 
-    private io.fabric8.kubernetes.client.dsl.NonNamespaceOperation<
-            Event, io.fabric8.kubernetes.api.model.EventList, io.fabric8.kubernetes.client.dsl.Resource<Event>>
-            operation(Event event) {
+    private io.fabric8.kubernetes.client.dsl.NonNamespaceOperation<Event,
+            io.fabric8.kubernetes.api.model.EventList,
+            io.fabric8.kubernetes.client.dsl.Resource<Event>> operation(
+        Event event) {
         return client.v1().events().inNamespace(event.getMetadata().getNamespace());
     }
 
-    private String eventName(
-            HasMetadata involvedObject,
-            String type,
-            String reason,
-            String message,
-            Instant now) {
+    private String eventName(HasMetadata involvedObject, String type, String reason, String message, Instant now) {
         var metadata = involvedObject.getMetadata();
         var window = now.toEpochMilli() / properties.getAggregationWindow().toMillis();
-        var seed = String.join("|", Objects.toString(metadata.getUid(), ""), type, reason, message,
-                component, Long.toString(window));
+        var seed = String.join("|", Objects.toString(metadata.getUid(), ""), type, reason, message, component,
+            Long.toString(window));
         var base = metadata.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9.-]", "-");
         base = base.substring(0, Math.min(base.length(), MAX_EVENT_NAME_LENGTH));
         return base + "." + digest(seed).substring(0, DIGEST_SUFFIX_LENGTH);
@@ -252,15 +272,6 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         return namespace == null || namespace.isBlank() ? "default" : namespace;
     }
 
-    private String component(Environment environment) {
-        var configured = properties.getComponent();
-        if (configured != null && !configured.isBlank()) {
-            return configured;
-        }
-        var application = environment.getProperty("spring.application.name", "operator-framework");
-        return application == null || application.isBlank() ? "operator-framework" : application;
-    }
-
     private void validate(HasMetadata resource, String reason, String message) {
         Objects.requireNonNull(resource, "involvedObject must not be null");
         Objects.requireNonNull(resource.getMetadata(), "involvedObject metadata must not be null");
@@ -275,24 +286,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         }
     }
 
-    private Map<String, CachedEvent> boundedCache(int maximum) {
-        return new LinkedHashMap<>(CACHE_INITIAL_CAPACITY, CACHE_LOAD_FACTOR, true) {
-            /**
-             * Evicts the eldest entry once the cache exceeds its maximum size.
-             *
-             * @param eldest the least recently accessed entry
-             * @return {@code true} when the eldest entry should be removed
-             */
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<String, CachedEvent> eldest) {
-                return size() > maximum;
-            }
-        };
-    }
+    private record CachedEvent(Event event) {}
 
-    private record CachedEvent(Event event) {
-    }
-
-    private record EventRequest(String type, HasMetadata involvedObject, String reason, String message) {
-    }
+    private record EventRequest(String type, HasMetadata involvedObject, String reason, String message) {}
 }

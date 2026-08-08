@@ -32,16 +32,16 @@ class ControllerApiTest {
     @Test
     void buildsImmutableControllerRegistration() {
         var builder = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                .generationFilter(true)
-                .resyncPeriod(Duration.ZERO)
-                .owns(Secret.class)
-                .watches("secrets", Secret.class, Mappers.byLabel("primary"))
-                .watchesKubernetesEvents();
+            .generationFilter(true)
+            .resyncPeriod(Duration.ZERO)
+            .owns(Secret.class)
+            .watches("secrets", Secret.class, Mappers.byLabel("primary"))
+            .watchesKubernetesEvents();
 
         var registration = builder.build();
         builder.owns(ConfigMap.class);
         builder.watches("after-build", Secret.class, Mappers.byLabel("primary"))
-                .indexField("after-build", resource -> resource.getMetadata().getName());
+            .indexField("after-build", resource -> resource.getMetadata().getName());
         assertEquals(ConfigMap.class, registration.resourceType());
         assertEquals(Boolean.TRUE, registration.generationFilter().orElseThrow());
         assertEquals(Duration.ZERO, registration.resyncPeriod().orElseThrow());
@@ -55,37 +55,34 @@ class ControllerApiTest {
 
     @Test
     void preservesOptionalOverridesAndRejectsInvalidConfiguration() {
-        var registration = ControllerBuilder
-                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                .build();
+        var registration =
+            ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done()).build();
 
         assertFalse(registration.generationFilter().isPresent());
         assertFalse(registration.resyncPeriod().isPresent());
         assertThrows(IllegalArgumentException.class,
-                () -> ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                        .resyncPeriod(Duration.ofSeconds(-1)));
+            () -> ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+                .resyncPeriod(Duration.ofSeconds(-1)));
         assertThrows(IllegalArgumentException.class,
-                () -> ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                        .watches(" ", Secret.class, Mappers.byLabel("primary")));
+            () -> ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+                .watches(" ", Secret.class, Mappers.byLabel("primary")));
     }
 
     @Test
     void mapsNativeKubernetesRelationships() {
         var owner = new OwnerReferenceBuilder().withName("owner").withController(true).build();
-        var secondary = new ConfigMapBuilder()
-                .withNewMetadata()
-                .withNamespace("operators")
-                .withName("secondary")
-                .withOwnerReferences(owner)
-                .addToLabels("primary", "label-owner")
-                .addToAnnotations("operator.example/primary", "annotation-owner")
-                .endMetadata()
-                .build();
-        var previous = new ConfigMapBuilder(secondary)
-                .editMetadata()
-                .addToLabels("primary", "previous-owner")
-                .endMetadata()
-                .build();
+        var secondary = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("operators")
+            .withName("secondary")
+            .withOwnerReferences(owner)
+            .addToLabels("primary", "label-owner")
+            .addToAnnotations("operator.example/primary", "annotation-owner")
+            .endMetadata()
+            .build();
+        var previous = new ConfigMapBuilder(secondary).editMetadata()
+            .addToLabels("primary", "previous-owner")
+            .endMetadata()
+            .build();
 
         ResourceMapper<ConfigMap, ConfigMap> owners = Mappers.ownerReferences();
         ResourceMapper<ConfigMap, ConfigMap> labels = Mappers.byLabel("primary");
@@ -94,88 +91,111 @@ class ControllerApiTest {
         assertEquals(List.of(new ResourceKey("operators", "owner")), owners.map(ResourceEvent.added(secondary)));
         assertEquals(List.of(new ResourceKey("operators", "label-owner")), labels.map(ResourceEvent.added(secondary)));
         assertEquals(
-                List.of(new ResourceKey("operators", "label-owner"), new ResourceKey("operators", "previous-owner")),
-                labels.map(ResourceEvent.updated(previous, secondary)));
+            List.of(new ResourceKey("operators", "label-owner"), new ResourceKey("operators", "previous-owner")),
+            labels.map(ResourceEvent.updated(previous, secondary)));
         assertEquals(List.of(new ResourceKey("operators", "label-owner")),
-                labels.map(ResourceEvent.updated(null, secondary)));
+            labels.map(ResourceEvent.updated(null, secondary)));
         assertEquals(List.of(new ResourceKey("operators", "annotation-owner")),
-                annotations.map(ResourceEvent.added(secondary)));
+            annotations.map(ResourceEvent.added(secondary)));
     }
 
     @Test
     void mapsClusterScopedSecondaryWithQualifiedPrimaryName() {
-        var secondary = new NamespaceBuilder().withNewMetadata().withName("secondary")
-                .addToLabels("primary", "operators/label-owner")
-                .addToAnnotations("operator.example/primary", "operators/annotation-owner")
-                .endMetadata().build();
+        var secondary = new NamespaceBuilder().withNewMetadata()
+            .withName("secondary")
+            .addToLabels("primary", "operators/label-owner")
+            .addToAnnotations("operator.example/primary", "operators/annotation-owner")
+            .endMetadata()
+            .build();
         assertEquals(List.of(new ResourceKey("operators", "label-owner")),
-                Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(secondary)));
+            Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(secondary)));
         assertEquals(List.of(new ResourceKey("operators", "annotation-owner")),
-                Mappers.<Namespace, ConfigMap>byAnnotation("operator.example/primary")
-                        .map(ResourceEvent.added(secondary)));
+            Mappers.<Namespace, ConfigMap>byAnnotation("operator.example/primary").map(ResourceEvent.added(secondary)));
 
-        var clusterPrimary = new NamespaceBuilder().withNewMetadata().withName("cluster-secondary")
-                .addToLabels("primary", "cluster-owner").endMetadata().build();
+        var clusterPrimary = new NamespaceBuilder().withNewMetadata()
+            .withName("cluster-secondary")
+            .addToLabels("primary", "cluster-owner")
+            .endMetadata()
+            .build();
         assertEquals(List.of(new ResourceKey(null, "cluster-owner")),
-                Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(clusterPrimary)));
+            Mappers.<Namespace, ConfigMap>byLabel("primary").map(ResourceEvent.added(clusterPrimary)));
     }
 
     @Test
     void ownerReferenceMapperFiltersByPrimaryGvkAndController() {
-        var matching = new OwnerReferenceBuilder().withApiVersion("v1").withKind("ConfigMap")
-                .withName("matching").withController(true).build();
+        var matching = new OwnerReferenceBuilder().withApiVersion("v1")
+            .withKind("ConfigMap")
+            .withName("matching")
+            .withController(true)
+            .build();
         var wrongVersion = new OwnerReferenceBuilder(matching).withApiVersion("v2").withName("wrong-version").build();
         var wrongKind = new OwnerReferenceBuilder(matching).withKind("Secret").withName("wrong-kind").build();
-        var notController = new OwnerReferenceBuilder(matching).withController(false)
-                .withName("not-controller").build();
-        var secondary = new ConfigMapBuilder().withNewMetadata().withNamespace("operators")
-                .withOwnerReferences(matching, wrongVersion, wrongKind, notController).endMetadata().build();
+        var notController =
+            new OwnerReferenceBuilder(matching).withController(false).withName("not-controller").build();
+        var secondary = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("operators")
+            .withOwnerReferences(matching, wrongVersion, wrongKind, notController)
+            .endMetadata()
+            .build();
 
         assertEquals(List.of(new ResourceKey("operators", "matching")),
-                Mappers.<ConfigMap, ConfigMap>ownerReferences(ConfigMap.class)
-                        .map(ResourceEvent.added(secondary)));
+            Mappers.<ConfigMap, ConfigMap>ownerReferences(ConfigMap.class).map(ResourceEvent.added(secondary)));
     }
 
     @Test
     void involvedObjectMapperFiltersByPrimaryGvk() {
-        var matching = new EventBuilder().withNewInvolvedObject().withApiVersion("v1").withKind("ConfigMap")
-                .withNamespace("operators").withName("matching").endInvolvedObject().build();
-        var wrongVersion = new EventBuilder().withNewInvolvedObject().withApiVersion("v2").withKind("ConfigMap")
-                .withNamespace("operators").withName("wrong-version").endInvolvedObject().build();
-        var wrongKind = new EventBuilder().withNewInvolvedObject().withApiVersion("v1").withKind("Secret")
-                .withNamespace("operators").withName("wrong-kind").endInvolvedObject().build();
+        var matching = new EventBuilder().withNewInvolvedObject()
+            .withApiVersion("v1")
+            .withKind("ConfigMap")
+            .withNamespace("operators")
+            .withName("matching")
+            .endInvolvedObject()
+            .build();
+        var wrongVersion = new EventBuilder().withNewInvolvedObject()
+            .withApiVersion("v2")
+            .withKind("ConfigMap")
+            .withNamespace("operators")
+            .withName("wrong-version")
+            .endInvolvedObject()
+            .build();
+        var wrongKind = new EventBuilder().withNewInvolvedObject()
+            .withApiVersion("v1")
+            .withKind("Secret")
+            .withNamespace("operators")
+            .withName("wrong-kind")
+            .endInvolvedObject()
+            .build();
 
         assertEquals(List.of(new ResourceKey("operators", "matching")),
-                Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(matching)));
+            Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(matching)));
         assertEquals(List.of(),
-                Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(wrongVersion)));
-        assertEquals(List.of(),
-                Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(wrongKind)));
+            Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(wrongVersion)));
+        assertEquals(List.of(), Mappers.<ConfigMap>involvedObject(ConfigMap.class).map(ResourceEvent.added(wrongKind)));
     }
 
     @Test
     void mapsKubernetesEventInvolvedObject() {
-        var event = new EventBuilder()
-                .withNewMetadata().withName("event").endMetadata()
-                .withNewInvolvedObject()
-                .withNamespace("operators")
-                .withName("primary")
-                .endInvolvedObject()
-                .build();
+        var event = new EventBuilder().withNewMetadata()
+            .withName("event")
+            .endMetadata()
+            .withNewInvolvedObject()
+            .withNamespace("operators")
+            .withName("primary")
+            .endInvolvedObject()
+            .build();
 
         assertEquals(List.of(new ResourceKey("operators", "primary")),
-                Mappers.<ConfigMap>involvedObject().map(ResourceEvent.added(event)));
+            Mappers.<ConfigMap>involvedObject().map(ResourceEvent.added(event)));
     }
 
     @Test
     void watchSelectorReplacesEachDimensionIndependently() {
-        var registration = ControllerBuilder
-                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                .labelSelector(Map.of("old", "value"))
-                .labelSelector(Map.of("app", "my-op"))
-                .fieldSelector(Map.of("metadata.name", "old"))
-                .fieldSelector(Map.of("metadata.namespace", "operators"))
-                .build();
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+            .labelSelector(Map.of("old", "value"))
+            .labelSelector(Map.of("app", "my-op"))
+            .fieldSelector(Map.of("metadata.name", "old"))
+            .fieldSelector(Map.of("metadata.namespace", "operators"))
+            .build();
 
         var selector = registration.watchSelector().orElseThrow();
         assertEquals(Map.of("app", "my-op"), selector.labels());
@@ -185,44 +205,42 @@ class ControllerApiTest {
 
     @Test
     void managesRegistersDependentResourceTypeAsOwned() {
-        var registration = ControllerBuilder
-                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                .manages(new DependentResource<Secret, ConfigMap>() {
-                    /**
-                     * Returns the dependent resource type.
-                     *
-                     * @return the Secret type
-                     */
-                    @Override
-                    public Class<Secret> resourceType() {
-                        return Secret.class;
-                    }
+        var registration = ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+            .manages(new DependentResource<Secret, ConfigMap>() {
+                /**
+                 * Returns the dependent resource type.
+                 *
+                 * @return the Secret type
+                 */
+                @Override
+                public Class<Secret> resourceType() {
+                    return Secret.class;
+                }
 
-                    /**
-                     * Computes the desired Secret; unused by this test.
-                     *
-                     * @param primary the primary resource
-                     * @param context the reconciliation context
-                     * @return always null
-                     */
-                    @Override
-                    public Secret desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
-                        return null;
-                    }
-                })
-                .build();
+                /**
+                 * Computes the desired Secret; unused by this test.
+                 *
+                 * @param primary the primary resource
+                 * @param context the reconciliation context
+                 * @return always null
+                 */
+                @Override
+                public Secret desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
+                    return null;
+                }
+            })
+            .build();
 
         assertEquals(List.of(Secret.class), registration.ownedResources());
-        assertThrows(NullPointerException.class, () -> ControllerBuilder
-                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
+        assertThrows(NullPointerException.class,
+            () -> ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
                 .manages(null));
     }
 
     @Test
     void watchSelectorIsAbsentWhenNeitherConfigured() {
-        var registration = ControllerBuilder
-                .forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done())
-                .build();
+        var registration =
+            ControllerBuilder.forResource(ConfigMap.class, (resource, context) -> ReconcileResult.done()).build();
         assertFalse(registration.watchSelector().isPresent());
     }
 }

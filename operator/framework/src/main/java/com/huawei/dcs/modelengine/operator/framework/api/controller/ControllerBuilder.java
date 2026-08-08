@@ -31,16 +31,23 @@ import java.util.function.Function;
  */
 public final class ControllerBuilder<T extends HasMetadata> {
     private final Class<T> resourceType;
+
     private final Reconciler<T> reconciler;
+
     private final Set<Class<? extends HasMetadata>> ownedResources = new LinkedHashSet<>();
+
     private final Map<String, ControllerRegistration.SecondaryWatch<? extends HasMetadata, T>> secondaryWatches =
-            new LinkedHashMap<>();
+        new LinkedHashMap<>();
+
+    private final Map<String, Function<T, String>> indexFields = new LinkedHashMap<>();
 
     private Boolean generationFilter;
+
     private Duration resyncPeriod;
+
     private boolean kubernetesEvents;
+
     private WatchSelector watchSelector;
-    private final Map<String, Function<T, String>> indexFields = new LinkedHashMap<>();
 
     private ControllerBuilder(Class<T> resourceType, Reconciler<T> reconciler) {
         this.resourceType = Objects.requireNonNull(resourceType, "resourceType must not be null");
@@ -55,9 +62,8 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @param reconciler the reconciler invoked for the primary resource
      * @return a new controller builder
      */
-    public static <T extends HasMetadata> ControllerBuilder<T> forResource(
-            Class<T> resourceType,
-            Reconciler<T> reconciler) {
+    public static <T extends HasMetadata> ControllerBuilder<T> forResource(Class<T> resourceType,
+        Reconciler<T> reconciler) {
         return new ControllerBuilder<>(resourceType, reconciler);
     }
 
@@ -90,19 +96,6 @@ public final class ControllerBuilder<T extends HasMetadata> {
     }
 
     /**
-     * Registers an owned resource type whose changes reconcile the primary resource.
-     *
-     * @param <S> the owned resource type
-     * @param resourceType the owned resource class
-     * @return this builder
-     * @throws NullPointerException if {@code resourceType} is null
-     */
-    public synchronized <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
-        ownedResources.add(Objects.requireNonNull(resourceType, "resourceType must not be null"));
-        return this;
-    }
-
-    /**
      * Registers the dependent's type as an owned resource; submit its desired state via
      * {@code Dependents.apply}.
      *
@@ -116,6 +109,19 @@ public final class ControllerBuilder<T extends HasMetadata> {
     }
 
     /**
+     * Registers an owned resource type whose changes reconcile the primary resource.
+     *
+     * @param <S> the owned resource type
+     * @param resourceType the owned resource class
+     * @return this builder
+     * @throws NullPointerException if {@code resourceType} is null
+     */
+    public synchronized <S extends HasMetadata> ControllerBuilder<T> owns(Class<S> resourceType) {
+        ownedResources.add(Objects.requireNonNull(resourceType, "resourceType must not be null"));
+        return this;
+    }
+
+    /**
      * Registers a named watch on a secondary resource type, mapping its events to primary resources.
      *
      * @param <S> the secondary resource type
@@ -126,10 +132,8 @@ public final class ControllerBuilder<T extends HasMetadata> {
      * @throws NullPointerException if {@code resourceType} or {@code mapper} is null
      * @throws IllegalArgumentException if the name is blank or already registered
      */
-    public synchronized <S extends HasMetadata> ControllerBuilder<T> watches(
-            String name,
-            Class<S> resourceType,
-            ResourceMapper<S, T> mapper) {
+    public synchronized <S extends HasMetadata> ControllerBuilder<T> watches(String name, Class<S> resourceType,
+        ResourceMapper<S, T> mapper) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("name must not be blank");
         }
@@ -212,29 +216,18 @@ public final class ControllerBuilder<T extends HasMetadata> {
     }
 
     private Snapshot<T> snapshot() {
-        return new Snapshot<>(
-                resourceType,
-                reconciler,
-                Optional.ofNullable(generationFilter),
-                Optional.ofNullable(resyncPeriod),
-                List.copyOf(ownedResources),
-                List.copyOf(secondaryWatches.values()),
-                kubernetesEvents,
-                Optional.ofNullable(watchSelector),
-                Map.copyOf(indexFields));
+        return new Snapshot<>(resourceType, reconciler, Optional.ofNullable(generationFilter),
+            Optional.ofNullable(resyncPeriod), List.copyOf(ownedResources), List.copyOf(secondaryWatches.values()),
+            kubernetesEvents, Optional.ofNullable(watchSelector), Map.copyOf(indexFields));
     }
 
     record Snapshot<T extends HasMetadata>(
-            Class<T> resourceType,
-            Reconciler<T> reconciler,
-            Optional<Boolean> generationFilter,
-            Optional<Duration> resyncPeriod,
+            Class<T> resourceType, Reconciler<T> reconciler,
+            Optional<Boolean> generationFilter, Optional<Duration> resyncPeriod,
             List<Class<? extends HasMetadata>> ownedResources,
             List<ControllerRegistration.SecondaryWatch<? extends HasMetadata, T>> secondaryWatches,
-            boolean kubernetesEvents,
-            Optional<WatchSelector> watchSelector,
-            Map<String, Function<T, String>> indexFields) {
-    }
+            boolean kubernetesEvents, Optional<WatchSelector> watchSelector,
+            Map<String, Function<T, String>> indexFields) {}
 
     /**
      * Equality-match label and field selectors for the primary watch; empty maps mean no filtering.

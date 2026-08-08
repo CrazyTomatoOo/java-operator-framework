@@ -41,7 +41,6 @@ public final class StatusUpdates {
         Objects.requireNonNull(resource, "resource");
         Objects.requireNonNull(status, "status");
         var body = Serialization.asJson(Map.of("status", status));
-        return client.resource(resource)
-                .subresource("status").patch(PatchContext.of(PatchType.JSON_MERGE), body);
+        return client.resource(resource).subresource("status").patch(PatchContext.of(PatchType.JSON_MERGE), body);
     }
 }

@@ -27,10 +27,7 @@ import java.util.Optional;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
-public record ResourceEvent<S extends HasMetadata>(
-        ResourceEventType type,
-        S resource,
-        Optional<S> previousResource) {
+public record ResourceEvent<S extends HasMetadata>(ResourceEventType type, S resource, Optional<S> previousResource) {
     /**
      * Validates the event details.
      *

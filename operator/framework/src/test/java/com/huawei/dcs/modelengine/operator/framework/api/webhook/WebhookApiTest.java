@@ -43,11 +43,9 @@ class WebhookApiTest {
     void contextsAreStableAndImmutable() {
         var reference = new ResourceReference("v1", "ConfigMap", "default", "sample", null);
         var groups = new java.util.ArrayList<>(List.of("developers"));
-        var identity = new AdmissionContext.UserIdentity(
-                "alice", "user-1", groups, Map.of("scopes", List.of("write")));
-        var context = new AdmissionContext(
-                "request-1", "UPDATE", reference, true,
-                Map.<String, Object>of("propagationPolicy", "Foreground"), identity);
+        var identity = new AdmissionContext.UserIdentity("alice", "user-1", groups, Map.of("scopes", List.of("write")));
+        var context = new AdmissionContext("request-1", "UPDATE", reference, true,
+            Map.<String, Object>of("propagationPolicy", "Foreground"), identity);
 
         groups.add("admins");
         assertEquals("request-1", context.uid());

@@ -70,7 +70,7 @@ public final class Owners {
         }
         if (meta.getUid() == null || meta.getUid().isBlank()) {
             throw new IllegalArgumentException(
-                    "owner uid must not be blank; the owner must already exist on the server");
+                "owner uid must not be blank; the owner must already exist on the server");
         }
         return meta;
     }
@@ -78,28 +78,27 @@ public final class Owners {
     private static void requireSameNamespace(ObjectMeta owner, ObjectMeta dependent) {
         if (owner.getNamespace() != null && !owner.getNamespace().equals(dependent.getNamespace())) {
             throw new IllegalArgumentException(
-                    "owner and dependent must share a namespace, or the owner must be cluster-scoped");
+                "owner and dependent must share a namespace, or the owner must be cluster-scoped");
         }
     }
 
     private static void rejectForeignController(List<OwnerReference> refs, String ownerUid) {
         for (var ref : refs) {
             if (Boolean.TRUE.equals(ref.getController()) && !ownerUid.equals(ref.getUid())) {
-                throw new IllegalStateException(String.format(
-                        "dependent is already controlled by %s/%s (uid %s)",
-                        ref.getKind(), ref.getName(), ref.getUid()));
+                throw new IllegalStateException(
+                    String.format("dependent is already controlled by %s/%s (uid %s)", ref.getKind(), ref.getName(),
+                        ref.getUid()));
             }
         }
     }
 
     private static OwnerReference controllerReference(HasMetadata owner, ObjectMeta meta) {
-        return new OwnerReferenceBuilder()
-                .withApiVersion(owner.getApiVersion())
-                .withKind(owner.getKind())
-                .withName(meta.getName())
-                .withUid(meta.getUid())
-                .withController(true)
-                .withBlockOwnerDeletion(true)
-                .build();
+        return new OwnerReferenceBuilder().withApiVersion(owner.getApiVersion())
+            .withKind(owner.getKind())
+            .withName(meta.getName())
+            .withUid(meta.getUid())
+            .withController(true)
+            .withBlockOwnerDeletion(true)
+            .build();
     }
 }

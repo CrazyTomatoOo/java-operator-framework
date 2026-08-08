@@ -24,9 +24,9 @@ final class GenerationFilter {
         }
         var oldMetadata = previous.getMetadata();
         var newMetadata = current.getMetadata();
-        return !Objects.equals(oldMetadata.getGeneration(), newMetadata.getGeneration())
-                || !Objects.equals(oldMetadata.getDeletionTimestamp(), newMetadata.getDeletionTimestamp())
-                || !Objects.equals(oldMetadata.getFinalizers(), newMetadata.getFinalizers());
+        return !Objects.equals(oldMetadata.getGeneration(), newMetadata.getGeneration()) || !Objects.equals(
+            oldMetadata.getDeletionTimestamp(), newMetadata.getDeletionTimestamp()) || !Objects.equals(
+            oldMetadata.getFinalizers(), newMetadata.getFinalizers());
     }
 
     static boolean isResync(HasMetadata previous, HasMetadata current) {
@@ -34,7 +34,6 @@ final class GenerationFilter {
             return true;
         }
         var resourceVersion = previous.getMetadata().getResourceVersion();
-        return resourceVersion != null
-                && resourceVersion.equals(current.getMetadata().getResourceVersion());
+        return resourceVersion != null && resourceVersion.equals(current.getMetadata().getResourceVersion());
     }
 }

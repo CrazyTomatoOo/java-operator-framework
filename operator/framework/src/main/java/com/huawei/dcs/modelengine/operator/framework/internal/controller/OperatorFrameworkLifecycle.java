@@ -28,17 +28,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class OperatorFrameworkLifecycle implements SmartLifecycle {
 
     private final OperatorFrameworkProperties properties;
+
     private final ControllerRuntimeFactory runtimeFactory;
+
     private final LeaderElectionAdapter leaderElection;
+
     private final RuntimeLifecycleSupport support;
-    private final ScheduledExecutorService supervisor = Executors.newSingleThreadScheduledExecutor(
-            Thread.ofPlatform().name("operator-supervisor").factory());
+
+    private final ScheduledExecutorService supervisor =
+        Executors.newSingleThreadScheduledExecutor(Thread.ofPlatform().name("operator-supervisor").factory());
+
     private final AtomicBoolean running = new AtomicBoolean();
+
     private volatile boolean leading;
+
     private volatile boolean electionActive;
+
     private volatile ControllerRuntime runtime;
+
     private volatile String lastFailure = "none";
+
     private CompletableFuture<Void> stoppingRuntime = CompletableFuture.completedFuture(null);
+
+    OperatorFrameworkLifecycle(OperatorFrameworkProperties properties, ControllerRuntimeFactory runtimeFactory,
+        LeaderElectionAdapter leaderElection, RuntimeReadiness readiness) {
+        this(properties, runtimeFactory, leaderElection, new RuntimeLifecycleSupport(readiness));
+    }
 
     /**
      * Creates the lifecycle supervisor.
@@ -48,23 +63,12 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
      * @param leaderElection the leader election adapter
      * @param support the readiness, metrics, and policy-state lifecycle support
      */
-    public OperatorFrameworkLifecycle(
-            OperatorFrameworkProperties properties,
-            ControllerRuntimeFactory runtimeFactory,
-            LeaderElectionAdapter leaderElection,
-            RuntimeLifecycleSupport support) {
+    public OperatorFrameworkLifecycle(OperatorFrameworkProperties properties, ControllerRuntimeFactory runtimeFactory,
+        LeaderElectionAdapter leaderElection, RuntimeLifecycleSupport support) {
         this.properties = properties;
         this.runtimeFactory = runtimeFactory;
         this.leaderElection = leaderElection;
         this.support = support;
-    }
-
-    OperatorFrameworkLifecycle(
-            OperatorFrameworkProperties properties,
-            ControllerRuntimeFactory runtimeFactory,
-            LeaderElectionAdapter leaderElection,
-            RuntimeReadiness readiness) {
-        this(properties, runtimeFactory, leaderElection, new RuntimeLifecycleSupport(readiness));
     }
 
     /**
@@ -84,6 +88,12 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         }
     }
 
+    /** Stops the lifecycle without a completion callback. */
+    @Override
+    public void stop() {
+        stop(() -> {});
+    }
+
     /**
      * Stops the runtime and leader election without blocking the caller.
      *
@@ -97,14 +107,30 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         }
         electionActive = false;
         support.notReady();
-        supervisor.execute(() -> stopRuntime().whenComplete(
-                (ignored, exception) -> finishLifecycleStop(callback)));
+        supervisor.execute(() -> stopRuntime().whenComplete((ignored, exception) -> finishLifecycleStop(callback)));
     }
 
-    /** Stops the lifecycle without a completion callback. */
-    @Override
-    public void stop() {
-        stop(() -> { });
+    private CompletableFuture<Void> stopRuntime() {
+        var current = runtime;
+        runtime = null;
+        if (current != null) {
+            stoppingRuntime =
+                current.stop().toCompletableFuture().whenComplete((ignored, exception) -> support.runtimeStopped());
+        } else if (stoppingRuntime.isDone()) {
+            support.runtimeStopped();
+        }
+        return stoppingRuntime;
+    }
+
+    private void finishLifecycleStop(Runnable callback) {
+        leaderElection.stop();
+        finishStop(callback);
+    }
+
+    private void finishStop(Runnable callback) {
+        supervisor.shutdownNow();
+        support.close();
+        callback.run();
     }
 
     /**
@@ -219,8 +245,7 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         leading = false;
         support.notReady();
         if (running.get()) {
-            supervisor.execute(() -> stopRuntime().whenComplete(
-                    (ignored, exception) -> markStandbyReady()));
+            supervisor.execute(() -> stopRuntime().whenComplete((ignored, exception) -> markStandbyReady()));
         }
     }
 
@@ -263,26 +288,9 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         schedule(this::checkRuntime);
     }
 
-    private CompletableFuture<Void> stopRuntime() {
-        var current = runtime;
-        runtime = null;
-        if (current != null) {
-            stoppingRuntime = current.stop().toCompletableFuture()
-                    .whenComplete((ignored, exception) -> support.runtimeStopped());
-        } else if (stoppingRuntime.isDone()) {
-            support.runtimeStopped();
-        }
-        return stoppingRuntime;
-    }
-
     private void restartLeaderElection() {
         leaderElection.stop();
         schedule(this::startLeaderElection);
-    }
-
-    private void finishLifecycleStop(Runnable callback) {
-        leaderElection.stop();
-        finishStop(callback);
     }
 
     private void resumeRuntimeStart() {
@@ -302,13 +310,7 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
     private void schedule(Runnable action) {
         if (running.get()) {
             supervisor.schedule(action, properties.getController().getStartupRetryDelay().toMillis(),
-                    TimeUnit.MILLISECONDS);
+                TimeUnit.MILLISECONDS);
         }
-    }
-
-    private void finishStop(Runnable callback) {
-        supervisor.shutdownNow();
-        support.close();
-        callback.run();
     }
 }

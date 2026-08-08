@@ -58,17 +58,35 @@ class OperatorFrameworkLifecycleTest {
         stop(lifecycle);
     }
 
+    private RuntimeReadiness readiness() {
+        var readiness = new RuntimeReadiness(event -> {}, false);
+        readiness.onApplicationEvent(null);
+        return readiness;
+    }
+
+    private OperatorFrameworkProperties properties() {
+        var properties = new OperatorFrameworkProperties();
+        properties.getController().setStartupRetryDelay(Duration.ofMillis(10));
+        return properties;
+    }
+
+    private void stop(OperatorFrameworkLifecycle lifecycle) throws InterruptedException {
+        var latch = new CountDownLatch(1);
+        lifecycle.stop(latch::countDown);
+        assertThat(latch.await(1, TimeUnit.SECONDS)).isTrue();
+    }
+
     @Test
     void unsyncedRuntimeStaysAliveWhileReadinessIsRetried() throws Exception {
         var runtime = new TestRuntime(false);
         var factory = new TestRuntimeFactory(runtime);
         var readiness = readiness();
-        var lifecycle = new OperatorFrameworkLifecycle(
-                properties(), factory, new TestLeaderElection(), readiness);
+        var lifecycle = new OperatorFrameworkLifecycle(properties(), factory, new TestLeaderElection(), readiness);
 
         lifecycle.start();
-        await().during(Duration.ofMillis(50)).atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(factory.creations).hasValue(1));
+        await().during(Duration.ofMillis(50))
+            .atMost(Duration.ofSeconds(1))
+            .untilAsserted(() -> assertThat(factory.creations).hasValue(1));
         assertThat(readiness.isReady()).isFalse();
 
         runtime.stopped.complete(null);
@@ -78,8 +96,9 @@ class OperatorFrameworkLifecycleTest {
     @Test
     void shutdownCallbackWaitsForRuntimeDrain() throws Exception {
         var runtime = new TestRuntime(true);
-        var lifecycle = new OperatorFrameworkLifecycle(
-                properties(), new TestRuntimeFactory(runtime), new TestLeaderElection(), readiness());
+        var lifecycle =
+            new OperatorFrameworkLifecycle(properties(), new TestRuntimeFactory(runtime), new TestLeaderElection(),
+                readiness());
         lifecycle.start();
         await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(runtime.started).isTrue());
 
@@ -126,15 +145,12 @@ class OperatorFrameworkLifecycleTest {
         var properties = properties();
         properties.getLeaderElection().setEnabled(true);
         var leader = new TestLeaderElection();
-        var lifecycle = new OperatorFrameworkLifecycle(
-                properties, new TestRuntimeFactory(), leader, readiness());
+        var lifecycle = new OperatorFrameworkLifecycle(properties, new TestRuntimeFactory(), leader, readiness());
 
         lifecycle.start();
-        await().atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
         leader.fail(new IllegalStateException("lease watch failed"));
-        await().atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
 
         stop(lifecycle);
     }
@@ -145,22 +161,21 @@ class OperatorFrameworkLifecycleTest {
         properties.getLeaderElection().setEnabled(true);
         var leader = new TestLeaderElection();
         var runtime = new TestRuntime(true);
-        var lifecycle = new OperatorFrameworkLifecycle(
-                properties, new TestRuntimeFactory(runtime), leader, readiness());
+        var lifecycle =
+            new OperatorFrameworkLifecycle(properties, new TestRuntimeFactory(runtime), leader, readiness());
 
         lifecycle.start();
-        await().atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
         leader.startLeading.run();
         await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(runtime.started).isTrue());
         leader.fail(new IllegalStateException("lease watch failed"));
         await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(runtime.stopCalls).hasValue(1));
-        await().during(Duration.ofMillis(50)).atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
+        await().during(Duration.ofMillis(50))
+            .atMost(Duration.ofSeconds(1))
+            .untilAsserted(() -> assertThat(leader.startCalls).hasValue(1));
 
         runtime.stopped.complete(null);
-        await().atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
+        await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(leader.startCalls).hasValue(2));
         stop(lifecycle);
     }
 
@@ -168,12 +183,13 @@ class OperatorFrameworkLifecycleTest {
     void policyStateClearsBetweenLeadershipTerms() throws Throwable {
         var properties = properties();
         properties.getLeaderElection().setEnabled(true);
-        var retry = new ReconcileRetryAspect(
-                properties, new OperatorFrameworkMetrics(null), new DefaultListableBeanFactory(), () -> 1.0);
-        var rateLimit = new ReconcileRateLimitAspect(properties, java.time.Clock.systemUTC(), new DefaultListableBeanFactory());
+        var retry =
+            new ReconcileRetryAspect(properties, new OperatorFrameworkMetrics(null), new DefaultListableBeanFactory(),
+                () -> 1.0);
+        var rateLimit =
+            new ReconcileRateLimitAspect(properties, java.time.Clock.systemUTC(), new DefaultListableBeanFactory());
         var readiness = readiness();
-        var support = new RuntimeLifecycleSupport(
-                readiness, new OperatorFrameworkMetrics(null), retry, rateLimit);
+        var support = new RuntimeLifecycleSupport(readiness, new OperatorFrameworkMetrics(null), retry, rateLimit);
         var leader = new TestLeaderElection();
         var first = new TestRuntime(true);
         var second = new TestRuntime(true);
@@ -206,6 +222,20 @@ class OperatorFrameworkLifecycleTest {
         verify(ratePoint, times(2)).proceed();
         second.stopped.complete(null);
         stop(lifecycle);
+    }
+
+    private ProceedingJoinPoint policyJoinPoint() {
+        var point = mock(ProceedingJoinPoint.class);
+        var resource = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("operators")
+            .withName("sample")
+            .withUid("uid")
+            .endMetadata()
+            .build();
+        var context = ReconciliationContext.withoutCache(new ResourceKey("operators", "sample"), List.of());
+        when(point.getArgs()).thenReturn(new Object[]{resource, context});
+        when(point.getTarget()).thenReturn(new Object());
+        return point;
     }
 
     @Test
@@ -324,43 +354,17 @@ class OperatorFrameworkLifecycleTest {
         await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> assertThat(factory.creations).hasValue(1));
 
         leader.startLeading.run();
-        await().during(Duration.ofMillis(50)).atMost(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(factory.creations).hasValue(1));
+        await().during(Duration.ofMillis(50))
+            .atMost(Duration.ofSeconds(1))
+            .untilAsserted(() -> assertThat(factory.creations).hasValue(1));
 
         runtime.stopped.complete(null);
         stop(lifecycle);
     }
 
-    private ProceedingJoinPoint policyJoinPoint() {
-        var point = mock(ProceedingJoinPoint.class);
-        var resource = new ConfigMapBuilder().withNewMetadata()
-                .withNamespace("operators").withName("sample").withUid("uid").endMetadata().build();
-        var context = ReconciliationContext.withoutCache(new ResourceKey("operators", "sample"), List.of());
-        when(point.getArgs()).thenReturn(new Object[] {resource, context});
-        when(point.getTarget()).thenReturn(new Object());
-        return point;
-    }
-
-    private RuntimeReadiness readiness() {
-        var readiness = new RuntimeReadiness(event -> { }, false);
-        readiness.onApplicationEvent(null);
-        return readiness;
-    }
-
-    private OperatorFrameworkProperties properties() {
-        var properties = new OperatorFrameworkProperties();
-        properties.getController().setStartupRetryDelay(Duration.ofMillis(10));
-        return properties;
-    }
-
-    private void stop(OperatorFrameworkLifecycle lifecycle) throws InterruptedException {
-        var latch = new CountDownLatch(1);
-        lifecycle.stop(latch::countDown);
-        assertThat(latch.await(1, TimeUnit.SECONDS)).isTrue();
-    }
-
     private static final class TestRuntimeFactory implements ControllerRuntimeFactory {
         private final Queue<ControllerRuntime> runtimes = new ArrayDeque<>();
+
         private final AtomicInteger creations = new AtomicInteger();
 
         private TestRuntimeFactory(ControllerRuntime... runtimes) {
@@ -381,8 +385,11 @@ class OperatorFrameworkLifecycleTest {
 
     private static class TestRuntime implements ControllerRuntime {
         private final boolean ready;
+
         private final CompletableFuture<Void> stopped = new CompletableFuture<>();
+
         private final AtomicInteger stopCalls = new AtomicInteger();
+
         private volatile boolean started;
 
         private TestRuntime(boolean ready) {
@@ -452,11 +459,16 @@ class OperatorFrameworkLifecycleTest {
     }
 
     private static final class TestLeaderElection implements LeaderElectionAdapter {
-        private Runnable startLeading;
-        private Runnable stopLeading;
-        private volatile boolean started;
         private final AtomicInteger startCalls = new AtomicInteger();
+
+        private Runnable startLeading;
+
+        private Runnable stopLeading;
+
+        private volatile boolean started;
+
         private volatile CompletableFuture<Void> election;
+
         private volatile RuntimeException startFailure;
 
         /**
@@ -467,9 +479,7 @@ class OperatorFrameworkLifecycleTest {
          * @return the election future, completed or failed by the test
          */
         @Override
-        public java.util.concurrent.CompletionStage<Void> start(
-                Runnable onStartLeading,
-                Runnable onStopLeading) {
+        public java.util.concurrent.CompletionStage<Void> start(Runnable onStartLeading, Runnable onStopLeading) {
             var failure = startFailure;
             startFailure = null;
             startCalls.incrementAndGet();
@@ -483,6 +493,16 @@ class OperatorFrameworkLifecycleTest {
             return election;
         }
 
+        /**
+         * Cancels the running election, if any.
+         */
+        @Override
+        public void stop() {
+            if (election != null) {
+                election.cancel(true);
+            }
+        }
+
         void fail(Throwable failure) {
             election.completeExceptionally(failure);
         }
@@ -493,16 +513,6 @@ class OperatorFrameworkLifecycleTest {
 
         void completeElection() {
             election.complete(null);
-        }
-
-        /**
-         * Cancels the running election, if any.
-         */
-        @Override
-        public void stop() {
-            if (election != null) {
-                election.cancel(true);
-            }
         }
     }
 }

@@ -22,15 +22,18 @@ class DependentsTest {
     private static final String PATH = "/api/v1/namespaces/ns/configmaps/child?fieldManager=test-operator";
 
     KubernetesClient client;
+
     KubernetesMockServer server;
 
     @Test
     void applySetsOwnerReferenceAndAppliesDesiredState() throws InterruptedException {
-        server.expect().patch().withPath(PATH)
-                .andReturn(200, configMap("applied")).once();
-        var primary = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("primary").withUid("uid-1").endMetadata()
-                .build();
+        server.expect().patch().withPath(PATH).andReturn(200, configMap("applied")).once();
+        var primary = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("primary")
+            .withUid("uid-1")
+            .endMetadata()
+            .build();
 
         var applied = Dependents.apply(client, new EchoConfigMap(), primary, context(), "test-operator");
 
@@ -41,13 +44,29 @@ class DependentsTest {
         assertThat(sent).contains("\"uid\":\"uid-1\"");
         assertThat(sent).contains("\"name\":\"primary\"");
     }
+
+    private static ReconciliationContext<ConfigMap> context() {
+        return ReconciliationContext.withoutCache(new ResourceKey("ns", "primary"), java.util.List.of());
+    }
+
+    private static ConfigMap configMap(String value) {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("child")
+            .endMetadata()
+            .addToData("k", value)
+            .build();
+    }
+
     @Test
     void applyDoesNotMutateDesiredResource() throws InterruptedException {
-        server.expect().patch().withPath(PATH)
-                .andReturn(200, configMap("applied")).once();
-        var primary = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("primary").withUid("uid-1").endMetadata()
-                .build();
+        server.expect().patch().withPath(PATH).andReturn(200, configMap("applied")).once();
+        var primary = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("primary")
+            .withUid("uid-1")
+            .endMetadata()
+            .build();
         var cached = configMap("cached");
 
         Dependents.apply(client, new EchoConfigMap(cached), primary, context(), "test-operator");
@@ -57,9 +76,12 @@ class DependentsTest {
 
     @Test
     void rejectsNullDesired() {
-        var primary = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("primary").withUid("uid-1").endMetadata()
-                .build();
+        var primary = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("primary")
+            .withUid("uid-1")
+            .endMetadata()
+            .build();
         DependentResource<ConfigMap, ConfigMap> empty = new DependentResource<>() {
             /**
              * Returns the dependent resource type.
@@ -84,20 +106,7 @@ class DependentsTest {
             }
         };
 
-        assertThrows(NullPointerException.class,
-                () -> Dependents.apply(client, empty, primary, context(), "fm"));
-    }
-
-    private static ReconciliationContext<ConfigMap> context() {
-        return ReconciliationContext.withoutCache(new ResourceKey("ns", "primary"), java.util.List.of());
-    }
-
-
-    private static ConfigMap configMap(String value) {
-        return new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("child").endMetadata()
-                .addToData("k", value)
-                .build();
+        assertThrows(NullPointerException.class, () -> Dependents.apply(client, empty, primary, context(), "fm"));
     }
 
     /** Echoes the primary's data into an owned ConfigMap named after the primary's "child" key. */
@@ -111,6 +120,7 @@ class DependentsTest {
         private EchoConfigMap(ConfigMap fixedDesired) {
             this.fixedDesired = fixedDesired;
         }
+
         /**
          * Returns the dependent resource type.
          *
@@ -130,9 +140,7 @@ class DependentsTest {
          */
         @Override
         public ConfigMap desired(ConfigMap primary, ReconciliationContext<ConfigMap> context) {
-            return fixedDesired == null
-                    ? configMap("from-" + primary.getMetadata().getName())
-                    : fixedDesired;
+            return fixedDesired == null ? configMap("from-" + primary.getMetadata().getName()) : fixedDesired;
         }
     }
 }

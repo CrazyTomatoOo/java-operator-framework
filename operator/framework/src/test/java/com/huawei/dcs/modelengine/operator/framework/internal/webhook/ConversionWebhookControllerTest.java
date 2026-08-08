@@ -36,8 +36,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class ConversionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
+
     private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
+
     private GenericApplicationContext context;
+
     private MockMvc mvc;
 
     @BeforeEach
@@ -51,7 +54,7 @@ class ConversionWebhookControllerTest {
         context.refresh();
         var registry = new WebhookCallbackRegistry(context.getBeanFactory());
         mvc = MockMvcBuilders.standaloneSetup(
-                new ConversionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
+            new ConversionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
     }
 
     @AfterEach
@@ -62,13 +65,13 @@ class ConversionWebhookControllerTest {
     @Test
     void convertsBatchInOrderAndPassesThroughSameVersion() throws Exception {
         var result = mvc.perform(conversion("converter", review("v2", resources())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.uid").value("conversion-1"))
-                .andExpect(jsonPath("$.response.result.status").value("Success"))
-                .andExpect(jsonPath("$.response.convertedObjects[0].metadata.name").value("already-v2"))
-                .andExpect(jsonPath("$.response.convertedObjects[1].metadata.name").value("needs-conversion"))
-                .andExpect(jsonPath("$.response.convertedObjects[1].apiVersion").value("v2"))
-                .andReturn();
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.uid").value("conversion-1"))
+            .andExpect(jsonPath("$.response.result.status").value("Success"))
+            .andExpect(jsonPath("$.response.convertedObjects[0].metadata.name").value("already-v2"))
+            .andExpect(jsonPath("$.response.convertedObjects[1].metadata.name").value("needs-conversion"))
+            .andExpect(jsonPath("$.response.convertedObjects[1].apiVersion").value("v2"))
+            .andReturn();
 
         var converter = context.getBean(VersionConverter.class);
         assertThat(converter.calls).hasValue(1);
@@ -76,85 +79,10 @@ class ConversionWebhookControllerTest {
         assertThat(result.getResponse().getContentAsString()).doesNotContain("sensitive");
     }
 
-    @Test
-    void anyFailureFailsWholeBatchWithoutPartialObjects() throws Exception {
-        mvc.perform(conversion("failure", review("v2", resources())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.uid").value("conversion-1"))
-                .andExpect(jsonPath("$.response.result.status").value("Failure"))
-                .andExpect(jsonPath("$.response.result.message").value("webhook callback failed"))
-                .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
-    }
-
-    @Test
-    void failsWhenConverterReturnsWrongDesiredApiVersion() throws Exception {
-        mvc.perform(conversion("wrongversion", review("v2", List.of(resource("source", "v1")))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.result.status").value("Failure"))
-                .andExpect(jsonPath("$.response.result.message").value("webhook callback failed"))
-                .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
-    }
-
-    @Test
-    void failsWhenConverterChangesKind() throws Exception {
-        mvc.perform(conversion("wrongkind", review("v2", List.of(resource("source", "v1")))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.result.status").value("Failure"))
-                .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
-    }
-
-    @Test
-    void failsWhenConverterChangesResourceIdentity() throws Exception {
-        mvc.perform(conversion("changedidentity", review("v2", List.of(resource("source", "v1")))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.result.status").value("Failure"))
-                .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
-    }
-
-    @Test
-    void rejectsSourceTypeMismatchBeforeInvokingConverter() throws Exception {
-        var source = resource("source", "v1");
-        source.setKind("Secret");
-
-        mvc.perform(conversion("converter", review("v2", List.of(source))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.result.status").value("Failure"))
-                .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
-        assertThat(context.getBean(VersionConverter.class).calls).hasValue(0);
-    }
-
-    @Test
-    void rejectsUnknownAndMalformedReview() throws Exception {
-        mvc.perform(conversion("missing", review("v2", resources())))
-                .andExpect(status().isBadRequest());
-        mvc.perform(post("/operator-framework/webhooks/convert/converter")
-                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void recordsCallbackMetricsPerOutcome() throws Exception {
-        mvc.perform(conversion("converter", review("v2", resources()))).andExpect(status().isOk());
-        mvc.perform(conversion("failure", review("v2", resources()))).andExpect(status().isOk());
-
-        assertThat(callbackCount("converter", "converted")).isEqualTo(1.0);
-        assertThat(callbackCount("failure", "error")).isEqualTo(1.0);
-        assertThat(meters.get("operator.framework.callback.duration")
-                .tags("callback.type", "converter", "bean", "converter", "outcome", "converted")
-                .timer().count()).isEqualTo(1);
-    }
-
-    private double callbackCount(String bean, String outcome) {
-        return meters.get("operator.framework.callback.total")
-                .tags("callback.type", "converter", "bean", bean, "outcome", outcome).counter().count();
-    }
-
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder conversion(
-            String name,
-            ConversionReview review) throws Exception {
-        return post("/operator-framework/webhooks/convert/" + name)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsBytes(review));
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder conversion(String name,
+        ConversionReview review) throws Exception {
+        return post("/operator-framework/webhooks/convert/" + name).contentType(MediaType.APPLICATION_JSON)
+            .content(mapper.writeValueAsBytes(review));
     }
 
     private ConversionReview review(String desired, List<Object> resources) {
@@ -174,8 +102,86 @@ class ConversionWebhookControllerTest {
     }
 
     private ConfigMap resource(String name, String version) {
-        return new ConfigMapBuilder().withApiVersion(version).withKind("ConfigMap")
-                .withNewMetadata().withName(name).endMetadata().build();
+        return new ConfigMapBuilder().withApiVersion(version)
+            .withKind("ConfigMap")
+            .withNewMetadata()
+            .withName(name)
+            .endMetadata()
+            .build();
+    }
+
+    @Test
+    void anyFailureFailsWholeBatchWithoutPartialObjects() throws Exception {
+        mvc.perform(conversion("failure", review("v2", resources())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.uid").value("conversion-1"))
+            .andExpect(jsonPath("$.response.result.status").value("Failure"))
+            .andExpect(jsonPath("$.response.result.message").value("webhook callback failed"))
+            .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
+    }
+
+    @Test
+    void failsWhenConverterReturnsWrongDesiredApiVersion() throws Exception {
+        mvc.perform(conversion("wrongversion", review("v2", List.of(resource("source", "v1")))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.result.status").value("Failure"))
+            .andExpect(jsonPath("$.response.result.message").value("webhook callback failed"))
+            .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
+    }
+
+    @Test
+    void failsWhenConverterChangesKind() throws Exception {
+        mvc.perform(conversion("wrongkind", review("v2", List.of(resource("source", "v1")))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.result.status").value("Failure"))
+            .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
+    }
+
+    @Test
+    void failsWhenConverterChangesResourceIdentity() throws Exception {
+        mvc.perform(conversion("changedidentity", review("v2", List.of(resource("source", "v1")))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.result.status").value("Failure"))
+            .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
+    }
+
+    @Test
+    void rejectsSourceTypeMismatchBeforeInvokingConverter() throws Exception {
+        var source = resource("source", "v1");
+        source.setKind("Secret");
+
+        mvc.perform(conversion("converter", review("v2", List.of(source))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.result.status").value("Failure"))
+            .andExpect(jsonPath("$.response.convertedObjects").doesNotExist());
+        assertThat(context.getBean(VersionConverter.class).calls).hasValue(0);
+    }
+
+    @Test
+    void rejectsUnknownAndMalformedReview() throws Exception {
+        mvc.perform(conversion("missing", review("v2", resources()))).andExpect(status().isBadRequest());
+        mvc.perform(post("/operator-framework/webhooks/convert/converter").contentType(MediaType.APPLICATION_JSON)
+            .content("{}")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void recordsCallbackMetricsPerOutcome() throws Exception {
+        mvc.perform(conversion("converter", review("v2", resources()))).andExpect(status().isOk());
+        mvc.perform(conversion("failure", review("v2", resources()))).andExpect(status().isOk());
+
+        assertThat(callbackCount("converter", "converted")).isEqualTo(1.0);
+        assertThat(callbackCount("failure", "error")).isEqualTo(1.0);
+        assertThat(meters.get("operator.framework.callback.duration")
+            .tags("callback.type", "converter", "bean", "converter", "outcome", "converted")
+            .timer()
+            .count()).isEqualTo(1);
+    }
+
+    private double callbackCount(String bean, String outcome) {
+        return meters.get("operator.framework.callback.total")
+            .tags("callback.type", "converter", "bean", bean, "outcome", outcome)
+            .counter()
+            .count();
     }
 
     static final class IdentityChangingConverter implements ResourceConverter<ConfigMap> {
@@ -189,13 +195,17 @@ class ConversionWebhookControllerTest {
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
             var converted = new ConfigMapBuilder(resource).withApiVersion(context.desiredVersion())
-                    .editMetadata().withName("different").endMetadata().build();
+                .editMetadata()
+                .withName("different")
+                .endMetadata()
+                .build();
             return ConversionResult.converted(converted);
         }
     }
 
     static final class VersionConverter implements ResourceConverter<ConfigMap> {
         private final AtomicInteger calls = new AtomicInteger();
+
         private final AtomicReference<ConversionContext> context = new AtomicReference<>();
 
         /**
@@ -210,7 +220,7 @@ class ConversionWebhookControllerTest {
             calls.incrementAndGet();
             context.set(conversionContext);
             return ConversionResult.converted(
-                    new ConfigMapBuilder(resource).withApiVersion(conversionContext.desiredVersion()).build());
+                new ConfigMapBuilder(resource).withApiVersion(conversionContext.desiredVersion()).build());
         }
     }
 
@@ -238,8 +248,8 @@ class ConversionWebhookControllerTest {
          */
         @Override
         public ConversionResult<ConfigMap> convert(ConfigMap resource, ConversionContext context) {
-            return ConversionResult.converted(new ConfigMapBuilder(resource)
-                    .withApiVersion(context.desiredVersion()).withKind("Secret").build());
+            return ConversionResult.converted(
+                new ConfigMapBuilder(resource).withApiVersion(context.desiredVersion()).withKind("Secret").build());
         }
     }
 

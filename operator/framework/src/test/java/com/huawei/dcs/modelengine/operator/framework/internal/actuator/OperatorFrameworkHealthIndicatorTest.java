@@ -39,10 +39,9 @@ class OperatorFrameworkHealthIndicatorTest {
         readiness.broken();
         readiness.live();
 
-        var states = events.stream()
-                .map(event -> (Object) ((AvailabilityChangeEvent<?>) event).getState()).toList();
+        var states = events.stream().map(event -> (Object) ((AvailabilityChangeEvent<?>) event).getState()).toList();
         assertThat(states).containsExactly(ReadinessState.ACCEPTING_TRAFFIC, ReadinessState.REFUSING_TRAFFIC,
-                LivenessState.BROKEN, LivenessState.CORRECT);
+            LivenessState.BROKEN, LivenessState.CORRECT);
     }
 
     @Test
@@ -54,36 +53,14 @@ class OperatorFrameworkHealthIndicatorTest {
             properties.setMode(OperatorFrameworkProperties.Mode.WEBHOOK);
             var readiness = new RuntimeReadiness();
             readiness.ready();
-            var health = new OperatorFrameworkHealthIndicator(
-                    properties, emptyProvider(), provider(callbacks), readiness).health();
+            var health = new OperatorFrameworkHealthIndicator(properties, emptyProvider(), provider(callbacks),
+                readiness).health();
 
             assertThat(health.getStatus()).isEqualTo(Status.UP);
             var details = (Map<?, ?>) health.getDetails().get("webhook");
             assertThat(details.get("validators")).isEqualTo(1);
-            assertThat(details.get("lastFailure"))
-                    .isEqualTo("validator callback 'validator' failed");
+            assertThat(details.get("lastFailure")).isEqualTo("validator callback 'validator' failed");
         }
-    }
-
-    @Test
-    void reportsControllerStateAndLiveness() {
-        var lifecycle = mock(OperatorFrameworkLifecycle.class);
-        when(lifecycle.isRunning()).thenReturn(true);
-        when(lifecycle.isInformerSynced()).thenReturn(true);
-        when(lifecycle.isLeading()).thenReturn(true);
-        var properties = new OperatorFrameworkProperties();
-        properties.setMode(OperatorFrameworkProperties.Mode.CONTROLLER);
-        var readiness = new RuntimeReadiness();
-        readiness.ready();
-        var indicator = new OperatorFrameworkHealthIndicator(
-                properties, provider(lifecycle), emptyProvider(), readiness);
-
-        var details = (Map<?, ?>) indicator.health().getDetails().get("controller");
-        assertThat(details.get("state")).isEqualTo("running");
-        assertThat(details.get("informerSynced")).isEqualTo(true);
-        assertThat(details.get("leadership")).isEqualTo(true);
-        readiness.broken();
-        assertThat(indicator.health().getStatus()).isEqualTo(Status.DOWN);
     }
 
     private GenericApplicationContext callbackContext() {
@@ -103,6 +80,27 @@ class OperatorFrameworkHealthIndicatorTest {
     @SuppressWarnings("unchecked")
     private <T> ObjectProvider<T> emptyProvider() {
         return (ObjectProvider<T>) mock(ObjectProvider.class);
+    }
+
+    @Test
+    void reportsControllerStateAndLiveness() {
+        var lifecycle = mock(OperatorFrameworkLifecycle.class);
+        when(lifecycle.isRunning()).thenReturn(true);
+        when(lifecycle.isInformerSynced()).thenReturn(true);
+        when(lifecycle.isLeading()).thenReturn(true);
+        var properties = new OperatorFrameworkProperties();
+        properties.setMode(OperatorFrameworkProperties.Mode.CONTROLLER);
+        var readiness = new RuntimeReadiness();
+        readiness.ready();
+        var indicator =
+            new OperatorFrameworkHealthIndicator(properties, provider(lifecycle), emptyProvider(), readiness);
+
+        var details = (Map<?, ?>) indicator.health().getDetails().get("controller");
+        assertThat(details.get("state")).isEqualTo("running");
+        assertThat(details.get("informerSynced")).isEqualTo(true);
+        assertThat(details.get("leadership")).isEqualTo(true);
+        readiness.broken();
+        assertThat(indicator.health().getStatus()).isEqualTo(Status.DOWN);
     }
 
     static final class TypedValidator implements AdmissionValidator<ConfigMap> {

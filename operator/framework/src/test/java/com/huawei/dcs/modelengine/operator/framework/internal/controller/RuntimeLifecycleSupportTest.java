@@ -33,16 +33,17 @@ class RuntimeLifecycleSupportTest {
         assertThat(registry.find("operator.framework.leadership").gauge()).isNull();
     }
 
-    @Test
-    void closeWithoutStartIsNoop() {
-        var support = new RuntimeLifecycleSupport(
-                readiness(), new OperatorFrameworkMetrics(new SimpleMeterRegistry()), null, null);
-        assertThatCode(support::close).doesNotThrowAnyException();
-    }
-
     private RuntimeReadiness readiness() {
-        var readiness = new RuntimeReadiness(event -> { }, false);
+        var readiness = new RuntimeReadiness(event -> {}, false);
         readiness.onApplicationEvent(null);
         return readiness;
+    }
+
+    @Test
+    void closeWithoutStartIsNoop() {
+        var support =
+            new RuntimeLifecycleSupport(readiness(), new OperatorFrameworkMetrics(new SimpleMeterRegistry()), null,
+                null);
+        assertThatCode(support::close).doesNotThrowAnyException();
     }
 }

@@ -16,7 +16,9 @@ import java.util.Optional;
  */
 public final class MutationResult<T> {
     private final Status status;
+
     private final T resource;
+
     private final String message;
 
     private MutationResult(Status status, T resource, String message) {

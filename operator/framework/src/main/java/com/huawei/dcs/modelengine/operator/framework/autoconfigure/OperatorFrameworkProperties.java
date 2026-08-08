@@ -23,19 +23,25 @@ import java.time.Duration;
 @Validated
 @ConfigurationProperties("operator.framework")
 public class OperatorFrameworkProperties {
-    private boolean enabled = true;
-    @NotNull
-    private Mode mode = Mode.COMBINED;
     @Valid
     private final Controller controller = new Controller();
+
     @Valid
     private final LeaderElection leaderElection = new LeaderElection();
+
     @Valid
     private final Retry retry = new Retry();
+
     @Valid
     private final RateLimit rateLimit = new RateLimit();
+
     @Valid
     private final Events events = new Events();
+
+    private boolean enabled = true;
+
+    @NotNull
+    private Mode mode = Mode.COMBINED;
 
     /**
      * Gets whether the operator framework is enabled.
@@ -118,26 +124,26 @@ public class OperatorFrameworkProperties {
         return events;
     }
 
-    /** Runtime modes supported by the starter. */
-    public enum Mode {
-        CONTROLLER,
-        WEBHOOK,
-        COMBINED
-    }
-
     /** Controller worker and informer settings. */
     public static class Controller {
         private static final Duration DEFAULT_RESYNC_PERIOD = Duration.ofSeconds(60);
+
         private static final Duration DEFAULT_STARTUP_RETRY_DELAY = Duration.ofSeconds(5);
 
         private String namespace;
+
         private boolean clusterScoped;
+
         @Min(1)
         private int workerThreads = 1;
+
         @NotNull
         private Duration resyncPeriod = DEFAULT_RESYNC_PERIOD;
+
         private boolean generationChangeFilter = true;
+
         private boolean filterEventsByInvolvedObject = true;
+
         @NotNull
         private Duration startupRetryDelay = DEFAULT_STARTUP_RETRY_DELAY;
 
@@ -226,7 +232,7 @@ public class OperatorFrameworkProperties {
          * Sets whether reconciliation is skipped when only the resource generation is unchanged.
          *
          * @param generationChangeFilter whether reconciliation is skipped when only the resource generation is
-         *        unchanged
+         *     unchanged
          */
         public void setGenerationChangeFilter(boolean generationChangeFilter) {
             this.generationChangeFilter = generationChangeFilter;
@@ -246,7 +252,7 @@ public class OperatorFrameworkProperties {
          * Sets whether the Kubernetes-Event watch narrows with involvedObject field selectors.
          *
          * @param filterEventsByInvolvedObject whether the Kubernetes-Event watch narrows with involvedObject field
-         *        selectors
+         *     selectors
          */
         public void setFilterEventsByInvolvedObject(boolean filterEventsByInvolvedObject) {
             this.filterEventsByInvolvedObject = filterEventsByInvolvedObject;
@@ -288,23 +294,30 @@ public class OperatorFrameworkProperties {
         @AssertTrue(message = "controller resync-period must be non-negative and startup-retry-delay positive")
         public boolean isTimingValid() {
             return resyncPeriod == null || startupRetryDelay == null
-                    || !resyncPeriod.isNegative() && startupRetryDelay.compareTo(Duration.ZERO) > 0;
+                || !resyncPeriod.isNegative() && startupRetryDelay.compareTo(Duration.ZERO) > 0;
         }
     }
 
     /** Lease leader-election settings. */
     public static class LeaderElection {
         private static final Duration DEFAULT_LEASE_DURATION = Duration.ofSeconds(15);
+
         private static final Duration DEFAULT_RENEW_DEADLINE = Duration.ofSeconds(10);
+
         private static final int MAX_DNS_LABEL_LENGTH = 63;
 
         private boolean enabled;
+
         private String leaseName;
+
         private String namespace;
+
         @NotNull
         private Duration leaseDuration = DEFAULT_LEASE_DURATION;
+
         @NotNull
         private Duration renewDeadline = DEFAULT_RENEW_DEADLINE;
+
         @NotNull
         private Duration retryPeriod = Duration.ofSeconds(2);
 
@@ -426,6 +439,15 @@ public class OperatorFrameworkProperties {
             return isTimingMissing() || isTimingOrdered();
         }
 
+        private boolean isTimingMissing() {
+            return leaseDuration == null || renewDeadline == null || retryPeriod == null;
+        }
+
+        private boolean isTimingOrdered() {
+            return retryPeriod.compareTo(Duration.ZERO) > 0 && renewDeadline.compareTo(retryPeriod) > 0
+                && leaseDuration.compareTo(renewDeadline) > 0;
+        }
+
         /**
          * Checks that the lease name and namespace are valid DNS labels.
          *
@@ -442,28 +464,22 @@ public class OperatorFrameworkProperties {
             }
             return value.length() <= MAX_DNS_LABEL_LENGTH && value.matches("[a-z0-9]([-a-z0-9]*[a-z0-9])?");
         }
-
-        private boolean isTimingMissing() {
-            return leaseDuration == null || renewDeadline == null || retryPeriod == null;
-        }
-
-        private boolean isTimingOrdered() {
-            return retryPeriod.compareTo(Duration.ZERO) > 0
-                    && renewDeadline.compareTo(retryPeriod) > 0
-                    && leaseDuration.compareTo(renewDeadline) > 0;
-        }
     }
 
     /** Exception retry settings. */
     public static class Retry {
         private static final Duration DEFAULT_INITIAL_DELAY = Duration.ofMillis(500);
+
         private static final Duration DEFAULT_MAX_DELAY = Duration.ofSeconds(30);
+
         private static final int DEFAULT_MAX_ATTEMPTS = 5;
 
         @NotNull
         private Duration initialDelay = DEFAULT_INITIAL_DELAY;
+
         @NotNull
         private Duration maxDelay = DEFAULT_MAX_DELAY;
+
         @Min(1)
         private int maxAttempts = DEFAULT_MAX_ATTEMPTS;
 
@@ -528,8 +544,8 @@ public class OperatorFrameworkProperties {
          */
         @AssertTrue(message = "retry delays must be positive and max-delay must not be less than initial-delay")
         public boolean isRangeValid() {
-            return initialDelay == null || maxDelay == null || initialDelay.compareTo(Duration.ZERO) > 0
-                    && maxDelay.compareTo(initialDelay) >= 0;
+            return initialDelay == null || maxDelay == null
+                || initialDelay.compareTo(Duration.ZERO) > 0 && maxDelay.compareTo(initialDelay) >= 0;
         }
     }
 
@@ -572,12 +588,16 @@ public class OperatorFrameworkProperties {
     /** Kubernetes Event publication settings. */
     public static class Events {
         private static final Duration DEFAULT_AGGREGATION_WINDOW = Duration.ofMinutes(5);
+
         private static final int DEFAULT_MAX_CACHE_ENTRIES = 1000;
 
         private boolean enabled = true;
+
         private String component;
+
         @NotNull
         private Duration aggregationWindow = DEFAULT_AGGREGATION_WINDOW;
+
         @Min(1)
         private int maxCacheEntries = DEFAULT_MAX_CACHE_ENTRIES;
 
@@ -662,5 +682,12 @@ public class OperatorFrameworkProperties {
         public boolean isAggregationWindowValid() {
             return aggregationWindow == null || aggregationWindow.compareTo(Duration.ZERO) > 0;
         }
+    }
+
+    /** Runtime modes supported by the starter. */
+    public enum Mode {
+        CONTROLLER,
+        WEBHOOK,
+        COMBINED
     }
 }

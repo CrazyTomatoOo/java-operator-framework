@@ -24,6 +24,7 @@ import org.springframework.core.annotation.Order;
 @Order(Ordered.HIGHEST_PRECEDENCE + 200)
 public final class ReconcileExceptionAspect {
     private final OperatorFrameworkMetrics metrics;
+
     private final SpringCallbackIdentifier identifiers;
 
     /**
@@ -32,9 +33,7 @@ public final class ReconcileExceptionAspect {
      * @param metrics the metrics recorder for terminal failures
      * @param beanFactory the bean factory used to resolve callback bean names
      */
-    public ReconcileExceptionAspect(
-            OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory) {
+    public ReconcileExceptionAspect(OperatorFrameworkMetrics metrics, ConfigurableListableBeanFactory beanFactory) {
         this.metrics = metrics;
         identifiers = new SpringCallbackIdentifier(beanFactory);
     }
@@ -56,8 +55,8 @@ public final class ReconcileExceptionAspect {
                 metrics.terminalFailure(identity.bean());
             }
             var logger = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
-            logger.error("{} callback '{}' failed with {}",
-                    identity.type(), identity.bean(), exception.getClass().getName());
+            logger.error("{} callback '{}' failed with {}", identity.type(), identity.bean(),
+                exception.getClass().getName());
             logger.debug("Callback failure stack trace", exception);
             throw exception;
         }

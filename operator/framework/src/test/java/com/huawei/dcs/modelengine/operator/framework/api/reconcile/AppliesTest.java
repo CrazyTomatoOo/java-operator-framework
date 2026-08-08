@@ -21,14 +21,18 @@ import org.junit.jupiter.api.Test;
 @EnableKubernetesMockClient(crud = false)
 class AppliesTest {
     KubernetesClient client;
+
     KubernetesMockServer server;
 
     @Test
     void applySendsApplyPatchWithExplicitFieldManager() throws InterruptedException {
         var cached = desired("v1");
         cached.setApiVersion(null);
-        server.expect().patch().withPath("/api/v1/namespaces/ns/configmaps/cm?fieldManager=test-operator")
-                .andReturn(200, desired("v1")).once();
+        server.expect()
+            .patch()
+            .withPath("/api/v1/namespaces/ns/configmaps/cm?fieldManager=test-operator")
+            .andReturn(200, desired("v1"))
+            .once();
 
         var applied = Applies.apply(client, cached, "test-operator");
 
@@ -37,11 +41,22 @@ class AppliesTest {
         assertThat(server.getLastRequest().getHeader("Content-Type")).contains("apply-patch+yaml");
     }
 
+    private static ConfigMap desired(String value) {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("cm")
+            .endMetadata()
+            .addToData("k", value)
+            .build();
+    }
+
     @Test
     void applyForciblyAddsForceParameter() {
-        server.expect().patch()
-                .withPath("/api/v1/namespaces/ns/configmaps/cm?fieldManager=test-operator&force=true")
-                .andReturn(200, desired("v1")).once();
+        server.expect()
+            .patch()
+            .withPath("/api/v1/namespaces/ns/configmaps/cm?fieldManager=test-operator&force=true")
+            .andReturn(200, desired("v1"))
+            .once();
 
         var applied = Applies.applyForcibly(client, desired("v1"), "test-operator");
 
@@ -54,12 +69,5 @@ class AppliesTest {
         assertThrows(NullPointerException.class, () -> Applies.apply(client, null, "fm"));
         assertThrows(IllegalArgumentException.class, () -> Applies.apply(client, cm, null));
         assertThrows(IllegalArgumentException.class, () -> Applies.apply(client, cm, " "));
-    }
-
-    private static ConfigMap desired(String value) {
-        return new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("cm").endMetadata()
-                .addToData("k", value)
-                .build();
     }
 }

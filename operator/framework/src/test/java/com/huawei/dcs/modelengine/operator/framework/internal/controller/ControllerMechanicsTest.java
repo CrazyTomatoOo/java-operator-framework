@@ -38,6 +38,11 @@ class ControllerMechanicsTest {
         assertThat(queue.isDrained()).isTrue();
     }
 
+    private ReconciliationTrigger trigger(ResourceEventType type) {
+        var reference = new ResourceReference("v1", "ConfigMap", "operators", "sample", "uid");
+        return new ReconciliationTrigger(type, TriggerRole.PRIMARY, reference);
+    }
+
     @Test
     void queueSerializesEventsArrivingWhileKeyIsInFlight() throws Exception {
         var queue = new ReconciliationQueue();
@@ -51,7 +56,7 @@ class ControllerMechanicsTest {
 
         var second = queue.poll(new ReconciliationQueue.DurationMillis(10)).orElseThrow();
         assertThat(second.triggers()).extracting(ReconciliationTrigger::eventType)
-                .containsExactly(ResourceEventType.UPDATED);
+            .containsExactly(ResourceEventType.UPDATED);
         queue.complete(second.key());
         assertThat(queue.isDrained()).isTrue();
     }
@@ -71,22 +76,15 @@ class ControllerMechanicsTest {
         assertThat(GenerationFilter.accepts(base, unchanged, false)).isTrue();
     }
 
-
-    private ReconciliationTrigger trigger(ResourceEventType type) {
-        var reference = new ResourceReference("v1", "ConfigMap", "operators", "sample", "uid");
-        return new ReconciliationTrigger(type, TriggerRole.PRIMARY, reference);
-    }
-
     private ConfigMap resource(Long generation, String deletionTimestamp, List<String> finalizers) {
-        return new ConfigMapBuilder()
-                .withNewMetadata()
-                .withNamespace("operators")
-                .withName("sample")
-                .withUid("uid")
-                .withGeneration(generation)
-                .withDeletionTimestamp(deletionTimestamp)
-                .withFinalizers(finalizers)
-                .endMetadata()
-                .build();
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("operators")
+            .withName("sample")
+            .withUid("uid")
+            .withGeneration(generation)
+            .withDeletionTimestamp(deletionTimestamp)
+            .withFinalizers(finalizers)
+            .endMetadata()
+            .build();
     }
 }

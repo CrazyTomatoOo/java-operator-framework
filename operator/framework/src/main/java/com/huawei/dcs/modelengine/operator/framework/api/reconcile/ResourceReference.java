@@ -42,6 +42,12 @@ public record ResourceReference(String apiVersion, String kind, String namespace
         }
     }
 
+    private static void requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+    }
+
     /**
      * Creates a reference from a Kubernetes resource and its metadata.
      *
@@ -53,7 +59,7 @@ public record ResourceReference(String apiVersion, String kind, String namespace
         Objects.requireNonNull(resource, "resource must not be null");
         var metadata = Objects.requireNonNull(resource.getMetadata(), "resource metadata must not be null");
         return new ResourceReference(resource.getApiVersion(), resource.getKind(), metadata.getNamespace(),
-                metadata.getName(), metadata.getUid());
+            metadata.getName(), metadata.getUid());
     }
 
     /**
@@ -63,11 +69,5 @@ public record ResourceReference(String apiVersion, String kind, String namespace
      */
     public ResourceKey key() {
         return new ResourceKey(namespace, name);
-    }
-
-    private static void requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " must not be blank");
-        }
     }
 }

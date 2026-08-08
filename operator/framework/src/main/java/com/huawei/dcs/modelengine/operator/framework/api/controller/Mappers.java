@@ -52,7 +52,7 @@ public final class Mappers {
      * @throws NullPointerException if {@code primaryType} is null
      */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> ownerReferences(
-            Class<T> primaryType) {
+        Class<T> primaryType) {
         Objects.requireNonNull(primaryType, "primaryType must not be null");
         return event -> ownerKeys(event, HasMetadata.getApiVersion(primaryType), HasMetadata.getKind(primaryType));
     }
@@ -73,6 +73,56 @@ public final class Mappers {
      */
     public static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byLabel(String key) {
         return byMetadata(key, ObjectMeta::getLabels);
+    }
+
+    private static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byMetadata(String key,
+        Function<ObjectMeta, Map<String, String>> values) {
+        if (key == null || key.isBlank()) {
+            throw new IllegalArgumentException("key must not be blank");
+        }
+        Objects.requireNonNull(values, "values must not be null");
+        return event -> mapMetadata(event, key, values);
+    }
+
+    private static <S extends HasMetadata> Collection<ResourceKey> mapMetadata(ResourceEvent<S> event, String key,
+        Function<ObjectMeta, Map<String, String>> values) {
+        return resources(event).map(HasMetadata::getMetadata)
+            .filter(Objects::nonNull)
+            .flatMap(metadata -> metadataKey(metadata, key, values).stream())
+            .distinct()
+            .toList();
+    }
+
+    private static Collection<ResourceKey> metadataKey(ObjectMeta metadata, String key,
+        Function<ObjectMeta, Map<String, String>> values) {
+        var entries = values.apply(metadata);
+        var name = entries == null ? null : entries.get(key);
+        if (name == null || name.isBlank()) {
+            return List.of();
+        }
+        return List.of(resourceKey(metadata, name));
+    }
+
+    private static ResourceKey resourceKey(ObjectMeta metadata, String value) {
+        var separator = value.indexOf('/');
+        if (separator > 0 && separator < value.length() - 1) {
+            return new ResourceKey(value.substring(0, separator), value.substring(separator + 1));
+        }
+        return new ResourceKey(metadata.getNamespace(), value);
+    }
+
+    /**
+     * Returns both current and previous resource states for mapping.
+     *
+     * <p>Including both states lets an update that changes an owner, label, or annotation
+     * reconcile the primary identified by the old state as well as the new state.
+     *
+     * @param <S> the secondary resource type
+     * @param event the resource event
+     * @return the current state followed by the previous state when present
+     */
+    private static <S extends HasMetadata> Stream<S> resources(ResourceEvent<S> event) {
+        return Stream.concat(Stream.of(event.resource()), event.previousResource().stream());
     }
 
     /**
@@ -103,6 +153,22 @@ public final class Mappers {
         return event -> involvedObjectKeys(event, null, null);
     }
 
+    private static Collection<ResourceKey> involvedObjectKeys(ResourceEvent<Event> event, String apiVersion,
+        String kind) {
+        return resources(event).map(Event::getInvolvedObject)
+            .filter(Objects::nonNull)
+            .filter(reference -> matches(reference.getApiVersion(), apiVersion))
+            .filter(reference -> matches(reference.getKind(), kind))
+            .filter(reference -> reference.getName() != null && !reference.getName().isBlank())
+            .map(reference -> new ResourceKey(reference.getNamespace(), reference.getName()))
+            .distinct()
+            .toList();
+    }
+
+    private static boolean matches(String actual, String expected) {
+        return expected == null || Objects.equals(actual, expected);
+    }
+
     /**
      * Maps a Kubernetes {@code Event} to its involved object when it matches the given primary type.
      *
@@ -113,106 +179,29 @@ public final class Mappers {
      */
     public static <T extends HasMetadata> ResourceMapper<Event, T> involvedObject(Class<T> primaryType) {
         Objects.requireNonNull(primaryType, "primaryType must not be null");
-        return event -> involvedObjectKeys(
-                event, HasMetadata.getApiVersion(primaryType), HasMetadata.getKind(primaryType));
+        return event -> involvedObjectKeys(event, HasMetadata.getApiVersion(primaryType),
+            HasMetadata.getKind(primaryType));
     }
 
-    private static <S extends HasMetadata, T extends HasMetadata> ResourceMapper<S, T> byMetadata(
-            String key,
-            Function<ObjectMeta, Map<String, String>> values) {
-        if (key == null || key.isBlank()) {
-            throw new IllegalArgumentException("key must not be blank");
-        }
-        Objects.requireNonNull(values, "values must not be null");
-        return event -> mapMetadata(event, key, values);
-    }
-
-    private static <S extends HasMetadata> Collection<ResourceKey> mapMetadata(
-            ResourceEvent<S> event,
-            String key,
-            Function<ObjectMeta, Map<String, String>> values) {
-        return resources(event)
-                .map(HasMetadata::getMetadata)
-                .filter(Objects::nonNull)
-                .flatMap(metadata -> metadataKey(metadata, key, values).stream())
-                .distinct()
-                .toList();
-    }
-
-    private static <S extends HasMetadata> Collection<ResourceKey> ownerKeys(
-            ResourceEvent<S> event,
-            String apiVersion,
-            String kind) {
-        return resources(event)
-                .map(HasMetadata::getMetadata)
-                .filter(Objects::nonNull)
-                .flatMap(metadata -> ownerKeys(metadata, apiVersion, kind).stream())
-                .distinct()
-                .toList();
+    private static <S extends HasMetadata> Collection<ResourceKey> ownerKeys(ResourceEvent<S> event, String apiVersion,
+        String kind) {
+        return resources(event).map(HasMetadata::getMetadata)
+            .filter(Objects::nonNull)
+            .flatMap(metadata -> ownerKeys(metadata, apiVersion, kind).stream())
+            .distinct()
+            .toList();
     }
 
     private static Collection<ResourceKey> ownerKeys(ObjectMeta metadata, String apiVersion, String kind) {
         if (metadata.getOwnerReferences() == null) {
             return List.of();
         }
-        return metadata.getOwnerReferences().stream()
-                .filter(owner -> Boolean.TRUE.equals(owner.getController()))
-                .filter(owner -> matches(owner.getApiVersion(), apiVersion) && matches(owner.getKind(), kind))
-                .filter(owner -> owner.getName() != null && !owner.getName().isBlank())
-                .map(owner -> new ResourceKey(metadata.getNamespace(), owner.getName()))
-                .toList();
-    }
-
-    private static Collection<ResourceKey> involvedObjectKeys(
-            ResourceEvent<Event> event,
-            String apiVersion,
-            String kind) {
-        return resources(event)
-                .map(Event::getInvolvedObject)
-                .filter(Objects::nonNull)
-                .filter(reference -> matches(reference.getApiVersion(), apiVersion))
-                .filter(reference -> matches(reference.getKind(), kind))
-                .filter(reference -> reference.getName() != null && !reference.getName().isBlank())
-                .map(reference -> new ResourceKey(reference.getNamespace(), reference.getName()))
-                .distinct()
-                .toList();
-    }
-
-    private static boolean matches(String actual, String expected) {
-        return expected == null || Objects.equals(actual, expected);
-    }
-
-    private static Collection<ResourceKey> metadataKey(
-            ObjectMeta metadata,
-            String key,
-            Function<ObjectMeta, Map<String, String>> values) {
-        var entries = values.apply(metadata);
-        var name = entries == null ? null : entries.get(key);
-        if (name == null || name.isBlank()) {
-            return List.of();
-        }
-        return List.of(resourceKey(metadata, name));
-    }
-
-    private static ResourceKey resourceKey(ObjectMeta metadata, String value) {
-        var separator = value.indexOf('/');
-        if (separator > 0 && separator < value.length() - 1) {
-            return new ResourceKey(value.substring(0, separator), value.substring(separator + 1));
-        }
-        return new ResourceKey(metadata.getNamespace(), value);
-    }
-
-    /**
-     * Returns both current and previous resource states for mapping.
-     *
-     * <p>Including both states lets an update that changes an owner, label, or annotation
-     * reconcile the primary identified by the old state as well as the new state.
-     *
-     * @param <S> the secondary resource type
-     * @param event the resource event
-     * @return the current state followed by the previous state when present
-     */
-    private static <S extends HasMetadata> Stream<S> resources(ResourceEvent<S> event) {
-        return Stream.concat(Stream.of(event.resource()), event.previousResource().stream());
+        return metadata.getOwnerReferences()
+            .stream()
+            .filter(owner -> Boolean.TRUE.equals(owner.getController()))
+            .filter(owner -> matches(owner.getApiVersion(), apiVersion) && matches(owner.getKind(), kind))
+            .filter(owner -> owner.getName() != null && !owner.getName().isBlank())
+            .map(owner -> new ResourceKey(metadata.getNamespace(), owner.getName()))
+            .toList();
     }
 }

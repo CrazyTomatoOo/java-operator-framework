@@ -22,12 +22,23 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class RuntimeReadiness implements ApplicationListener<ApplicationReadyEvent> {
     private final ApplicationEventPublisher publisher;
+
     private final AtomicBoolean applicationReady = new AtomicBoolean();
+
     private final AtomicBoolean frameworkReady = new AtomicBoolean();
-    private final AtomicReference<ReadinessState> readiness =
-            new AtomicReference<>(ReadinessState.REFUSING_TRAFFIC);
-    private final AtomicReference<LivenessState> liveness =
-            new AtomicReference<>(LivenessState.CORRECT);
+
+    private final AtomicReference<ReadinessState> readiness = new AtomicReference<>(ReadinessState.REFUSING_TRAFFIC);
+
+    private final AtomicReference<LivenessState> liveness = new AtomicReference<>(LivenessState.CORRECT);
+
+    RuntimeReadiness() {
+        this(event -> {});
+    }
+
+    RuntimeReadiness(ApplicationEventPublisher publisher) {
+        this(publisher, false);
+        applicationReady.set(true);
+    }
 
     /**
      * Creates the tracker, publishing availability changes through the given publisher.
@@ -38,15 +49,6 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
     public RuntimeReadiness(ApplicationEventPublisher publisher, boolean initiallyReady) {
         this.publisher = publisher;
         frameworkReady.set(initiallyReady);
-    }
-
-    RuntimeReadiness(ApplicationEventPublisher publisher) {
-        this(publisher, false);
-        applicationReady.set(true);
-    }
-
-    RuntimeReadiness() {
-        this(event -> { });
     }
 
     /**
@@ -75,6 +77,19 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
         refreshReadiness();
     }
 
+    private void refreshReadiness() {
+        var state = applicationReady.get() && frameworkReady.get()
+            ? ReadinessState.ACCEPTING_TRAFFIC
+            : ReadinessState.REFUSING_TRAFFIC;
+        publishReadiness(state);
+    }
+
+    private void publishReadiness(ReadinessState state) {
+        if (readiness.getAndSet(state) != state) {
+            AvailabilityChangeEvent.publish(publisher, this, state);
+        }
+    }
+
     /**
      * Marks the framework runtime not ready, refusing traffic immediately.
      */
@@ -88,6 +103,12 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
      */
     public void live() {
         publishLiveness(LivenessState.CORRECT);
+    }
+
+    private void publishLiveness(LivenessState state) {
+        if (liveness.getAndSet(state) != state) {
+            AvailabilityChangeEvent.publish(publisher, this, state);
+        }
     }
 
     /**
@@ -106,24 +127,5 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
     public void onApplicationEvent(ApplicationReadyEvent event) {
         applicationReady.set(true);
         refreshReadiness();
-    }
-
-    private void refreshReadiness() {
-        var state = applicationReady.get() && frameworkReady.get()
-                ? ReadinessState.ACCEPTING_TRAFFIC
-                : ReadinessState.REFUSING_TRAFFIC;
-        publishReadiness(state);
-    }
-
-    private void publishReadiness(ReadinessState state) {
-        if (readiness.getAndSet(state) != state) {
-            AvailabilityChangeEvent.publish(publisher, this, state);
-        }
-    }
-
-    private void publishLiveness(LivenessState state) {
-        if (liveness.getAndSet(state) != state) {
-            AvailabilityChangeEvent.publish(publisher, this, state);
-        }
     }
 }

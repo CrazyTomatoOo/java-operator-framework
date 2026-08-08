@@ -27,10 +27,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
     private final OperatorFrameworkProperties properties;
-    private final ObjectProvider<OperatorFrameworkLifecycle> lifecycle;
-    private final ObjectProvider<WebhookCallbackRegistry> callbacks;
-    private final RuntimeReadiness readiness;
 
+    private final ObjectProvider<OperatorFrameworkLifecycle> lifecycle;
+
+    private final ObjectProvider<WebhookCallbackRegistry> callbacks;
+
+    private final RuntimeReadiness readiness;
 
     /**
      * Builds the aggregated health of the framework: overall status plus mode, liveness, readiness,
@@ -66,13 +68,8 @@ public final class OperatorFrameworkHealthIndicator implements HealthIndicator {
     private Map<String, Object> controllerDetails() {
         var current = lifecycle.getIfAvailable();
         if (current == null) {
-            return Map.of(
-                    "state", "stopped",
-                    "workersRunning", false,
-                    "informerSynced", false,
-                    "leadership", false,
-                    "queueDepth", 0,
-                    "lastFailure", "none");
+            return Map.of("state", "stopped", "workersRunning", false, "informerSynced", false, "leadership", false,
+                "queueDepth", 0, "lastFailure", "none");
         }
         var details = new LinkedHashMap<String, Object>();
         details.put("state", current.isRunning() ? "running" : "stopped");

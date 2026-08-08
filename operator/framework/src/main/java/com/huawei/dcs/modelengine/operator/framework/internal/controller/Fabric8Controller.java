@@ -50,33 +50,49 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntime {
-    private static final ReconciliationQueue.DurationMillis POLL_TIMEOUT =
-            new ReconciliationQueue.DurationMillis(100);
+    private static final ReconciliationQueue.DurationMillis POLL_TIMEOUT = new ReconciliationQueue.DurationMillis(100);
 
     private final KubernetesClient client;
+
     private final ControllerRegistration<T> registration;
+
     private final OperatorFrameworkProperties.Controller properties;
+
     private final Duration shutdownTimeout;
+
     private final OperatorFrameworkMetrics metrics;
+
     private final ReconciliationQueue queue = new ReconciliationQueue();
+
     private final ConcurrentHashMap<ResourceKey, T> deletedResources = new ConcurrentHashMap<>();
+
     private final List<SharedIndexInformer<?>> informers = new ArrayList<>();
+
     private final ConcurrentHashMap<Class<? extends HasMetadata>, Indexer<?>> caches = new ConcurrentHashMap<>();
+
     private final ExecutorService workers;
+
     private final ScheduledExecutorService scheduler;
+
     private final AtomicBoolean started = new AtomicBoolean();
+
     private final OperatorFrameworkMetrics.GaugeHandle queueGauge;
+
     private final OperatorFrameworkMetrics.GaugeHandle informerGauge;
+
     private volatile boolean stopping;
+
     private CompletableFuture<Void> stopFuture = CompletableFuture.completedFuture(null);
+
     private SharedIndexInformer<T> primaryInformer;
 
-    Fabric8Controller(
-            KubernetesClient client,
-            ControllerRegistration<T> registration,
-            OperatorFrameworkProperties.Controller properties,
-            Duration shutdownTimeout,
-            OperatorFrameworkMetrics metrics) {
+    Fabric8Controller(KubernetesClient client, ControllerRegistration<T> registration,
+        OperatorFrameworkProperties.Controller properties, Duration shutdownTimeout) {
+        this(client, registration, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
+    }
+
+    Fabric8Controller(KubernetesClient client, ControllerRegistration<T> registration,
+        OperatorFrameworkProperties.Controller properties, Duration shutdownTimeout, OperatorFrameworkMetrics metrics) {
         this.client = client;
         this.registration = registration;
         this.properties = properties;
@@ -84,20 +100,22 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         this.metrics = metrics;
         var prefix = "operator-" + registration.resourceType().getSimpleName().toLowerCase() + "-";
         workers = Executors.newFixedThreadPool(properties.getWorkerThreads(),
-                Thread.ofPlatform().daemon(true).name(prefix + "worker-", 0).factory());
-        scheduler = Executors.newSingleThreadScheduledExecutor(
-                Thread.ofPlatform().name(prefix + "scheduler").factory());
+            Thread.ofPlatform().daemon(true).name(prefix + "worker-", 0).factory());
+        scheduler =
+            Executors.newSingleThreadScheduledExecutor(Thread.ofPlatform().name(prefix + "scheduler").factory());
         var controller = registration.resourceType().getName();
         queueGauge = metrics.queueDepth(controller, () -> queue.size());
         informerGauge = metrics.informerSynced(controller, () -> isReady() ? 1.0 : 0.0);
     }
 
-    Fabric8Controller(
-            KubernetesClient client,
-            ControllerRegistration<T> registration,
-            OperatorFrameworkProperties.Controller properties,
-            Duration shutdownTimeout) {
-        this(client, registration, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
+    /**
+     * Reports whether the controller is started, not stopping, and all informers have synced.
+     *
+     * @return {@code true} when the controller is ready to serve
+     */
+    @Override
+    public boolean isReady() {
+        return started.get() && !stopping && informers.stream().allMatch(SharedIndexInformer::hasSynced);
     }
 
     /**
@@ -118,16 +136,6 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             stop();
             throw exception;
         }
-    }
-
-    /**
-     * Reports whether the controller is started, not stopping, and all informers have synced.
-     *
-     * @return {@code true} when the controller is ready to serve
-     */
-    @Override
-    public boolean isReady() {
-        return started.get() && !stopping && informers.stream().allMatch(SharedIndexInformer::hasSynced);
     }
 
     /**
@@ -172,19 +180,17 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         informerGauge.close();
         workers.shutdownNow();
         CompletableFuture.delayedExecutor(shutdownTimeout.toMillis(), TimeUnit.MILLISECONDS)
-                .execute(workers::shutdownNow);
+            .execute(workers::shutdownNow);
         stopFuture = CompletableFuture.runAsync(this::awaitWorkers);
         return stopFuture;
     }
 
     private void configureInformers() {
         var resync = resyncPeriod();
-        primaryInformer = informer(
-                registration.resourceType(), new PrimaryHandler(),
-                resync, registration.watchSelector());
-        registration.indexFields().forEach((key, fn) ->
-                primaryInformer.addIndexers(
-                        Map.of(key, r -> List.of(fn.apply(r)))));
+        primaryInformer =
+            informer(registration.resourceType(), new PrimaryHandler(), resync, registration.watchSelector());
+        registration.indexFields()
+            .forEach((key, fn) -> primaryInformer.addIndexers(Map.of(key, r -> List.of(fn.apply(r)))));
         caches.put(registration.resourceType(), primaryInformer.getIndexer());
         registration.ownedResources().forEach(this::addOwnedInformer);
         registration.secondaryWatches().forEach(this::addSecondaryInformer);
@@ -193,19 +199,13 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         }
     }
 
-    private <S extends HasMetadata> SharedIndexInformer<S> informer(
-            Class<S> type,
-            ResourceEventHandler<S> handler,
-            Duration resync,
-            Optional<WatchSelector> watchSelector) {
+    private <S extends HasMetadata> SharedIndexInformer<S> informer(Class<S> type, ResourceEventHandler<S> handler,
+        Duration resync, Optional<WatchSelector> watchSelector) {
         var resources = client.resources(type);
-        var scoped = properties.isClusterScoped()
-                ? resources.inAnyNamespace()
-                : resources.inNamespace(namespace());
-        var informer = watchSelector.isPresent()
-                ? scoped.withLabels(watchSelector.get().labels()).withFields(watchSelector.get().fields())
-                        .runnableInformer(resync.toMillis())
-                : scoped.runnableInformer(resync.toMillis());
+        var scoped = properties.isClusterScoped() ? resources.inAnyNamespace() : resources.inNamespace(namespace());
+        var informer = watchSelector.isPresent() ? scoped.withLabels(watchSelector.get().labels())
+            .withFields(watchSelector.get().fields())
+            .runnableInformer(resync.toMillis()) : scoped.runnableInformer(resync.toMillis());
         informer.addEventHandler(handler);
         informer.exceptionHandler((startedState, exception) -> {
             onInformerError(exception);
@@ -218,15 +218,15 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void addOwnedInformer(Class<? extends HasMetadata> type) {
         ResourceMapper mapper = Mappers.ownerReferences(registration.resourceType());
-        var informer = informer((Class) type, new SecondaryHandler(mapper, TriggerRole.OWNED),
-                resyncPeriod(), Optional.empty());
+        var informer =
+            informer((Class) type, new SecondaryHandler(mapper, TriggerRole.OWNED), resyncPeriod(), Optional.empty());
         caches.put(type, informer.getIndexer());
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void addSecondaryInformer(ControllerRegistration.SecondaryWatch<? extends HasMetadata, T> watch) {
         var informer = informer((Class) watch.resourceType(), new SecondaryHandler(watch.mapper(), TriggerRole.WATCHED),
-                resyncPeriod(), Optional.empty());
+            resyncPeriod(), Optional.empty());
         caches.put(watch.resourceType(), informer.getIndexer());
     }
 
@@ -234,22 +234,19 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         var mapper = Mappers.involvedObject(registration.resourceType());
         var type = registration.resourceType();
         var events = client.v1().events();
-        var scoped = properties.isClusterScoped()
-                ? events.inAnyNamespace()
-                : events.inNamespace(namespace());
+        var scoped = properties.isClusterScoped() ? events.inAnyNamespace() : events.inNamespace(namespace());
         if (!properties.isFilterEventsByInvolvedObject()) {
             registerEventInformer(scoped.runnableInformer(resync.toMillis()), mapper);
             return;
         }
         var informer = scoped.withField("involvedObject.kind", HasMetadata.getKind(type))
-                .withField("involvedObject.apiVersion", HasMetadata.getApiVersion(type))
-                .runnableInformer(resync.toMillis());
+            .withField("involvedObject.apiVersion", HasMetadata.getApiVersion(type))
+            .runnableInformer(resync.toMillis());
         registerEventInformer(informer, mapper);
     }
 
-    private SharedIndexInformer<Event> registerEventInformer(
-            SharedIndexInformer<Event> informer,
-            ResourceMapper<Event, T> mapper) {
+    private SharedIndexInformer<Event> registerEventInformer(SharedIndexInformer<Event> informer,
+        ResourceMapper<Event, T> mapper) {
         informer.addEventHandler(new SecondaryHandler<>(mapper, TriggerRole.KUBERNETES_EVENT));
         informer.exceptionHandler((startedState, exception) -> {
             onInformerError(exception);
@@ -300,15 +297,15 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             if (resource == null) {
                 return;
             }
-            var context = new ReconciliationContext<T>(work.key(), work.triggers(),
-                    primaryInformer.getIndexer(), caches);
+            var context =
+                new ReconciliationContext<T>(work.key(), work.triggers(), primaryInformer.getIndexer(), caches);
             var result = registration.reconciler().reconcile(resource, context);
             schedule(result, resource);
             if (result.isDone()) {
                 deletedResources.remove(work.key());
             }
-        // catch Throwable so a single bad reconcile (e.g. StackOverflowError) cannot kill
-        // the worker thread; the aspect chain has already classified/logged the callback failure
+            // catch Throwable so a single bad reconcile (e.g. StackOverflowError) cannot kill
+            // the worker thread; the aspect chain has already classified/logged the callback failure
         } catch (Throwable exception) {
             deletedResources.remove(work.key());
             log.error("Reconciliation failed for {}", work.key(), exception);
@@ -329,8 +326,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     private void schedule(ReconcileResult result, T resource) {
         Objects.requireNonNull(result, "reconciler result must not be null").requeueDelay().ifPresent(delay -> {
             var trigger = trigger(ResourceEventType.RESYNC, TriggerRole.PRIMARY, resource);
-            scheduler.schedule(() -> queue.offer(ResourceReference.from(resource).key(), trigger),
-                    delay.toMillis(), TimeUnit.MILLISECONDS);
+            scheduler.schedule(() -> queue.offer(ResourceReference.from(resource).key(), trigger), delay.toMillis(),
+                TimeUnit.MILLISECONDS);
         });
     }
 
@@ -401,6 +398,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
 
     private final class SecondaryHandler<S extends HasMetadata> implements ResourceEventHandler<S> {
         private final ResourceMapper<S, T> mapper;
+
         private final TriggerRole role;
 
         private SecondaryHandler(ResourceMapper<S, T> mapper, TriggerRole role) {
@@ -418,6 +416,16 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
             map(ResourceEvent.added(resource));
         }
 
+        private void map(ResourceEvent<S> event) {
+            try {
+                var trigger = trigger(event.type(), role, event.resource());
+                Objects.requireNonNull(mapper.map(event), "resource mapper result must not be null")
+                    .forEach(key -> queue.offer(key, trigger));
+            } catch (RuntimeException exception) {
+                log.error("Secondary resource mapping failed", exception);
+            }
+        }
+
         /**
          * Maps an updated secondary resource onto the primary resources to reconcile.
          *
@@ -431,7 +439,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
                 return;
             }
             map(GenerationFilter.isResync(previous, resource)
-                    ? ResourceEvent.resync(resource) : ResourceEvent.updated(previous, resource));
+                ? ResourceEvent.resync(resource)
+                : ResourceEvent.updated(previous, resource));
         }
 
         /**
@@ -443,16 +452,6 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         @Override
         public void onDelete(S resource, boolean deletedFinalStateUnknown) {
             map(ResourceEvent.deleted(resource));
-        }
-
-        private void map(ResourceEvent<S> event) {
-            try {
-                var trigger = trigger(event.type(), role, event.resource());
-                Objects.requireNonNull(mapper.map(event), "resource mapper result must not be null")
-                        .forEach(key -> queue.offer(key, trigger));
-            } catch (RuntimeException exception) {
-                log.error("Secondary resource mapping failed", exception);
-            }
         }
     }
 }

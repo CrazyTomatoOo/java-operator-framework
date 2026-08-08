@@ -42,23 +42,47 @@ class PolicyMechanicsTest {
         properties.getRetry().setMaxAttempts(3);
         var aspect = new ReconcileRetryAspect(properties);
         var joinPoint = joinPoint();
-        when(joinPoint.proceed())
-                .thenThrow(new IllegalStateException("first"))
-                .thenThrow(new IllegalStateException("second"))
-                .thenThrow(new IllegalStateException("third"));
+        when(joinPoint.proceed()).thenThrow(new IllegalStateException("first"))
+            .thenThrow(new IllegalStateException("second"))
+            .thenThrow(new IllegalStateException("third"));
 
         assertThat(result(aspect.retry(joinPoint)).requeueDelay()).contains(Duration.ofMillis(500));
         assertThat(result(aspect.retry(joinPoint)).requeueDelay()).contains(Duration.ofSeconds(1));
         assertThatThrownBy(() -> aspect.retry(joinPoint)).isInstanceOf(ReconcileTerminalException.class);
 
         var resetPoint = joinPoint();
-        when(resetPoint.proceed())
-                .thenThrow(new IllegalStateException("first"))
-                .thenReturn(ReconcileResult.done())
-                .thenThrow(new IllegalStateException("again"));
+        when(resetPoint.proceed()).thenThrow(new IllegalStateException("first"))
+            .thenReturn(ReconcileResult.done())
+            .thenThrow(new IllegalStateException("again"));
         assertThat(result(aspect.retry(resetPoint)).requeueDelay()).contains(Duration.ofMillis(500));
         assertThat(result(aspect.retry(resetPoint)).isDone()).isTrue();
         assertThat(result(aspect.retry(resetPoint)).requeueDelay()).contains(Duration.ofMillis(500));
+    }
+
+    private ProceedingJoinPoint joinPoint() {
+        return joinPoint("sample");
+    }
+
+    private ProceedingJoinPoint joinPoint(String name) {
+        var joinPoint = mock(ProceedingJoinPoint.class);
+        var context = ReconciliationContext.<ConfigMap>withoutCache(new ResourceKey("operators", name), List.of());
+        when(joinPoint.getArgs()).thenReturn(new Object[]{resource(name), context});
+        when(joinPoint.getTarget()).thenReturn(new TestController());
+        return joinPoint;
+    }
+
+    private ConfigMap resource(String name) {
+        return new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("operators")
+            .withName(name)
+            .withUid("uid-" + name)
+            .withGeneration(1L)
+            .endMetadata()
+            .build();
+    }
+
+    private ReconcileResult result(Object value) {
+        return (ReconcileResult) value;
     }
 
     @Test
@@ -110,9 +134,12 @@ class PolicyMechanicsTest {
         assertThat(proxy.reconcile(resource(), context).requeueDelay()).contains(Duration.ofMillis(500));
         assertThat(proxy.reconcile(resource(), context).requeueDelay()).contains(Duration.ofSeconds(5));
         clock.advance(Duration.ofSeconds(5));
-        assertThatThrownBy(() -> proxy.reconcile(resource(), context))
-                .isInstanceOf(ReconcileTerminalException.class);
+        assertThatThrownBy(() -> proxy.reconcile(resource(), context)).isInstanceOf(ReconcileTerminalException.class);
         assertThat(target.calls).hasValue(2);
+    }
+
+    private ConfigMap resource() {
+        return resource("sample");
     }
 
     @Test
@@ -123,43 +150,11 @@ class PolicyMechanicsTest {
         assertThat(order(ReconcileRateLimitAspect.class)).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 400);
     }
 
-    private ProceedingJoinPoint joinPoint() {
-        return joinPoint("sample");
-    }
-
-    private ProceedingJoinPoint joinPoint(String name) {
-        var joinPoint = mock(ProceedingJoinPoint.class);
-        var context = ReconciliationContext.<ConfigMap>withoutCache(new ResourceKey("operators", name), List.of());
-        when(joinPoint.getArgs()).thenReturn(new Object[] {resource(name), context});
-        when(joinPoint.getTarget()).thenReturn(new TestController());
-        return joinPoint;
-    }
-
-    private ReconcileResult result(Object value) {
-        return (ReconcileResult) value;
-    }
-
     private int order(Class<?> type) {
         return AnnotationUtils.findAnnotation(type, Order.class).value();
     }
 
-    private ConfigMap resource() {
-        return resource("sample");
-    }
-
-    private ConfigMap resource(String name) {
-        return new ConfigMapBuilder()
-                .withNewMetadata()
-                .withNamespace("operators")
-                .withName(name)
-                .withUid("uid-" + name)
-                .withGeneration(1L)
-                .endMetadata()
-                .build();
-    }
-
-    private static final class TestController {
-    }
+    private static final class TestController {}
 
     private static final class FailingReconciler implements Reconciler<ConfigMap> {
         private final AtomicInteger calls = new AtomicInteger();
@@ -183,10 +178,6 @@ class PolicyMechanicsTest {
 
         private MutableClock(Instant instant) {
             this.instant = instant;
-        }
-
-        void advance(Duration duration) {
-            instant = instant.plus(duration);
         }
 
         /**
@@ -218,6 +209,10 @@ class PolicyMechanicsTest {
         @Override
         public Instant instant() {
             return instant;
+        }
+
+        void advance(Duration duration) {
+            instant = instant.plus(duration);
         }
     }
 }

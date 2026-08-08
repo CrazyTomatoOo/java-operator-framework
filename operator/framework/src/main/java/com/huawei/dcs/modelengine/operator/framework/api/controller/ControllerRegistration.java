@@ -24,13 +24,21 @@ import java.util.function.Function;
  */
 public final class ControllerRegistration<T extends HasMetadata> {
     private final Class<T> resourceType;
+
     private final Reconciler<T> reconciler;
+
     private final Optional<Boolean> generationFilter;
+
     private final Optional<Duration> resyncPeriod;
+
     private final List<Class<? extends HasMetadata>> ownedResources;
+
     private final List<SecondaryWatch<? extends HasMetadata, T>> secondaryWatches;
+
     private final boolean kubernetesEvents;
+
     private final Optional<ControllerBuilder.WatchSelector> watchSelector;
+
     private final Map<String, Function<T, String>> indexFields;
 
     ControllerRegistration(ControllerBuilder.Snapshot<T> snapshot) {
@@ -136,10 +144,8 @@ public final class ControllerRegistration<T extends HasMetadata> {
      * @param resourceType secondary resource class
      * @param mapper maps secondary events to primary resource keys
      */
-    public record SecondaryWatch<S extends HasMetadata, T extends HasMetadata>(
-            String name,
-            Class<S> resourceType,
-            ResourceMapper<S, T> mapper) {
+    public record SecondaryWatch<S extends HasMetadata, T extends HasMetadata>(String name, Class<S> resourceType,
+                                                                               ResourceMapper<S, T> mapper) {
         /**
          * Validates the watch descriptor.
          *

@@ -41,9 +41,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 class AdmissionWebhookControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
+
     private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
+
     private GenericApplicationContext context;
+
     private WebhookCallbackRegistry registry;
+
     private MockMvc mvc;
 
     @BeforeEach
@@ -58,7 +62,7 @@ class AdmissionWebhookControllerTest {
         context.refresh();
         registry = new WebhookCallbackRegistry(context.getBeanFactory());
         mvc = MockMvcBuilders.standaloneSetup(
-                new AdmissionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
+            new AdmissionWebhookController(registry, mapper, new OperatorFrameworkMetrics(meters))).build();
     }
 
     @AfterEach
@@ -69,10 +73,10 @@ class AdmissionWebhookControllerTest {
     @Test
     void validatesAndPreservesUidAndContext() throws Exception {
         var result = mvc.perform(admission("/operator-framework/webhooks/validate/allow"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.uid").value("request-1"))
-                .andExpect(jsonPath("$.response.allowed").value(true))
-                .andReturn();
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.uid").value("request-1"))
+            .andExpect(jsonPath("$.response.allowed").value(true))
+            .andReturn();
 
         var callback = context.getBean(AllowValidator.class);
         assertThat(callback.context.get().uid()).isEqualTo("request-1");
@@ -81,16 +85,46 @@ class AdmissionWebhookControllerTest {
         assertThat(result.getResponse().getContentAsString()).doesNotContain("sensitive callback detail");
     }
 
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder admission(String path)
+        throws Exception {
+        return post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(review()));
+    }
+
+    private AdmissionReview review() {
+        var resource = new ConfigMapBuilder().withApiVersion("v1")
+            .withKind("ConfigMap")
+            .withNewMetadata()
+            .withNamespace("default")
+            .withName("sample")
+            .withUid("resource-1")
+            .endMetadata()
+            .addToData("existing", "value")
+            .build();
+        var request = new AdmissionRequest();
+        request.setUid("request-1");
+        request.setOperation("UPDATE");
+        request.setDryRun(true);
+        request.setOptions(Map.of("propagationPolicy", "Foreground"));
+        request.setObject(resource);
+        request.setUserInfo(
+            new UserInfoBuilder().withUsername("alice").withUid("user-1").withGroups("developers").build());
+        var review = new AdmissionReview();
+        review.setApiVersion("admission.k8s.io/v1");
+        review.setKind("AdmissionReview");
+        review.setRequest(request);
+        return review;
+    }
+
     @Test
     void returnsDenialAndSafeCallbackFailure() throws Exception {
         mvc.perform(admission("/operator-framework/webhooks/validate/deny"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.allowed").value(false))
-                .andExpect(jsonPath("$.response.status.message").value("invalid spec"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.allowed").value(false))
+            .andExpect(jsonPath("$.response.status.message").value("invalid spec"));
         mvc.perform(admission("/operator-framework/webhooks/validate/throwing"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.allowed").value(false))
-                .andExpect(jsonPath("$.response.status.message").value("webhook callback failed"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.allowed").value(false))
+            .andExpect(jsonPath("$.response.status.message").value("webhook callback failed"));
 
         assertThat(registry.lastFailure()).contains("validator callback 'throwing' failed");
     }
@@ -98,11 +132,11 @@ class AdmissionWebhookControllerTest {
     @Test
     void emitsBase64Rfc6902Patch() throws Exception {
         var result = mvc.perform(admission("/operator-framework/webhooks/mutate/mutate"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.uid").value("request-1"))
-                .andExpect(jsonPath("$.response.allowed").value(true))
-                .andExpect(jsonPath("$.response.patchType").value("JSONPatch"))
-                .andReturn();
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.uid").value("request-1"))
+            .andExpect(jsonPath("$.response.allowed").value(true))
+            .andExpect(jsonPath("$.response.patchType").value("JSONPatch"))
+            .andReturn();
 
         var review = mapper.readTree(result.getResponse().getContentAsByteArray());
         var patch = Base64.getDecoder().decode(review.at("/response/patch").asText());
@@ -113,51 +147,52 @@ class AdmissionWebhookControllerTest {
     @Test
     void preservesUnknownFieldsAndRejectsMutatedIdentity() throws Exception {
         var unknown = review();
-        var raw = (com.fasterxml.jackson.databind.node.ObjectNode)
-                mapper.valueToTree(unknown.getRequest().getObject());
+        var raw = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.valueToTree(unknown.getRequest().getObject());
         raw.put("futureField", "preserved");
         unknown.getRequest().setObject(raw);
 
-        var result = mvc.perform(post("/operator-framework/webhooks/mutate/mutate")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(unknown)))
-                .andExpect(status().isOk()).andReturn();
+        var result = mvc.perform(
+            post("/operator-framework/webhooks/mutate/mutate").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(unknown))).andExpect(status().isOk()).andReturn();
         var response = mapper.readTree(result.getResponse().getContentAsByteArray());
         var patch = Base64.getDecoder().decode(response.at("/response/patch").asText());
         assertThat(new String(patch, StandardCharsets.UTF_8)).doesNotContain("futureField");
 
         mvc.perform(admission("/operator-framework/webhooks/mutate/changeidentity"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.allowed").value(false))
-                .andExpect(jsonPath("$.response.status.message")
-                        .value("resource type does not match callback"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.allowed").value(false))
+            .andExpect(jsonPath("$.response.status.message").value("resource type does not match callback"));
     }
 
     @Test
     void deniesResourceTypeMismatchBeforeInvokingCallback() throws Exception {
         var mismatch = review();
-        mismatch.getRequest().setObject(new SecretBuilder()
-                .withApiVersion("v1").withKind("Secret")
-                .withNewMetadata().withNamespace("default").withName("sample").endMetadata().build());
+        mismatch.getRequest()
+            .setObject(new SecretBuilder().withApiVersion("v1")
+                .withKind("Secret")
+                .withNewMetadata()
+                .withNamespace("default")
+                .withName("sample")
+                .endMetadata()
+                .build());
 
-        mvc.perform(post("/operator-framework/webhooks/validate/allow")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(mismatch)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.allowed").value(false))
-                .andExpect(jsonPath("$.response.status.message")
-                        .value("resource type does not match callback"));
+        mvc.perform(post("/operator-framework/webhooks/validate/allow").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(mismatch)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.allowed").value(false))
+            .andExpect(jsonPath("$.response.status.message").value("resource type does not match callback"));
         assertThat(context.getBean(AllowValidator.class).context).hasValue(null);
     }
 
     @Test
     void rejectsUnknownAndMalformedAndContainsNullResult() throws Exception {
-        mvc.perform(admission("/operator-framework/webhooks/validate/missing"))
-                .andExpect(status().isBadRequest());
-        mvc.perform(post("/operator-framework/webhooks/validate/allow")
-                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isBadRequest());
+        mvc.perform(admission("/operator-framework/webhooks/validate/missing")).andExpect(status().isBadRequest());
+        mvc.perform(
+                post("/operator-framework/webhooks/validate/allow").contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isBadRequest());
         mvc.perform(admission("/operator-framework/webhooks/mutate/nullmutator"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.response.status.message").value("webhook callback failed"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.response.status.message").value("webhook callback failed"));
     }
 
     @Test
@@ -176,38 +211,16 @@ class AdmissionWebhookControllerTest {
         assertThat(callbackCount("mutator", "changeidentity", "denied")).isEqualTo(1.0);
         assertThat(callbackCount("mutator", "nullmutator", "error")).isEqualTo(1.0);
         assertThat(meters.get("operator.framework.callback.duration")
-                .tags("callback.type", "validator", "bean", "allow", "outcome", "allowed")
-                .timer().count()).isEqualTo(1);
+            .tags("callback.type", "validator", "bean", "allow", "outcome", "allowed")
+            .timer()
+            .count()).isEqualTo(1);
     }
 
     private double callbackCount(String type, String bean, String outcome) {
         return meters.get("operator.framework.callback.total")
-                .tags("callback.type", type, "bean", bean, "outcome", outcome).counter().count();
-    }
-
-    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder admission(String path)
-            throws Exception {
-        return post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(review()));
-    }
-
-    private AdmissionReview review() {
-        var resource = new ConfigMapBuilder()
-                .withApiVersion("v1").withKind("ConfigMap")
-                .withNewMetadata().withNamespace("default").withName("sample").withUid("resource-1").endMetadata()
-                .addToData("existing", "value").build();
-        var request = new AdmissionRequest();
-        request.setUid("request-1");
-        request.setOperation("UPDATE");
-        request.setDryRun(true);
-        request.setOptions(Map.of("propagationPolicy", "Foreground"));
-        request.setObject(resource);
-        request.setUserInfo(new UserInfoBuilder().withUsername("alice").withUid("user-1")
-                .withGroups("developers").build());
-        var review = new AdmissionReview();
-        review.setApiVersion("admission.k8s.io/v1");
-        review.setKind("AdmissionReview");
-        review.setRequest(request);
-        return review;
+            .tags("callback.type", type, "bean", bean, "outcome", outcome)
+            .counter()
+            .count();
     }
 
     static final class AllowValidator implements AdmissionValidator<ConfigMap> {
@@ -280,8 +293,8 @@ class AdmissionWebhookControllerTest {
          */
         @Override
         public MutationResult<ConfigMap> mutate(ConfigMap current, AdmissionContext context) {
-            return MutationResult.mutated(new ConfigMapBuilder(current)
-                    .editMetadata().withName("different").endMetadata().build());
+            return MutationResult.mutated(
+                new ConfigMapBuilder(current).editMetadata().withName("different").endMetadata().build());
         }
     }
 

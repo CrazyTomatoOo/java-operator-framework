@@ -30,7 +30,7 @@ import org.springframework.core.annotation.Order;
 @Order(Ordered.HIGHEST_PRECEDENCE + 100)
 public final class ReconcileObservationAspect {
     static final String CALLBACKS =
-            "execution(* com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler+.reconcile(..))"
+        "execution(* com.huawei.dcs.modelengine.operator.framework.api.reconcile.Reconciler+.reconcile(..))"
             + " || execution(* com.huawei.dcs.modelengine.operator.framework.api.webhook."
             + "AdmissionValidator+.validate(..))"
             + " || execution(* com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionMutator+.mutate(..))"
@@ -38,7 +38,9 @@ public final class ReconcileObservationAspect {
             + "ResourceConverter+.convert(..))";
 
     private final ObservationRegistry observations;
+
     private final OperatorFrameworkMetrics metrics;
+
     private final SpringCallbackIdentifier identifiers;
 
     /**
@@ -48,10 +50,8 @@ public final class ReconcileObservationAspect {
      * @param metrics the metrics recorder for callback timing and outcome
      * @param beanFactory the bean factory used to resolve callback bean names
      */
-    public ReconcileObservationAspect(
-            ObservationRegistry observations,
-            OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory) {
+    public ReconcileObservationAspect(ObservationRegistry observations, OperatorFrameworkMetrics metrics,
+        ConfigurableListableBeanFactory beanFactory) {
         this.observations = observations;
         this.metrics = metrics;
         identifiers = new SpringCallbackIdentifier(beanFactory);
@@ -118,7 +118,7 @@ public final class ReconcileObservationAspect {
 
     private Observation observation(SpringCallbackIdentifier.Identity identity) {
         return Observation.createNotStarted("operator.framework.callback", observations)
-                .lowCardinalityKeyValue("callback.type", identity.type())
-                .lowCardinalityKeyValue("bean", identity.bean());
+            .lowCardinalityKeyValue("callback.type", identity.type())
+            .lowCardinalityKeyValue("bean", identity.bean());
     }
 }

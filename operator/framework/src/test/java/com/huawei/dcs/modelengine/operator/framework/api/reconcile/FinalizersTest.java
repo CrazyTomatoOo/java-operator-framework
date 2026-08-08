@@ -20,15 +20,20 @@ class FinalizersTest {
 
     @Test
     void presentAndIsDeletingReadMetadataWithoutServer() {
-        var plain = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("plain").endMetadata().build();
-        var withFinalizer = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("f")
-                .addToFinalizers("example.com/cleanup").endMetadata()
-                .build();
-        var deleting = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("d")
-                .withDeletionTimestamp("2024-01-01T00:00:00Z").endMetadata().build();
+        var plain =
+            new ConfigMapBuilder().withNewMetadata().withNamespace("ns").withName("plain").endMetadata().build();
+        var withFinalizer = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("f")
+            .addToFinalizers("example.com/cleanup")
+            .endMetadata()
+            .build();
+        var deleting = new ConfigMapBuilder().withNewMetadata()
+            .withNamespace("ns")
+            .withName("d")
+            .withDeletionTimestamp("2024-01-01T00:00:00Z")
+            .endMetadata()
+            .build();
 
         assertThat(Finalizers.present(plain, "example.com/cleanup")).isFalse();
         assertThat(Finalizers.present(withFinalizer, "example.com/cleanup")).isTrue();
@@ -50,6 +55,19 @@ class FinalizersTest {
         assertThat(serverFinalizers("idempotent")).hasSize(1);
     }
 
+    private ConfigMap create(String name) {
+        var resource =
+            new ConfigMapBuilder().withNewMetadata().withNamespace("ns").withName(name).endMetadata().build();
+        return client.resource(resource).create();
+    }
+
+    private java.util.List<String> serverFinalizers(String name) {
+        var fetched = client.configMaps().inNamespace("ns").withName(name).get();
+        assertThat(fetched).as("resource must exist").isNotNull();
+        var finalizers = fetched.getMetadata().getFinalizers();
+        return finalizers == null ? java.util.List.of() : finalizers;
+    }
+
     @Test
     void removePatchesFinalizerWhenPresentAndIsIdempotentWhenAbsent() {
         var resource = create("removable");
@@ -63,13 +81,13 @@ class FinalizersTest {
         // removing a missing finalizer is a no-op, never throws
         assertThat(Finalizers.remove(client, resource, "absent")).isSameAs(resource);
     }
+
     @Test
     void removePatchesAllDuplicateOccurrences() {
-        var resource = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName("duplicates").endMetadata()
-                .build();
-        resource.getMetadata().setFinalizers(java.util.List.of(
-                "example.com/cleanup", "example.com/other", "example.com/cleanup"));
+        var resource =
+            new ConfigMapBuilder().withNewMetadata().withNamespace("ns").withName("duplicates").endMetadata().build();
+        resource.getMetadata()
+            .setFinalizers(java.util.List.of("example.com/cleanup", "example.com/other", "example.com/cleanup"));
         var created = client.resource(resource).create();
 
         Finalizers.remove(client, created, "example.com/cleanup");
@@ -82,18 +100,5 @@ class FinalizersTest {
         var resource = create("rejected");
         assertThatIllegalArgumentException().isThrownBy(() -> Finalizers.add(client, resource, " "));
         assertThatIllegalArgumentException().isThrownBy(() -> Finalizers.remove(client, resource, ""));
-    }
-
-    private ConfigMap create(String name) {
-        var resource = new ConfigMapBuilder()
-                .withNewMetadata().withNamespace("ns").withName(name).endMetadata().build();
-        return client.resource(resource).create();
-    }
-
-    private java.util.List<String> serverFinalizers(String name) {
-        var fetched = client.configMaps().inNamespace("ns").withName(name).get();
-        assertThat(fetched).as("resource must exist").isNotNull();
-        var finalizers = fetched.getMetadata().getFinalizers();
-        return finalizers == null ? java.util.List.of() : finalizers;
     }
 }

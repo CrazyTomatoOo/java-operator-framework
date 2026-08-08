@@ -32,11 +32,17 @@ import java.util.function.DoubleSupplier;
 @Order(Ordered.HIGHEST_PRECEDENCE + 300)
 public final class ReconcileRetryAspect {
     private static final double BACKOFF_JITTER_LOWER_BOUND = 0.8;
+
     private static final double BACKOFF_JITTER_UPPER_BOUND = 1.2;
+
     private final ConcurrentHashMap<ReconcileInvocationKey, AtomicInteger> attempts = new ConcurrentHashMap<>();
+
     private final OperatorFrameworkProperties.Retry properties;
+
     private final OperatorFrameworkMetrics metrics;
+
     private final SpringCallbackIdentifier identifiers;
+
     private final DoubleSupplier jitterFactor;
 
     /**
@@ -46,20 +52,12 @@ public final class ReconcileRetryAspect {
      * @param metrics the metrics recorder for retry counts
      * @param beanFactory the bean factory used to resolve controller bean names
      */
-    public ReconcileRetryAspect(
-            OperatorFrameworkProperties properties,
-            OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory) {
+    public ReconcileRetryAspect(OperatorFrameworkProperties properties, OperatorFrameworkMetrics metrics,
+        ConfigurableListableBeanFactory beanFactory) {
         this(properties, metrics, beanFactory,
-                () -> ThreadLocalRandom.current()
-                        .nextDouble(BACKOFF_JITTER_LOWER_BOUND, BACKOFF_JITTER_UPPER_BOUND));
+            () -> ThreadLocalRandom.current().nextDouble(BACKOFF_JITTER_LOWER_BOUND, BACKOFF_JITTER_UPPER_BOUND));
     }
 
-    ReconcileRetryAspect(OperatorFrameworkProperties properties) {
-        this(properties, new OperatorFrameworkMetrics(null), new DefaultListableBeanFactory(), () -> 1.0);
-    }
-
-    // jitter factor seam lets tests pin deterministic delays while production spreads retries
     /**
      * Creates the aspect with an explicit jitter factor, allowing tests to pin deterministic delays.
      *
@@ -69,11 +67,17 @@ public final class ReconcileRetryAspect {
      * @param jitterFactor supplies the multiplier applied to each computed retry delay
      */
     public ReconcileRetryAspect(OperatorFrameworkProperties properties, OperatorFrameworkMetrics metrics,
-            ConfigurableListableBeanFactory beanFactory, DoubleSupplier jitterFactor) {
+        ConfigurableListableBeanFactory beanFactory, DoubleSupplier jitterFactor) {
         this.properties = properties.getRetry();
         this.metrics = metrics;
         this.identifiers = new SpringCallbackIdentifier(beanFactory);
         this.jitterFactor = jitterFactor;
+    }
+
+    // jitter factor seam lets tests pin deterministic delays while production spreads retries
+
+    ReconcileRetryAspect(OperatorFrameworkProperties properties) {
+        this(properties, new OperatorFrameworkMetrics(null), new DefaultListableBeanFactory(), () -> 1.0);
     }
 
     /**
@@ -103,19 +107,7 @@ public final class ReconcileRetryAspect {
         }
     }
 
-    /** Clears retry attempts when the controller runtime lifecycle ends. */
-    public void clear() {
-        attempts.clear();
-    }
-
-    int stateSize() {
-        return attempts.size();
-    }
-
-    private ReconcileResult retryResult(
-            ReconcileInvocationKey key,
-            Exception exception,
-            String controller) {
+    private ReconcileResult retryResult(ReconcileInvocationKey key, Exception exception, String controller) {
         var attempt = attempts.computeIfAbsent(key, ignored -> new AtomicInteger()).incrementAndGet();
         if (attempt >= properties.getMaxAttempts()) {
             attempts.remove(key);
@@ -135,5 +127,14 @@ public final class ReconcileRetryAspect {
         } catch (ArithmeticException exception) {
             return properties.getMaxDelay();
         }
+    }
+
+    /** Clears retry attempts when the controller runtime lifecycle ends. */
+    public void clear() {
+        attempts.clear();
+    }
+
+    int stateSize() {
+        return attempts.size();
     }
 }

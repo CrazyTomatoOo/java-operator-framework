@@ -16,8 +16,8 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Duration;
 
 class OperatorFrameworkPropertiesTest {
-    private final ApplicationContextRunner runner = new ApplicationContextRunner()
-            .withUserConfiguration(PropertiesConfiguration.class);
+    private final ApplicationContextRunner runner =
+        new ApplicationContextRunner().withUserConfiguration(PropertiesConfiguration.class);
 
     @Test
     void exposesRequiredDefaults() {
@@ -59,6 +59,13 @@ class OperatorFrameworkPropertiesTest {
         assertThat(violations(properties)).hasSize(5);
     }
 
+    private java.util.Set<jakarta.validation.ConstraintViolation<OperatorFrameworkProperties>> violations(
+        OperatorFrameworkProperties properties) {
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            return factory.getValidator().validate(properties);
+        }
+    }
+
     @Test
     void rejectsClusterScopeWithConfiguredNamespace() {
         var properties = new OperatorFrameworkProperties();
@@ -66,7 +73,7 @@ class OperatorFrameworkPropertiesTest {
         properties.getController().setNamespace("operators");
 
         assertThat(violations(properties)).singleElement()
-                .satisfies(violation -> assertThat(violation.getMessage()).contains("namespace"));
+            .satisfies(violation -> assertThat(violation.getMessage()).contains("namespace"));
     }
 
     @Test
@@ -75,7 +82,7 @@ class OperatorFrameworkPropertiesTest {
         properties.getLeaderElection().setLeaseName("Invalid_Name");
 
         assertThat(violations(properties)).singleElement()
-                .satisfies(violation -> assertThat(violation.getMessage()).contains("DNS labels"));
+            .satisfies(violation -> assertThat(violation.getMessage()).contains("DNS labels"));
     }
 
     @Test
@@ -88,19 +95,10 @@ class OperatorFrameworkPropertiesTest {
 
     @Test
     void rejectsUnknownModeDuringBinding() {
-        runner.withPropertyValues("operator.framework.mode=not-a-mode")
-                .run(context -> assertThat(context).hasFailed());
-    }
-
-    private java.util.Set<jakarta.validation.ConstraintViolation<OperatorFrameworkProperties>> violations(
-            OperatorFrameworkProperties properties) {
-        try (var factory = Validation.buildDefaultValidatorFactory()) {
-            return factory.getValidator().validate(properties);
-        }
+        runner.withPropertyValues("operator.framework.mode=not-a-mode").run(context -> assertThat(context).hasFailed());
     }
 
     @Configuration(proxyBeanMethods = false)
     @EnableConfigurationProperties(OperatorFrameworkProperties.class)
-    static class PropertiesConfiguration {
-    }
+    static class PropertiesConfiguration {}
 }

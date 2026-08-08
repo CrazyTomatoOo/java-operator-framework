@@ -16,6 +16,7 @@ import java.util.Optional;
  */
 public final class ConversionResult<T> {
     private final T resource;
+
     private final String message;
 
     private ConversionResult(T resource, String message) {

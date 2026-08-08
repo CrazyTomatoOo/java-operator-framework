@@ -36,10 +36,18 @@ public final class ReconcileRateLimitAspect {
     private static final ThreadLocal<Boolean> DEFERRED = ThreadLocal.withInitial(() -> false);
 
     private final ConcurrentHashMap<ReconcileInvocationKey, Instant> lastInvocations = new ConcurrentHashMap<>();
-    private volatile Instant lastSweep;
+
     private final Duration minimum;
+
     private final Clock clock;
+
     private final SpringCallbackIdentifier identifiers;
+
+    private volatile Instant lastSweep;
+
+    ReconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock) {
+        this(properties, clock, new DefaultListableBeanFactory());
+    }
 
     /**
      * Creates the aspect with the configured minimum interval per resource.
@@ -48,17 +56,17 @@ public final class ReconcileRateLimitAspect {
      * @param clock the clock used for interval bookkeeping
      * @param beanFactory the bean factory used to resolve controller bean names
      */
-    public ReconcileRateLimitAspect(
-            OperatorFrameworkProperties properties,
-            Clock clock,
-            ConfigurableListableBeanFactory beanFactory) {
+    public ReconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock,
+        ConfigurableListableBeanFactory beanFactory) {
         minimum = properties.getRateLimit().getMinimumInterval();
         this.clock = clock;
         identifiers = new SpringCallbackIdentifier(beanFactory);
     }
 
-    ReconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock) {
-        this(properties, clock, new DefaultListableBeanFactory());
+    static boolean consumeDeferred() {
+        var deferred = DEFERRED.get();
+        DEFERRED.remove();
+        return deferred;
     }
 
     /**
@@ -91,8 +99,8 @@ public final class ReconcileRateLimitAspect {
     // sweep at most once per minimum window instead of every reconcile (was O(resources)/call)
     private void sweepExpired(Instant now) {
         if (lastSweep == null || Duration.between(lastSweep, now).compareTo(minimum) >= 0) {
-            lastInvocations.entrySet().removeIf(entry ->
-                    Duration.between(entry.getValue(), now).compareTo(minimum) > 0);
+            lastInvocations.entrySet()
+                .removeIf(entry -> Duration.between(entry.getValue(), now).compareTo(minimum) > 0);
             lastSweep = now;
         }
     }
@@ -108,11 +116,5 @@ public final class ReconcileRateLimitAspect {
 
     int stateSize() {
         return lastInvocations.size();
-    }
-
-    static boolean consumeDeferred() {
-        var deferred = DEFERRED.get();
-        DEFERRED.remove();
-        return deferred;
     }
 }

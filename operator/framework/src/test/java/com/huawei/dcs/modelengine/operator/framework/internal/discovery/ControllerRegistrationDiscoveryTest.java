@@ -29,10 +29,17 @@ class ControllerRegistrationDiscoveryTest {
     @Test
     void rejectsLambdaEvenWhenBeanMethodDeclaresItsGenericType() {
         try (var context = context(DeclaredGenericConfiguration.class)) {
-            assertThatThrownBy(() -> discovery(context).discover())
-                    .hasMessageContaining("lambda")
-                    .hasMessageContaining("explicit ControllerRegistration");
+            assertThatThrownBy(() -> discovery(context).discover()).hasMessageContaining("lambda")
+                .hasMessageContaining("explicit ControllerRegistration");
         }
+    }
+
+    private ControllerRegistrationDiscovery discovery(AnnotationConfigApplicationContext context) {
+        return new ControllerRegistrationDiscovery(context.getBeanFactory());
+    }
+
+    private AnnotationConfigApplicationContext context(Class<?> configuration) {
+        return new AnnotationConfigApplicationContext(configuration);
     }
 
     @Test
@@ -48,6 +55,12 @@ class ControllerRegistrationDiscoveryTest {
         }
     }
 
+    private ReconciliationContext reconciliationContext() {
+        return ReconciliationContext.<ConfigMap>withoutCache(
+            new com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey("test", "sample"),
+            java.util.List.of());
+    }
+
     @Test
     void explicitRegistrationOverridesAutomaticRegistrationForResource() {
         try (var context = context(ExplicitConfiguration.class)) {
@@ -61,42 +74,25 @@ class ControllerRegistrationDiscoveryTest {
     @Test
     void duplicateAutomaticRegistrationsFailWithBeanNames() {
         try (var context = context(DuplicateConfiguration.class)) {
-            assertThatThrownBy(() -> discovery(context).discover())
-                    .hasMessageContaining("firstReconciler")
-                    .hasMessageContaining("secondReconciler");
+            assertThatThrownBy(() -> discovery(context).discover()).hasMessageContaining("firstReconciler")
+                .hasMessageContaining("secondReconciler");
         }
     }
 
     @Test
     void rawLambdaReconcilerFailsWithBeanName() {
         try (var context = context(RawConfiguration.class)) {
-            assertThatThrownBy(() -> discovery(context).discover())
-                    .hasMessageContaining("rawReconciler")
-                    .hasMessageContaining("lambda");
+            assertThatThrownBy(() -> discovery(context).discover()).hasMessageContaining("rawReconciler")
+                .hasMessageContaining("lambda");
         }
     }
 
     @Test
     void explicitRegistrationRequiresSpringManagedReconciler() {
         try (var context = context(NonBeanRegistrationConfiguration.class)) {
-            assertThatThrownBy(() -> discovery(context).discover())
-                    .hasMessageContaining("registration")
-                    .hasMessageContaining("not a Spring bean");
+            assertThatThrownBy(() -> discovery(context).discover()).hasMessageContaining("registration")
+                .hasMessageContaining("not a Spring bean");
         }
-    }
-
-    private ControllerRegistrationDiscovery discovery(AnnotationConfigApplicationContext context) {
-        return new ControllerRegistrationDiscovery(context.getBeanFactory());
-    }
-
-    private AnnotationConfigApplicationContext context(Class<?> configuration) {
-        return new AnnotationConfigApplicationContext(configuration);
-    }
-
-    private ReconciliationContext reconciliationContext() {
-        return ReconciliationContext.<ConfigMap>withoutCache(
-                new com.huawei.dcs.modelengine.operator.framework.api.reconcile.ResourceKey("test", "sample"),
-                java.util.List.of());
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -181,8 +177,7 @@ class ControllerRegistrationDiscoveryTest {
         }
     }
 
-    static final class SecondConfigMapReconciler extends ConfigMapReconciler {
-    }
+    static final class SecondConfigMapReconciler extends ConfigMapReconciler {}
 
     static final class CountingConfigMapReconciler extends ConfigMapReconciler {
         private final AtomicInteger calls = new AtomicInteger();

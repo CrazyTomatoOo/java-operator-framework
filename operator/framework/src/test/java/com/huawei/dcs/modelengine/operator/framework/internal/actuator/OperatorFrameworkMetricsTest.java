@@ -28,9 +28,9 @@ class OperatorFrameworkMetricsTest {
         assertThat(timer.count()).isEqualTo(1);
         assertThat(counter.count()).isEqualTo(1);
         assertThat(timer.getId().getTags()).extracting(tag -> tag.getKey())
-                .containsExactlyInAnyOrder("callback.type", "bean", "outcome");
+            .containsExactlyInAnyOrder("callback.type", "bean", "outcome");
         assertThat(timer.getId().getTags()).extracting(tag -> tag.getKey())
-                .doesNotContainAnyElementsOf(Set.of("resource", "namespace", "uid", "reason", "message", "error"));
+            .doesNotContainAnyElementsOf(Set.of("resource", "namespace", "uid", "reason", "message", "error"));
     }
 
     @Test
@@ -46,14 +46,10 @@ class OperatorFrameworkMetricsTest {
         metrics.event("suppressed");
         metrics.event("failed");
 
-        assertThat(registry.scrape()).contains(
-                "operator_framework_queue_depth",
-                "operator_framework_reconcile_retries_total",
-                "operator_framework_reconcile_terminal_failures_total",
-                "operator_framework_informer_errors_total",
-                "operator_framework_event_published_total",
-                "operator_framework_event_suppressed_total",
-                "operator_framework_event_failed_total");
+        assertThat(registry.scrape()).contains("operator_framework_queue_depth",
+            "operator_framework_reconcile_retries_total", "operator_framework_reconcile_terminal_failures_total",
+            "operator_framework_informer_errors_total", "operator_framework_event_published_total",
+            "operator_framework_event_suppressed_total", "operator_framework_event_failed_total");
         gauge.close();
         assertThat(registry.find("operator.framework.queue.depth").gauge()).isNull();
     }

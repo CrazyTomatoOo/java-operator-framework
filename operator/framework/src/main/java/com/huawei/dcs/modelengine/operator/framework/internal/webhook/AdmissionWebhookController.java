@@ -45,12 +45,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public final class AdmissionWebhookController {
     private static final String BASE_PATH = "/operator-framework/webhooks";
+
     private static final String CALLBACK_FAILED = "webhook callback failed";
 
     private final WebhookCallbackRegistry callbacks;
-    private final ObjectMapper objectMapper;
-    private final OperatorFrameworkMetrics metrics;
 
+    private final ObjectMapper objectMapper;
+
+    private final OperatorFrameworkMetrics metrics;
 
     /**
      * Handles a validating AdmissionReview by dispatching it to the named validator callback.
@@ -61,9 +63,7 @@ public final class AdmissionWebhookController {
      *     malformed review
      */
     @PostMapping(BASE_PATH + "/validate/{name}")
-    public ResponseEntity<AdmissionReview> validate(
-            @PathVariable String name,
-            @RequestBody AdmissionReview review) {
+    public ResponseEntity<AdmissionReview> validate(@PathVariable String name, @RequestBody AdmissionReview review) {
         var callback = callbacks.validator(name);
         if (callback.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -84,9 +84,7 @@ public final class AdmissionWebhookController {
      *     unknown name or a malformed review
      */
     @PostMapping(BASE_PATH + "/mutate/{name}")
-    public ResponseEntity<AdmissionReview> mutate(
-            @PathVariable String name,
-            @RequestBody AdmissionReview review) {
+    public ResponseEntity<AdmissionReview> mutate(@PathVariable String name, @RequestBody AdmissionReview review) {
         var callback = callbacks.mutator(name);
         if (callback.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -107,8 +105,8 @@ public final class AdmissionWebhookController {
             var decision = invokeValidator(callback, invocation);
             outcome = decision.isAllowed() ? "allowed" : "denied";
             return decision.isAllowed()
-                    ? response(invocation.request().getUid(), true, null, null)
-                    : response(invocation.request().getUid(), false, decision.message().orElse("denied"), null);
+                ? response(invocation.request().getUid(), true, null, null)
+                : response(invocation.request().getUid(), false, decision.message().orElse("denied"), null);
         } catch (ResourceTypeMismatchException exception) {
             outcome = "denied";
             return response(invocation.request().getUid(), false, "resource type does not match callback", null);
@@ -118,6 +116,90 @@ public final class AdmissionWebhookController {
         } finally {
             metrics.callback("validator", callback.name(), outcome, System.nanoTime() - started);
         }
+    }
+
+    private Invocation invocation(AdmissionReview review, WebhookCallbackRegistry.Callback callback) {
+        try {
+            var request = requireRequest(review);
+            var source = request.getObject() == null ? request.getOldObject() : request.getObject();
+            if (source == null) {
+                throw new IllegalArgumentException("admission object is missing");
+            }
+            var current = objectMapper.convertValue(source, callback.resourceType());
+            var original = objectMapper.valueToTree(current);
+            return new Invocation(request, current, original, context(request, current));
+        } catch (RuntimeException exception) {
+            throw new MalformedReviewException(exception);
+        }
+    }
+
+    private AdmissionRequest requireRequest(AdmissionReview review) {
+        var request = Objects.requireNonNull(review, "review must not be null").getRequest();
+        Objects.requireNonNull(request, "admission request must not be null");
+        requireText(request.getUid(), "admission uid");
+        requireText(request.getOperation(), "admission operation");
+        return request;
+    }
+
+    private void requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+    }
+
+    private AdmissionContext context(AdmissionRequest request, HasMetadata current) {
+        var user = Objects.requireNonNull(request.getUserInfo(), "user info must not be null");
+        var identity = new AdmissionContext.UserIdentity(user.getUsername(), user.getUid(), list(user.getGroups()),
+            extra(user.getExtra()));
+        return new AdmissionContext(request.getUid(), request.getOperation(), ResourceReference.from(current),
+            Boolean.TRUE.equals(request.getDryRun()), options(request.getOptions()), identity);
+    }
+
+    private List<String> list(List<String> values) {
+        return values == null ? List.of() : values;
+    }
+
+    private Map<String, List<String>> extra(Map<String, List<String>> values) {
+        return values == null ? Map.of() : values;
+    }
+
+    private Map<String, Object> options(Object value) {
+        return value == null ? Map.of() : objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {});
+    }
+
+    private void requireResourceType(HasMetadata resource, WebhookCallbackRegistry.Callback callback) {
+        var expectedApiVersion = HasMetadata.getApiVersion(callback.resourceType());
+        var expectedKind = HasMetadata.getKind(callback.resourceType());
+        if (!Objects.equals(resource.getApiVersion(), expectedApiVersion) || !Objects.equals(resource.getKind(),
+            expectedKind)) {
+            throw new ResourceTypeMismatchException();
+        }
+    }
+
+    private AdmissionReview response(String uid, boolean allowed, String message, String patch) {
+        var admissionResponse = new AdmissionResponse();
+        admissionResponse.setUid(uid);
+        admissionResponse.setAllowed(allowed);
+        if (message != null) {
+            admissionResponse.setStatus(new StatusBuilder().withStatus("Failure").withMessage(message).build());
+        }
+        if (patch != null) {
+            admissionResponse.setPatchType("JSONPatch");
+            admissionResponse.setPatch(patch);
+        }
+        var review = new AdmissionReview();
+        review.setApiVersion("admission.k8s.io/v1");
+        review.setKind("AdmissionReview");
+        review.setResponse(admissionResponse);
+        return review;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private AdmissionDecision invokeValidator(WebhookCallbackRegistry.Callback callback, Invocation invocation)
+        throws Exception {
+        return Objects.requireNonNull(
+            ((AdmissionValidator) callback.bean()).validate(invocation.current(), invocation.context()),
+            "validator result must not be null");
     }
 
     private AdmissionReview mutate(AdmissionReview review, WebhookCallbackRegistry.Callback callback) {
@@ -141,10 +223,8 @@ public final class AdmissionWebhookController {
         }
     }
 
-    private AdmissionReview mutationResponse(
-            Invocation invocation,
-            MutationResult<?> result,
-            WebhookCallbackRegistry.Callback callback) throws Exception {
+    private AdmissionReview mutationResponse(Invocation invocation, MutationResult<?> result,
+        WebhookCallbackRegistry.Callback callback) throws Exception {
         Objects.requireNonNull(result, "mutator result must not be null");
         return switch (result.status()) {
             case UNCHANGED -> response(invocation.request().getUid(), true, null, null);
@@ -153,87 +233,23 @@ public final class AdmissionWebhookController {
         };
     }
 
-    private AdmissionReview mutatedResponse(
-            Invocation invocation,
-            Object mutated,
-            WebhookCallbackRegistry.Callback callback) throws Exception {
+    private AdmissionReview mutatedResponse(Invocation invocation, Object mutated,
+        WebhookCallbackRegistry.Callback callback) throws Exception {
         requireMutationOutput(invocation.current(), mutated, callback);
         return response(invocation.request().getUid(), true, null, patch(invocation.original(), mutated));
     }
 
-    private void requireMutationOutput(
-            HasMetadata current,
-            Object mutated,
-            WebhookCallbackRegistry.Callback callback) {
+    private void requireMutationOutput(HasMetadata current, Object mutated, WebhookCallbackRegistry.Callback callback) {
         if (!callback.resourceType().isInstance(mutated)) {
             throw new ResourceTypeMismatchException();
         }
         var original = objectMapper.valueToTree(current);
         var changed = objectMapper.valueToTree(mutated);
-        for (var path : List.of("/apiVersion", "/kind", "/metadata/name",
-                "/metadata/namespace", "/metadata/uid")) {
+        for (var path : List.of("/apiVersion", "/kind", "/metadata/name", "/metadata/namespace", "/metadata/uid")) {
             if (!Objects.equals(original.at(path), changed.at(path))) {
                 throw new ResourceTypeMismatchException();
             }
         }
-    }
-
-    private Invocation invocation(AdmissionReview review, WebhookCallbackRegistry.Callback callback) {
-        try {
-            var request = requireRequest(review);
-            var source = request.getObject() == null ? request.getOldObject() : request.getObject();
-            if (source == null) {
-                throw new IllegalArgumentException("admission object is missing");
-            }
-            var current = objectMapper.convertValue(source, callback.resourceType());
-            var original = objectMapper.valueToTree(current);
-            return new Invocation(request, current, original, context(request, current));
-        } catch (RuntimeException exception) {
-            throw new MalformedReviewException(exception);
-        }
-    }
-
-    private void requireResourceType(HasMetadata resource, WebhookCallbackRegistry.Callback callback) {
-        var expectedApiVersion = HasMetadata.getApiVersion(callback.resourceType());
-        var expectedKind = HasMetadata.getKind(callback.resourceType());
-        if (!Objects.equals(resource.getApiVersion(), expectedApiVersion)
-                || !Objects.equals(resource.getKind(), expectedKind)) {
-            throw new ResourceTypeMismatchException();
-        }
-    }
-
-    private AdmissionRequest requireRequest(AdmissionReview review) {
-        var request = Objects.requireNonNull(review, "review must not be null").getRequest();
-        Objects.requireNonNull(request, "admission request must not be null");
-        requireText(request.getUid(), "admission uid");
-        requireText(request.getOperation(), "admission operation");
-        return request;
-    }
-
-    private AdmissionContext context(AdmissionRequest request, HasMetadata current) {
-        var user = Objects.requireNonNull(request.getUserInfo(), "user info must not be null");
-        var identity = new AdmissionContext.UserIdentity(
-                user.getUsername(), user.getUid(), list(user.getGroups()), extra(user.getExtra()));
-        return new AdmissionContext(request.getUid(), request.getOperation(), ResourceReference.from(current),
-                Boolean.TRUE.equals(request.getDryRun()), options(request.getOptions()), identity);
-    }
-
-    private AdmissionReview response(String uid, boolean allowed, String message, String patch) {
-        var admissionResponse = new AdmissionResponse();
-        admissionResponse.setUid(uid);
-        admissionResponse.setAllowed(allowed);
-        if (message != null) {
-            admissionResponse.setStatus(new StatusBuilder().withStatus("Failure").withMessage(message).build());
-        }
-        if (patch != null) {
-            admissionResponse.setPatchType("JSONPatch");
-            admissionResponse.setPatch(patch);
-        }
-        var review = new AdmissionReview();
-        review.setApiVersion("admission.k8s.io/v1");
-        review.setKind("AdmissionReview");
-        review.setResponse(admissionResponse);
-        return review;
     }
 
     private String patch(JsonNode original, Object mutated) throws Exception {
@@ -245,49 +261,16 @@ public final class AdmissionWebhookController {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private AdmissionDecision invokeValidator(
-            WebhookCallbackRegistry.Callback callback,
-            Invocation invocation) throws Exception {
-        return Objects.requireNonNull(((AdmissionValidator) callback.bean())
-                .validate(invocation.current(), invocation.context()), "validator result must not be null");
+    private MutationResult<?> invokeMutator(WebhookCallbackRegistry.Callback callback, Invocation invocation)
+        throws Exception {
+        return (MutationResult<?>) ((AdmissionMutator) callback.bean()).mutate(invocation.current(),
+            invocation.context());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private MutationResult<?> invokeMutator(
-            WebhookCallbackRegistry.Callback callback,
-            Invocation invocation) throws Exception {
-        return (MutationResult<?>) ((AdmissionMutator) callback.bean())
-                .mutate(invocation.current(), invocation.context());
-    }
+    private record Invocation(AdmissionRequest request, HasMetadata current, JsonNode original,
+                              AdmissionContext context) {}
 
-    private List<String> list(List<String> values) {
-        return values == null ? List.of() : values;
-    }
-
-    private Map<String, List<String>> extra(Map<String, List<String>> values) {
-        return values == null ? Map.of() : values;
-    }
-
-    private Map<String, Object> options(Object value) {
-        return value == null ? Map.of()
-                : objectMapper.convertValue(value, new TypeReference<Map<String, Object>>() {});
-    }
-
-    private void requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(field + " must not be blank");
-        }
-    }
-
-    private record Invocation(
-            AdmissionRequest request,
-            HasMetadata current,
-            JsonNode original,
-            AdmissionContext context) {
-    }
-
-    private static final class ResourceTypeMismatchException extends RuntimeException {
-    }
+    private static final class ResourceTypeMismatchException extends RuntimeException {}
 
     private static final class MalformedReviewException extends RuntimeException {
         private MalformedReviewException(RuntimeException cause) {

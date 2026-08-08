@@ -19,10 +19,18 @@ import java.util.function.BooleanSupplier;
  */
 public final class RuntimeLifecycleSupport {
     private final RuntimeReadiness readiness;
+
     private final OperatorFrameworkMetrics metrics;
+
     private final ReconcileRetryAspect retry;
+
     private final ReconcileRateLimitAspect rateLimit;
+
     private OperatorFrameworkMetrics.GaugeHandle leadershipGauge;
+
+    RuntimeLifecycleSupport(RuntimeReadiness readiness) {
+        this(readiness, new OperatorFrameworkMetrics(null), null, null);
+    }
 
     /**
      * Creates the lifecycle support bundle.
@@ -32,19 +40,12 @@ public final class RuntimeLifecycleSupport {
      * @param retry the retry policy aspect whose state is cleared when a runtime stops
      * @param rateLimit the rate-limit aspect whose state is cleared when a runtime stops
      */
-    public RuntimeLifecycleSupport(
-            RuntimeReadiness readiness,
-            OperatorFrameworkMetrics metrics,
-            ReconcileRetryAspect retry,
-            ReconcileRateLimitAspect rateLimit) {
+    public RuntimeLifecycleSupport(RuntimeReadiness readiness, OperatorFrameworkMetrics metrics,
+        ReconcileRetryAspect retry, ReconcileRateLimitAspect rateLimit) {
         this.readiness = readiness;
         this.metrics = metrics;
         this.retry = retry;
         this.rateLimit = rateLimit;
-    }
-
-    RuntimeLifecycleSupport(RuntimeReadiness readiness) {
-        this(readiness, new OperatorFrameworkMetrics(null), null, null);
     }
 
     void start(BooleanSupplier leading) {

@@ -19,13 +19,6 @@ public interface ControllerRuntime {
     void start();
 
     /**
-     * Reports whether all informers are synchronized and the runtime can serve requests.
-     *
-     * @return {@code true} when the runtime is ready
-     */
-    boolean isReady();
-
-    /**
      * Reports whether the runtime has started and is not stopping.
      *
      * @return {@code true} when the runtime is running
@@ -33,6 +26,13 @@ public interface ControllerRuntime {
     default boolean isRunning() {
         return isReady();
     }
+
+    /**
+     * Reports whether all informers are synchronized and the runtime can serve requests.
+     *
+     * @return {@code true} when the runtime is ready
+     */
+    boolean isReady();
 
     /**
      * Returns the number of reconciliation requests waiting in the queue.

@@ -17,15 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * SpringCallbackIdentifier.
  *
- * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
+
 /** Resolves callback type and bean-name tags; cached per target class and callback kind. */
 final class SpringCallbackIdentifier {
-    private record CacheKey(Class<?> targetClass, CallbackKind kind) {
-    }
-
     private final ConfigurableListableBeanFactory beanFactory;
+
     private final ConcurrentHashMap<CacheKey, Identity> identities = new ConcurrentHashMap<>();
 
     SpringCallbackIdentifier(ConfigurableListableBeanFactory beanFactory) {
@@ -38,21 +36,10 @@ final class SpringCallbackIdentifier {
         return identities.computeIfAbsent(key, ignored -> resolve(joinPoint));
     }
 
-    int cacheSize() {
-        return identities.size();
-    }
-
     private Identity resolve(ProceedingJoinPoint joinPoint) {
         var callback = callbackKind(joinPoint);
         var name = beanName(callback.callbackInterface, joinPoint.getThis(), joinPoint.getTarget());
         return new Identity(callback.type, name);
-    }
-
-    private CallbackKind callbackKind(ProceedingJoinPoint joinPoint) {
-        var signature = joinPoint.getSignature();
-        return signature == null
-                ? CallbackKind.fromTarget(joinPoint.getTarget())
-                : CallbackKind.from(signature.getName());
     }
 
     private String beanName(Class<?> type, Object proxy, Object target) {
@@ -65,6 +52,21 @@ final class SpringCallbackIdentifier {
         return target.getClass().getSimpleName();
     }
 
+    private CallbackKind callbackKind(ProceedingJoinPoint joinPoint) {
+        var signature = joinPoint.getSignature();
+        return signature == null
+            ? CallbackKind.fromTarget(joinPoint.getTarget())
+            : CallbackKind.from(signature.getName());
+    }
+
+    int cacheSize() {
+        return identities.size();
+    }
+
+    private record CacheKey(Class<?> targetClass, CallbackKind kind) {}
+
+    record Identity(String type, String bean) {}
+
     private enum CallbackKind {
         RECONCILER("reconciler", Reconciler.class),
         VALIDATOR("validator", AdmissionValidator.class),
@@ -72,6 +74,7 @@ final class SpringCallbackIdentifier {
         CONVERTER("converter", ResourceConverter.class);
 
         private final String type;
+
         private final Class<?> callbackInterface;
 
         CallbackKind(String type, Class<?> callbackInterface) {
@@ -101,8 +104,5 @@ final class SpringCallbackIdentifier {
             }
             return CONVERTER;
         }
-    }
-
-    record Identity(String type, String bean) {
     }
 }

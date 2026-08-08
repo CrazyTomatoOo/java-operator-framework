@@ -16,6 +16,7 @@ import java.util.Optional;
  */
 public final class ReconcileResult {
     private static final ReconcileResult DONE = new ReconcileResult(null);
+
     private static final ReconcileResult REQUEUE_NOW = new ReconcileResult(Duration.ZERO);
 
     private final Duration delay;

@@ -31,10 +31,9 @@ import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class OperatorFrameworkAutoConfigurationTest {
-    private final ApplicationContextRunner runner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(
-                    AopAutoConfiguration.class, OperatorFrameworkAutoConfiguration.class))
-            .withBean(ObjectMapper.class, ObjectMapper::new);
+    private final ApplicationContextRunner runner = new ApplicationContextRunner().withConfiguration(
+            AutoConfigurations.of(AopAutoConfiguration.class, OperatorFrameworkAutoConfiguration.class))
+        .withBean(ObjectMapper.class, ObjectMapper::new);
 
     @Test
     void disabledCreatesNothing() {
@@ -49,8 +48,7 @@ class OperatorFrameworkAutoConfigurationTest {
 
     @Test
     void controllerModeRequiresControllerAndCreatesNoMvcWebhooks() {
-        runner.withPropertyValues("operator.framework.mode=controller")
-                .run(context -> assertThat(context).hasFailed());
+        runner.withPropertyValues("operator.framework.mode=controller").run(context -> assertThat(context).hasFailed());
         controllerRunner().run(context -> {
             assertThat(context).hasSingleBean(OperatorFrameworkLifecycle.class);
             assertThat(context).doesNotHaveBean(WebhookCallbackRegistry.class);
@@ -59,10 +57,19 @@ class OperatorFrameworkAutoConfigurationTest {
         });
     }
 
+    private ApplicationContextRunner controllerRunner() {
+        return baseInfrastructure().withBean("configmapreconciler", ConfigMapReconciler.class, ConfigMapReconciler::new)
+            .withPropertyValues("operator.framework.mode=controller");
+    }
+
+    private ApplicationContextRunner baseInfrastructure() {
+        return runner.withBean(KubernetesClient.class, () -> mock(KubernetesClient.class),
+            definition -> definition.setDestroyMethodName(""));
+    }
+
     @Test
     void webhookModeRequiresCallbackAndCreatesNoControllerInfrastructure() {
-        runner.withPropertyValues("operator.framework.mode=webhook")
-                .run(context -> assertThat(context).hasFailed());
+        runner.withPropertyValues("operator.framework.mode=webhook").run(context -> assertThat(context).hasFailed());
         webhookRunner().run(context -> {
             assertThat(context).hasSingleBean(WebhookCallbackRegistry.class);
             assertThat(context).hasSingleBean(AdmissionWebhookController.class);
@@ -73,29 +80,34 @@ class OperatorFrameworkAutoConfigurationTest {
         });
     }
 
+    private ApplicationContextRunner webhookRunner() {
+        return runner.withBean("configmapvalidator", ConfigMapValidator.class, ConfigMapValidator::new)
+            .withPropertyValues("operator.framework.mode=webhook");
+    }
+
     @Test
     void combinedModeRequiresBothGroups() {
         controllerRunner().withPropertyValues("operator.framework.mode=combined")
-                .run(context -> assertThat(context).hasFailed());
+            .run(context -> assertThat(context).hasFailed());
         webhookRunner().withPropertyValues("operator.framework.mode=combined")
-                .run(context -> assertThat(context).hasFailed());
+            .run(context -> assertThat(context).hasFailed());
         baseInfrastructure().withBean("configmapreconciler", ConfigMapReconciler.class, ConfigMapReconciler::new)
-                .withBean("configmapvalidator", ConfigMapValidator.class, ConfigMapValidator::new)
-                .withPropertyValues("operator.framework.mode=combined")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(OperatorFrameworkLifecycle.class);
-                    assertThat(context).hasSingleBean(WebhookCallbackRegistry.class);
-                    assertThat(context).hasSingleBean(OperatorFrameworkHealthIndicator.class);
-                });
+            .withBean("configmapvalidator", ConfigMapValidator.class, ConfigMapValidator::new)
+            .withPropertyValues("operator.framework.mode=combined")
+            .run(context -> {
+                assertThat(context).hasSingleBean(OperatorFrameworkLifecycle.class);
+                assertThat(context).hasSingleBean(WebhookCallbackRegistry.class);
+                assertThat(context).hasSingleBean(OperatorFrameworkHealthIndicator.class);
+            });
     }
 
     @Test
     void contextDoesNotCloseUserSuppliedKubernetesClient() {
         var supplied = mock(KubernetesClient.class);
         runner.withBean(KubernetesClient.class, () -> supplied, definition -> definition.setDestroyMethodName(""))
-                .withBean("configmapreconciler", ConfigMapReconciler.class, ConfigMapReconciler::new)
-                .withPropertyValues("operator.framework.mode=controller")
-                .run(context -> assertThat(context).hasSingleBean(KubernetesClient.class));
+            .withBean("configmapreconciler", ConfigMapReconciler.class, ConfigMapReconciler::new)
+            .withPropertyValues("operator.framework.mode=controller")
+            .run(context -> assertThat(context).hasSingleBean(KubernetesClient.class));
 
         verify(supplied, never()).close();
     }
@@ -104,23 +116,7 @@ class OperatorFrameworkAutoConfigurationTest {
     void userSuppliedEventPublisherReplacesDefault() {
         var supplied = mock(KubernetesEventPublisher.class);
         controllerRunner().withBean(KubernetesEventPublisher.class, () -> supplied)
-                .run(context -> assertThat(context).hasSingleBean(KubernetesEventPublisher.class));
-    }
-
-    private ApplicationContextRunner controllerRunner() {
-        return baseInfrastructure()
-                .withBean("configmapreconciler", ConfigMapReconciler.class, ConfigMapReconciler::new)
-                .withPropertyValues("operator.framework.mode=controller");
-    }
-
-    private ApplicationContextRunner webhookRunner() {
-        return runner.withBean("configmapvalidator", ConfigMapValidator.class, ConfigMapValidator::new)
-                .withPropertyValues("operator.framework.mode=webhook");
-    }
-
-    private ApplicationContextRunner baseInfrastructure() {
-        return runner.withBean(KubernetesClient.class, () -> mock(KubernetesClient.class),
-                definition -> definition.setDestroyMethodName(""));
+            .run(context -> assertThat(context).hasSingleBean(KubernetesEventPublisher.class));
     }
 
     static class ConfigMapReconciler implements Reconciler<ConfigMap> {
@@ -132,9 +128,8 @@ class OperatorFrameworkAutoConfigurationTest {
          * @return a completed result
          */
         @Override
-        public ReconcileResult reconcile(
-                ConfigMap resource,
-                com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext context) {
+        public ReconcileResult reconcile(ConfigMap resource,
+            com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconciliationContext context) {
             return ReconcileResult.done();
         }
     }
@@ -148,9 +143,8 @@ class OperatorFrameworkAutoConfigurationTest {
          * @return an allow decision
          */
         @Override
-        public AdmissionDecision validate(
-                ConfigMap current,
-                com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext context) {
+        public AdmissionDecision validate(ConfigMap current,
+            com.huawei.dcs.modelengine.operator.framework.api.webhook.AdmissionContext context) {
             return AdmissionDecision.allow();
         }
     }

@@ -29,11 +29,17 @@ import java.util.stream.Stream;
  */
 public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter {
     private static final int MAX_LEASE_NAME_LENGTH = 56;
+
     private final KubernetesClient client;
+
     private final OperatorFrameworkProperties.Controller controllerProperties;
+
     private final OperatorFrameworkProperties.LeaderElection properties;
+
     private final Environment environment;
+
     private LeaderElector elector;
+
     private CompletableFuture<?> election;
 
     /**
@@ -43,10 +49,8 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
      * @param properties the operator framework configuration
      * @param environment the Spring environment used to derive the lease name
      */
-    public Fabric8LeaderElectionAdapter(
-            KubernetesClient client,
-            OperatorFrameworkProperties properties,
-            Environment environment) {
+    public Fabric8LeaderElectionAdapter(KubernetesClient client, OperatorFrameworkProperties properties,
+        Environment environment) {
         this.client = client;
         controllerProperties = properties.getController();
         this.properties = properties.getLeaderElection();
@@ -69,6 +73,45 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
         return election.thenApply(ignored -> null);
     }
 
+    LeaderElectionConfig config(Runnable onStartLeading, Runnable onStopLeading) {
+        var name = leaseName();
+        var callbacks = new LeaderCallbacks(onStartLeading, onStopLeading, ignored -> {});
+        var lock = new LeaseLock(namespace(), name, identity());
+        return new LeaderElectionConfigBuilder().withName(name)
+            .withLock(lock)
+            .withLeaseDuration(properties.getLeaseDuration())
+            .withRenewDeadline(properties.getRenewDeadline())
+            .withRetryPeriod(properties.getRetryPeriod())
+            .withReleaseOnCancel(true)
+            .withLeaderCallbacks(callbacks)
+            .build();
+    }
+
+    private String leaseName() {
+        var configured = properties.getLeaseName();
+        if (configured != null && !configured.isBlank()) {
+            return configured;
+        }
+        var application = environment.getProperty("spring.application.name", "operator-framework");
+        var sanitized = application.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-").replaceAll("^-+|-+$", "");
+        if (sanitized.length() > MAX_LEASE_NAME_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_LEASE_NAME_LENGTH).replaceAll("-+$", "");
+        }
+        return (sanitized.isBlank() ? "operator-framework" : sanitized) + "-leader";
+    }
+
+    private String namespace() {
+        return Stream.of(properties.getNamespace(), controllerProperties.getNamespace(), client.getNamespace())
+            .filter(value -> value != null && !value.isBlank())
+            .findFirst()
+            .orElse("default");
+    }
+
+    private String identity() {
+        var hostname = System.getenv("HOSTNAME");
+        return hostname == null || hostname.isBlank() ? ManagementFactory.getRuntimeMXBean().getName() : hostname;
+    }
+
     /** Cancels the running election and releases the Lease, if any. */
     @Override
     public synchronized void stop() {
@@ -79,48 +122,5 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
             election = null;
             elector = null;
         }
-    }
-
-    LeaderElectionConfig config(Runnable onStartLeading, Runnable onStopLeading) {
-        var name = leaseName();
-        var callbacks = new LeaderCallbacks(onStartLeading, onStopLeading, ignored -> { });
-        var lock = new LeaseLock(namespace(), name, identity());
-        return new LeaderElectionConfigBuilder()
-                .withName(name)
-                .withLock(lock)
-                .withLeaseDuration(properties.getLeaseDuration())
-                .withRenewDeadline(properties.getRenewDeadline())
-                .withRetryPeriod(properties.getRetryPeriod())
-                .withReleaseOnCancel(true)
-                .withLeaderCallbacks(callbacks)
-                .build();
-    }
-
-    private String leaseName() {
-        var configured = properties.getLeaseName();
-        if (configured != null && !configured.isBlank()) {
-            return configured;
-        }
-        var application = environment.getProperty("spring.application.name", "operator-framework");
-        var sanitized = application.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-")
-                .replaceAll("^-+|-+$", "");
-        if (sanitized.length() > MAX_LEASE_NAME_LENGTH) {
-            sanitized = sanitized.substring(0, MAX_LEASE_NAME_LENGTH).replaceAll("-+$", "");
-        }
-        return (sanitized.isBlank() ? "operator-framework" : sanitized) + "-leader";
-    }
-
-    private String namespace() {
-        return Stream.of(properties.getNamespace(), controllerProperties.getNamespace(), client.getNamespace())
-                .filter(value -> value != null && !value.isBlank())
-                .findFirst()
-                .orElse("default");
-    }
-
-    private String identity() {
-        var hostname = System.getenv("HOSTNAME");
-        return hostname == null || hostname.isBlank()
-                ? ManagementFactory.getRuntimeMXBean().getName()
-                : hostname;
     }
 }

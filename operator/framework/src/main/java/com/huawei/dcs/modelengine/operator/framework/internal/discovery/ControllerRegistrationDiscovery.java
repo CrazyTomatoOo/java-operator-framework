@@ -44,7 +44,7 @@ public final class ControllerRegistrationDiscovery {
      *
      * @return the discovered controller registrations, one per resource type
      * @throws IllegalStateException when no controller is found, a resource type is duplicated,
-     *         a reconciler is a lambda, or a resource type cannot be resolved
+     *     a reconciler is a lambda, or a resource type cannot be resolved
      */
     public List<ControllerRegistration<?>> discover() {
         var explicit = explicitRegistrations();
@@ -54,9 +54,7 @@ public final class ControllerRegistrationDiscovery {
         if (explicit.isEmpty()) {
             throw new IllegalStateException("controller mode requires a Reconciler or ControllerRegistration bean");
         }
-        return explicit.values().stream()
-                .<ControllerRegistration<?>>map(NamedRegistration::registration)
-                .toList();
+        return explicit.values().stream().<ControllerRegistration<?>>map(NamedRegistration::registration).toList();
     }
 
     private Map<Class<?>, NamedRegistration> explicitRegistrations() {
@@ -69,16 +67,34 @@ public final class ControllerRegistrationDiscovery {
         return registrations;
     }
 
+    private void requireSpringBean(String registrationName, Reconciler<?> reconciler) {
+        for (var name : beanFactory.getBeanNamesForType(Reconciler.class, false, false)) {
+            if (beanFactory.getBean(name) == reconciler) {
+                return;
+            }
+        }
+        throw new IllegalStateException(
+            "ControllerRegistration bean '" + registrationName + "' references a reconciler that is not a Spring bean");
+    }
+
+    private void put(Map<Class<?>, NamedRegistration> registrations, Class<?> resourceType,
+        NamedRegistration candidate) {
+        var previous = registrations.putIfAbsent(resourceType, candidate);
+        if (previous != null) {
+            throw new IllegalStateException(
+                "duplicate controller resource " + resourceType.getName() + " in beans '" + previous.beanName()
+                    + "' and '" + candidate.beanName() + "'");
+        }
+    }
+
     private IdentityHashMap<Object, Boolean> registeredReconcilers(Map<Class<?>, NamedRegistration> registrations) {
         var reconcilers = new IdentityHashMap<Object, Boolean>();
         registrations.values().forEach(entry -> reconcilers.put(entry.registration().reconciler(), Boolean.TRUE));
         return reconcilers;
     }
 
-    private void addDiscoveredReconcilers(
-            Map<Class<?>, NamedRegistration> registrations,
-            Set<Class<?>> explicitTypes,
-            IdentityHashMap<Object, Boolean> registeredReconcilers) {
+    private void addDiscoveredReconcilers(Map<Class<?>, NamedRegistration> registrations, Set<Class<?>> explicitTypes,
+        IdentityHashMap<Object, Boolean> registeredReconcilers) {
         for (var name : beanFactory.getBeanNamesForType(Reconciler.class, false, false)) {
             var reconciler = beanFactory.getBean(name, Reconciler.class);
             if (registeredReconcilers.containsKey(reconciler)) {
@@ -91,60 +107,35 @@ public final class ControllerRegistrationDiscovery {
         }
     }
 
-    private void requireSpringBean(String registrationName, Reconciler<?> reconciler) {
-        for (var name : beanFactory.getBeanNamesForType(Reconciler.class, false, false)) {
-            if (beanFactory.getBean(name) == reconciler) {
-                return;
-            }
-        }
-        throw new IllegalStateException("ControllerRegistration bean '" + registrationName
-                + "' references a reconciler that is not a Spring bean");
-    }
-
     private Class<? extends HasMetadata> resolveResourceType(String beanName, Reconciler<?> reconciler) {
         var targetType = AopUtils.getTargetClass(reconciler);
         if (targetType.isSynthetic()) {
             throw new IllegalStateException("Reconciler bean '" + beanName
-                    + "' is a lambda; use a concrete class or explicit ControllerRegistration");
+                + "' is a lambda; use a concrete class or explicit ControllerRegistration");
         }
         var definitionType = beanFactory.getMergedBeanDefinition(beanName).getResolvableType();
-        return resolveResourceType(definitionType)
-                .or(() -> resolveResourceType(ResolvableType.forClass(targetType)))
-                .orElseThrow(() -> new IllegalStateException(
-                        "Reconciler bean '" + beanName + "' has an unresolved resource type"));
+        return resolveResourceType(definitionType).or(() -> resolveResourceType(ResolvableType.forClass(targetType)))
+            .orElseThrow(
+                () -> new IllegalStateException("Reconciler bean '" + beanName + "' has an unresolved resource type"));
     }
 
     @SuppressWarnings("unchecked")
     private Optional<Class<? extends HasMetadata>> resolveResourceType(ResolvableType type) {
         var reconcilerType = type.as(Reconciler.class);
         var resolved = reconcilerType.getGeneric(0).resolve();
-        if (reconcilerType.hasUnresolvableGenerics() || resolved == HasMetadata.class
-                || resolved == null || !HasMetadata.class.isAssignableFrom(resolved)) {
+        if (reconcilerType.hasUnresolvableGenerics() || resolved == HasMetadata.class || resolved == null
+            || !HasMetadata.class.isAssignableFrom(resolved)) {
             return Optional.empty();
         }
         return Optional.of((Class<? extends HasMetadata>) resolved);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private NamedRegistration autoRegistration(
-            String beanName,
-            Class<? extends HasMetadata> resourceType,
-            Reconciler<?> reconciler) {
+    private NamedRegistration autoRegistration(String beanName, Class<? extends HasMetadata> resourceType,
+        Reconciler<?> reconciler) {
         var registration = ControllerBuilder.forResource((Class) resourceType, (Reconciler) reconciler).build();
         return new NamedRegistration(beanName, registration);
     }
 
-    private void put(
-            Map<Class<?>, NamedRegistration> registrations,
-            Class<?> resourceType,
-            NamedRegistration candidate) {
-        var previous = registrations.putIfAbsent(resourceType, candidate);
-        if (previous != null) {
-            throw new IllegalStateException("duplicate controller resource " + resourceType.getName() + " in beans '"
-                    + previous.beanName() + "' and '" + candidate.beanName() + "'");
-        }
-    }
-
-    private record NamedRegistration(String beanName, ControllerRegistration<?> registration) {
-    }
+    private record NamedRegistration(String beanName, ControllerRegistration<?> registration) {}
 }

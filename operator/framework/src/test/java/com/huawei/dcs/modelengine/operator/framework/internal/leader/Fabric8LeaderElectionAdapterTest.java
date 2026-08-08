@@ -61,7 +61,7 @@ class Fabric8LeaderElectionAdapterTest {
         properties.getLeaderElection().setNamespace("leader-namespace");
         var adapter = new Fabric8LeaderElectionAdapter(client, properties, new MockEnvironment());
 
-        var config = adapter.config(() -> { }, () -> { });
+        var config = adapter.config(() -> {}, () -> {});
 
         assertThat(config.getName()).isEqualTo("custom-lease");
         assertThat(config.getLock().describe()).contains("leader-namespace", "custom-lease");
@@ -73,10 +73,9 @@ class Fabric8LeaderElectionAdapterTest {
         when(client.getNamespace()).thenReturn("operators");
         var applicationName = "Very Long Operator Name ".repeat(10);
         var environment = new MockEnvironment().withProperty("spring.application.name", applicationName);
-        var adapter = new Fabric8LeaderElectionAdapter(
-                client, new OperatorFrameworkProperties(), environment);
+        var adapter = new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), environment);
 
-        var name = adapter.config(() -> { }, () -> { }).getName();
+        var name = adapter.config(() -> {}, () -> {}).getName();
 
         assertThat(name).hasSizeLessThanOrEqualTo(63).matches("[a-z0-9]([-a-z0-9]*[a-z0-9])?");
     }
@@ -91,10 +90,10 @@ class Fabric8LeaderElectionAdapterTest {
         when(builder.withConfig(any())).thenReturn(builder);
         when(builder.build()).thenReturn(elector);
         doReturn(election).when(elector).start();
-        var adapter = new Fabric8LeaderElectionAdapter(
-                client, new OperatorFrameworkProperties(), new MockEnvironment());
+        var adapter =
+            new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), new MockEnvironment());
 
-        adapter.start(() -> { }, () -> { });
+        adapter.start(() -> {}, () -> {});
         adapter.stop();
 
         assertThat(election).isCancelled();
@@ -111,11 +110,11 @@ class Fabric8LeaderElectionAdapterTest {
         when(builder.withConfig(any())).thenReturn(builder);
         when(builder.build()).thenReturn(elector);
         doReturn(election).when(elector).start();
-        var adapter = new Fabric8LeaderElectionAdapter(
-                client, new OperatorFrameworkProperties(), new MockEnvironment());
+        var adapter =
+            new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), new MockEnvironment());
 
-        adapter.start(() -> { }, () -> { });
-        adapter.start(() -> { }, () -> { });
+        adapter.start(() -> {}, () -> {});
+        adapter.start(() -> {}, () -> {});
         verify(elector, times(1)).start();
 
         adapter.stop();
@@ -130,7 +129,7 @@ class Fabric8LeaderElectionAdapterTest {
         var environment = new MockEnvironment().withProperty("spring.application.name", "!!!");
         var adapter = new Fabric8LeaderElectionAdapter(client, new OperatorFrameworkProperties(), environment);
 
-        var config = adapter.config(() -> { }, () -> { });
+        var config = adapter.config(() -> {}, () -> {});
 
         assertThat(config.getName()).isEqualTo("operator-framework-leader");
         assertThat(config.getLock().describe()).contains("default");
@@ -144,6 +143,6 @@ class Fabric8LeaderElectionAdapterTest {
         properties.getController().setNamespace("controller-namespace");
         var adapter = new Fabric8LeaderElectionAdapter(client, properties, new MockEnvironment());
 
-        assertThat(adapter.config(() -> { }, () -> { }).getLock().describe()).contains("controller-namespace");
+        assertThat(adapter.config(() -> {}, () -> {}).getLock().describe()).contains("controller-namespace");
     }
 }
