@@ -18,6 +18,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -107,25 +108,21 @@ public final class ControllerRegistrationDiscovery {
                     + "' is a lambda; use a concrete class or explicit ControllerRegistration");
         }
         var definitionType = beanFactory.getMergedBeanDefinition(beanName).getResolvableType();
-        var resolved = resolveResourceType(definitionType);
-        if (resolved == null) {
-            resolved = resolveResourceType(ResolvableType.forClass(targetType));
-        }
-        if (resolved == null) {
-            throw new IllegalStateException("Reconciler bean '" + beanName + "' has an unresolved resource type");
-        }
-        return resolved;
+        return resolveResourceType(definitionType)
+                .or(() -> resolveResourceType(ResolvableType.forClass(targetType)))
+                .orElseThrow(() -> new IllegalStateException(
+                        "Reconciler bean '" + beanName + "' has an unresolved resource type"));
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends HasMetadata> resolveResourceType(ResolvableType type) {
+    private Optional<Class<? extends HasMetadata>> resolveResourceType(ResolvableType type) {
         var reconcilerType = type.as(Reconciler.class);
         var resolved = reconcilerType.getGeneric(0).resolve();
         if (reconcilerType.hasUnresolvableGenerics() || resolved == HasMetadata.class
                 || resolved == null || !HasMetadata.class.isAssignableFrom(resolved)) {
-            return null;
+            return Optional.empty();
         }
-        return (Class<? extends HasMetadata>) resolved;
+        return Optional.of((Class<? extends HasMetadata>) resolved);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

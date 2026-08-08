@@ -153,15 +153,10 @@ public final class WebhookCallbackRegistry {
     }
 
     private Class<? extends HasMetadata> resolveResourceType(String name, Object bean, Class<?> callbackType) {
-        var resolved = resolve(declaredType(name), callbackType);
-        if (resolved == null) {
-            resolved = resolve(ResolvableType.forClass(AopUtils.getTargetClass(bean)), callbackType);
-        }
-        if (resolved == null) {
-            throw new ApplicationContextException(
-                    "webhook callback bean '" + name + "' has a raw or unresolved resource type");
-        }
-        return resolved;
+        return resolve(declaredType(name), callbackType)
+                .or(() -> resolve(ResolvableType.forClass(AopUtils.getTargetClass(bean)), callbackType))
+                .orElseThrow(() -> new ApplicationContextException(
+                        "webhook callback bean '" + name + "' has a raw or unresolved resource type"));
     }
 
     private ResolvableType declaredType(String name) {
@@ -173,16 +168,16 @@ public final class WebhookCallbackRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends HasMetadata> resolve(ResolvableType type, Class<?> callbackType) {
+    private Optional<Class<? extends HasMetadata>> resolve(ResolvableType type, Class<?> callbackType) {
         var genericType = type.as(callbackType);
         var resolved = genericType.getGeneric(0).resolve();
         if (genericType == ResolvableType.NONE || genericType.hasUnresolvableGenerics()) {
-            return null;
+            return Optional.empty();
         }
         if (!isConcreteResourceType(resolved)) {
-            return null;
+            return Optional.empty();
         }
-        return (Class<? extends HasMetadata>) resolved;
+        return Optional.of((Class<? extends HasMetadata>) resolved);
     }
 
     private boolean isConcreteResourceType(Class<?> resolved) {

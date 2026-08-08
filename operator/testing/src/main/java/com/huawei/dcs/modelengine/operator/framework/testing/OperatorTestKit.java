@@ -16,6 +16,7 @@ import com.huawei.dcs.modelengine.operator.framework.internal.controller.Control
 import com.huawei.dcs.modelengine.operator.framework.internal.controller.Fabric8ControllerRuntimeFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.impl.cache.CacheImpl;
@@ -110,11 +111,12 @@ public final class OperatorTestKit implements AutoCloseable {
         return runtime;
     }
 
-    // CacheImpl is fabric8's impl-jar indexer — the only concrete one shipped
     /**
      * Direct-invocation test context for {@code primary} with a working primary cache (the primary
      * itself is cached), so reconcilers can exercise by-index/get-by-key paths without a runtime.
      * For secondary caches, run a real runtime via {@link #controller} instead.
+     *
+     * <p>CacheImpl is fabric8's impl-jar indexer — the only concrete one shipped.
      *
      * @param <T> the primary resource type
      * @param primary the resource under reconciliation, also stored in the context cache
