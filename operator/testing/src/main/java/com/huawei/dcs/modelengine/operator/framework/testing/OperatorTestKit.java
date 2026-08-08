@@ -131,7 +131,9 @@ public final class OperatorTestKit implements AutoCloseable {
                 Map.of(primary.getClass(), cache));
     }
 
-    /** Stops all started runtimes and tears down the in-memory server. */
+    /**
+     * Stops all started runtimes and tears down the in-memory server.
+     */
     @Override
     public void close() {
         runtimes.forEach(runtime -> runtime.stop().toCompletableFuture().join());
