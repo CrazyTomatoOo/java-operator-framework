@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 public final class OperatorFrameworkLifecycle implements SmartLifecycle {
-
     private final OperatorFrameworkProperties properties;
 
     private final ControllerRuntimeFactory runtimeFactory;
@@ -50,11 +49,6 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
 
     private CompletableFuture<Void> stoppingRuntime = CompletableFuture.completedFuture(null);
 
-    OperatorFrameworkLifecycle(OperatorFrameworkProperties properties, ControllerRuntimeFactory runtimeFactory,
-        LeaderElectionAdapter leaderElection, RuntimeReadiness readiness) {
-        this(properties, runtimeFactory, leaderElection, new RuntimeLifecycleSupport(readiness));
-    }
-
     /**
      * Creates the lifecycle supervisor.
      *
@@ -69,6 +63,11 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         this.runtimeFactory = runtimeFactory;
         this.leaderElection = leaderElection;
         this.support = support;
+    }
+
+    OperatorFrameworkLifecycle(OperatorFrameworkProperties properties, ControllerRuntimeFactory runtimeFactory,
+        LeaderElectionAdapter leaderElection, RuntimeReadiness readiness) {
+        this(properties, runtimeFactory, leaderElection, new RuntimeLifecycleSupport(readiness));
     }
 
     /**
@@ -88,7 +87,9 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
         }
     }
 
-    /** Stops the lifecycle without a completion callback. */
+    /**
+     * Stops the lifecycle without a completion callback.
+     */
     @Override
     public void stop() {
         stop(() -> {});
@@ -118,6 +119,8 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
                 current.stop().toCompletableFuture().whenComplete((ignored, exception) -> support.runtimeStopped());
         } else if (stoppingRuntime.isDone()) {
             support.runtimeStopped();
+        } else {
+            // a previous stop is still draining; its completion callback already clears policy state
         }
         return stoppingRuntime;
     }
@@ -220,11 +223,11 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
     }
 
     private void electionFinished(Throwable failure) {
-        electionActive = false;
-        if (!running.get()) {
-            return;
-        }
         supervisor.execute(() -> {
+            electionActive = false;
+            if (!running.get()) {
+                return;
+            }
             recordFailure(failure);
             log.warn("Leader election stopped unexpectedly; retrying", failure);
             leading = false;
@@ -235,17 +238,24 @@ public final class OperatorFrameworkLifecycle implements SmartLifecycle {
 
     private void leadershipStarted() {
         if (running.get()) {
-            leading = true;
-            support.notReady();
-            supervisor.execute(this::startRuntime);
+            supervisor.execute(() -> {
+                leading = true;
+                support.notReady();
+                startRuntime();
+            });
         }
     }
 
     private void leadershipStopped() {
-        leading = false;
-        support.notReady();
         if (running.get()) {
-            supervisor.execute(() -> stopRuntime().whenComplete((ignored, exception) -> markStandbyReady()));
+            supervisor.execute(() -> {
+                leading = false;
+                support.notReady();
+                stopRuntime().whenComplete((ignored, exception) -> markStandbyReady());
+            });
+        } else {
+            leading = false;
+            support.notReady();
         }
     }
 
