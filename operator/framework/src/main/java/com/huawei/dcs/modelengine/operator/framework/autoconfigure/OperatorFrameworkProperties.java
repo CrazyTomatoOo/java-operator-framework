@@ -127,16 +127,19 @@ public class OperatorFrameworkProperties {
 
     /** Controller worker and informer settings. */
     public static class Controller {
+        private static final Duration DEFAULT_RESYNC_PERIOD = Duration.ofSeconds(60);
+        private static final Duration DEFAULT_STARTUP_RETRY_DELAY = Duration.ofSeconds(5);
+
         private String namespace;
         private boolean clusterScoped;
         @Min(1)
         private int workerThreads = 1;
         @NotNull
-        private Duration resyncPeriod = Duration.ofSeconds(60);
+        private Duration resyncPeriod = DEFAULT_RESYNC_PERIOD;
         private boolean generationChangeFilter = true;
         private boolean filterEventsByInvolvedObject = true;
         @NotNull
-        private Duration startupRetryDelay = Duration.ofSeconds(5);
+        private Duration startupRetryDelay = DEFAULT_STARTUP_RETRY_DELAY;
 
         /**
          * Gets the namespace the controller watches.
@@ -291,13 +294,17 @@ public class OperatorFrameworkProperties {
 
     /** Lease leader-election settings. */
     public static class LeaderElection {
+        private static final Duration DEFAULT_LEASE_DURATION = Duration.ofSeconds(15);
+        private static final Duration DEFAULT_RENEW_DEADLINE = Duration.ofSeconds(10);
+        private static final int MAX_DNS_LABEL_LENGTH = 63;
+
         private boolean enabled;
         private String leaseName;
         private String namespace;
         @NotNull
-        private Duration leaseDuration = Duration.ofSeconds(15);
+        private Duration leaseDuration = DEFAULT_LEASE_DURATION;
         @NotNull
-        private Duration renewDeadline = Duration.ofSeconds(10);
+        private Duration renewDeadline = DEFAULT_RENEW_DEADLINE;
         @NotNull
         private Duration retryPeriod = Duration.ofSeconds(2);
 
@@ -433,7 +440,7 @@ public class OperatorFrameworkProperties {
             if (value == null || value.isBlank()) {
                 return true;
             }
-            return value.length() <= 63 && value.matches("[a-z0-9]([-a-z0-9]*[a-z0-9])?");
+            return value.length() <= MAX_DNS_LABEL_LENGTH && value.matches("[a-z0-9]([-a-z0-9]*[a-z0-9])?");
         }
 
         private boolean isTimingMissing() {
@@ -449,12 +456,16 @@ public class OperatorFrameworkProperties {
 
     /** Exception retry settings. */
     public static class Retry {
+        private static final Duration DEFAULT_INITIAL_DELAY = Duration.ofMillis(500);
+        private static final Duration DEFAULT_MAX_DELAY = Duration.ofSeconds(30);
+        private static final int DEFAULT_MAX_ATTEMPTS = 5;
+
         @NotNull
-        private Duration initialDelay = Duration.ofMillis(500);
+        private Duration initialDelay = DEFAULT_INITIAL_DELAY;
         @NotNull
-        private Duration maxDelay = Duration.ofSeconds(30);
+        private Duration maxDelay = DEFAULT_MAX_DELAY;
         @Min(1)
-        private int maxAttempts = 5;
+        private int maxAttempts = DEFAULT_MAX_ATTEMPTS;
 
         /**
          * Gets the delay before the first retry attempt.
@@ -524,8 +535,10 @@ public class OperatorFrameworkProperties {
 
     /** Per-resource reconciliation rate limit. */
     public static class RateLimit {
+        private static final Duration DEFAULT_MINIMUM_INTERVAL = Duration.ofSeconds(5);
+
         @NotNull
-        private Duration minimumInterval = Duration.ofSeconds(5);
+        private Duration minimumInterval = DEFAULT_MINIMUM_INTERVAL;
 
         /**
          * Gets the minimum interval between reconciliations of the same resource.
@@ -558,12 +571,15 @@ public class OperatorFrameworkProperties {
 
     /** Kubernetes Event publication settings. */
     public static class Events {
+        private static final Duration DEFAULT_AGGREGATION_WINDOW = Duration.ofMinutes(5);
+        private static final int DEFAULT_MAX_CACHE_ENTRIES = 1000;
+
         private boolean enabled = true;
         private String component;
         @NotNull
-        private Duration aggregationWindow = Duration.ofMinutes(5);
+        private Duration aggregationWindow = DEFAULT_AGGREGATION_WINDOW;
         @Min(1)
-        private int maxCacheEntries = 1000;
+        private int maxCacheEntries = DEFAULT_MAX_CACHE_ENTRIES;
 
         /**
          * Gets whether Kubernetes Event publication is enabled.

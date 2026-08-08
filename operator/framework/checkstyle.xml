@@ -8,9 +8,22 @@
     <property name="max" value="120"/>
     <property name="ignorePattern" value="^package|^import"/>
   </module>
+  <!-- File header: Huawei copyright block, first thing in every source file (coding-style.md §Inline comments) -->
+  <module name="RegexpHeader">
+    <property name="fileExtensions" value="java"/>
+    <property name="header" value="^/\*$\n^ \* Copyright \(c\) Huawei Technologies Co\., Ltd\. \d{4}-\d{4}\. All rights reserved\.$\n^ \*/$"/>
+  </module>
   <module name="TreeWalker">
     <module name="AvoidStarImport"/>
     <module name="UnusedImports"/>
+    <module name="CustomImportOrder">
+      <property name="customImportOrderRules" value="SAME_PACKAGE(2),SPECIAL_IMPORTS,THIRD_PARTY_PACKAGE,STANDARD_JAVA_PACKAGE"/>
+      <property name="specialImportsRegExp" value="^com\."/>
+      <property name="thirdPartyPackageRegExp" value="^(io|lombok|jakarta)\."/>
+      <property name="standardPackageRegExp" value="^(org|net)\."/>
+      <property name="sortImportsInGroupAlphabetically" value="true"/>
+      <property name="separateLineBetweenGroups" value="true"/>
+    </module>
     <module name="ModifierOrder"/>
     <module name="OneStatementPerLine"/>
     <module name="NeedBraces"/>
@@ -26,6 +39,32 @@
     </module>
     <module name="ParameterNumber">
       <property name="max" value="5"/>
+    </module>
+    <!-- 禁止魔法数字（除0,1,-1外） -->
+    <module name="MagicNumber">
+      <property name="ignoreHashCodeMethod" value="true"/>
+      <property name="ignoreAnnotation" value="true"/>
+    </module>
+    <!-- switch 必须包含 default -->
+    <module name="MissingSwitchDefault"/>
+    <!-- equals 与 hashCode 必须成对重写 -->
+    <module name="EqualsHashCode"/>
+    <!-- 禁止空语句块 -->
+    <module name="EmptyBlock">
+      <property name="option" value="text"/>
+    </module>
+    <!-- 简化布尔表达式 (如 if(b==true) -> if(b)) -->
+    <module name="SimplifyBooleanExpression"/>
+    <!-- Javadoc: every public/protected type and method must be documented (coding-style.md §Javadoc) -->
+    <module name="MissingJavadocType">
+      <property name="scope" value="protected"/>
+    </module>
+    <module name="MissingJavadocMethod">
+      <property name="scope" value="protected"/>
+    </module>
+    <!-- Javadoc tag completeness: @param per parameter, @return for non-void, @throws for declared exceptions -->
+    <module name="JavadocMethod">
+      <property name="validateThrows" value="true"/>
     </module>
   </module>
 </module>

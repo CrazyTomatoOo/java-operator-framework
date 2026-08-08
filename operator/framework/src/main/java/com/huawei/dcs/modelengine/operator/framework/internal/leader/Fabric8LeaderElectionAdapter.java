@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * @since 2026-07-30
  */
 public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter {
+    private static final int MAX_LEASE_NAME_LENGTH = 56;
     private final KubernetesClient client;
     private final OperatorFrameworkProperties.Controller controllerProperties;
     private final OperatorFrameworkProperties.LeaderElection properties;
@@ -103,8 +104,8 @@ public final class Fabric8LeaderElectionAdapter implements LeaderElectionAdapter
         var application = environment.getProperty("spring.application.name", "operator-framework");
         var sanitized = application.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "-")
                 .replaceAll("^-+|-+$", "");
-        if (sanitized.length() > 56) {
-            sanitized = sanitized.substring(0, 56).replaceAll("-+$", "");
+        if (sanitized.length() > MAX_LEASE_NAME_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_LEASE_NAME_LENGTH).replaceAll("-+$", "");
         }
         return (sanitized.isBlank() ? "operator-framework" : sanitized) + "-leader";
     }

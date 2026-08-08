@@ -31,6 +31,8 @@ import java.util.function.DoubleSupplier;
 @Aspect
 @Order(Ordered.HIGHEST_PRECEDENCE + 300)
 public final class ReconcileRetryAspect {
+    private static final double BACKOFF_JITTER_LOWER_BOUND = 0.8;
+    private static final double BACKOFF_JITTER_UPPER_BOUND = 1.2;
     private final ConcurrentHashMap<ReconcileInvocationKey, AtomicInteger> attempts = new ConcurrentHashMap<>();
     private final OperatorFrameworkProperties.Retry properties;
     private final OperatorFrameworkMetrics metrics;
@@ -48,7 +50,9 @@ public final class ReconcileRetryAspect {
             OperatorFrameworkProperties properties,
             OperatorFrameworkMetrics metrics,
             ConfigurableListableBeanFactory beanFactory) {
-        this(properties, metrics, beanFactory, () -> ThreadLocalRandom.current().nextDouble(0.8, 1.2));
+        this(properties, metrics, beanFactory,
+                () -> ThreadLocalRandom.current()
+                        .nextDouble(BACKOFF_JITTER_LOWER_BOUND, BACKOFF_JITTER_UPPER_BOUND));
     }
 
     ReconcileRetryAspect(OperatorFrameworkProperties properties) {

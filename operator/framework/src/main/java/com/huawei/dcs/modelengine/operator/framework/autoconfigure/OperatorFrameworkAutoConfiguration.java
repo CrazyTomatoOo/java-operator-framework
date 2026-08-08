@@ -57,6 +57,8 @@ import java.time.Duration;
 @EnableConfigurationProperties(OperatorFrameworkProperties.class)
 @ConditionalOnProperty(prefix = "operator.framework", name = "enabled", matchIfMissing = true)
 public class OperatorFrameworkAutoConfiguration {
+    private static final Duration DEFAULT_SHUTDOWN_TIMEOUT = Duration.ofSeconds(30);
+
     @Bean
     OperatorFrameworkMetrics operatorFrameworkMetrics(ObjectProvider<MeterRegistry> registry) {
         return new OperatorFrameworkMetrics(registry.getIfAvailable());
@@ -134,7 +136,7 @@ public class OperatorFrameworkAutoConfiguration {
                 OperatorFrameworkMetrics metrics) {
             try {
                 var timeout = environment.getProperty(
-                        "spring.lifecycle.timeout-per-shutdown-phase", Duration.class, Duration.ofSeconds(30));
+                        "spring.lifecycle.timeout-per-shutdown-phase", Duration.class, DEFAULT_SHUTDOWN_TIMEOUT);
                 return new Fabric8ControllerRuntimeFactory(client, discovery.discover(), properties, timeout, metrics);
             } catch (RuntimeException exception) {
                 throw new ApplicationContextException("controller mode configuration is invalid: "

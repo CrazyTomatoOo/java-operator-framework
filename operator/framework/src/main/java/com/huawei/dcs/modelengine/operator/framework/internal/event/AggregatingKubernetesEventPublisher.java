@@ -39,6 +39,11 @@ import java.util.Objects;
 @Slf4j
 public final class AggregatingKubernetesEventPublisher implements KubernetesEventPublisher, AutoCloseable {
 
+    private static final int HTTP_CONFLICT = 409;
+    private static final int MAX_EVENT_NAME_LENGTH = 40;
+    private static final int DIGEST_SUFFIX_LENGTH = 16;
+    private static final int CACHE_INITIAL_CAPACITY = 16;
+    private static final float CACHE_LOAD_FACTOR = 0.75f;
     private final KubernetesClient client;
     private final OperatorFrameworkProperties.Events properties;
     private final Clock clock;
@@ -141,7 +146,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         try {
             return operation(event).resource(event).create();
         } catch (KubernetesClientException exception) {
-            return exception.getCode() == 409 ? mergeExisting(event) : failed(exception);
+            return exception.getCode() == HTTP_CONFLICT ? mergeExisting(event) : failed(exception);
         }
     }
 
@@ -158,7 +163,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         try {
             return operation(updated).resource(updated).update();
         } catch (KubernetesClientException exception) {
-            return exception.getCode() == 409 ? retryUpdate(updated, now) : failed(exception);
+            return exception.getCode() == HTTP_CONFLICT ? retryUpdate(updated, now) : failed(exception);
         }
     }
 
@@ -229,8 +234,8 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         var seed = String.join("|", Objects.toString(metadata.getUid(), ""), type, reason, message,
                 component, Long.toString(window));
         var base = metadata.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9.-]", "-");
-        base = base.substring(0, Math.min(base.length(), 40));
-        return base + "." + digest(seed).substring(0, 16);
+        base = base.substring(0, Math.min(base.length(), MAX_EVENT_NAME_LENGTH));
+        return base + "." + digest(seed).substring(0, DIGEST_SUFFIX_LENGTH);
     }
 
     private String digest(String value) {
@@ -271,7 +276,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
     }
 
     private Map<String, CachedEvent> boundedCache(int maximum) {
-        return new LinkedHashMap<>(16, 0.75f, true) {
+        return new LinkedHashMap<>(CACHE_INITIAL_CAPACITY, CACHE_LOAD_FACTOR, true) {
             /**
              * Evicts the eldest entry once the cache exceeds its maximum size.
              *
