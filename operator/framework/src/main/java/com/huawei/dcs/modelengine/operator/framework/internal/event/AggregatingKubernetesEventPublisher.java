@@ -38,7 +38,6 @@ import java.util.Objects;
  */
 @Slf4j
 public final class AggregatingKubernetesEventPublisher implements KubernetesEventPublisher, AutoCloseable {
-
     private static final int HTTP_CONFLICT = 409;
 
     private static final int MAX_EVENT_NAME_LENGTH = 40;
@@ -61,11 +60,6 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
 
     private final OperatorFrameworkMetrics metrics;
 
-    AggregatingKubernetesEventPublisher(KubernetesClient client, OperatorFrameworkProperties properties,
-        Environment environment, Clock clock) {
-        this(client, properties, environment, clock, new OperatorFrameworkMetrics(null));
-    }
-
     /**
      * Creates the aggregating event publisher.
      *
@@ -83,6 +77,11 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         component = component(environment);
         cache = boundedCache(this.properties.getMaxCacheEntries());
         this.metrics = metrics;
+    }
+
+    AggregatingKubernetesEventPublisher(KubernetesClient client, OperatorFrameworkProperties properties,
+        Environment environment, Clock clock) {
+        this(client, properties, environment, clock, new OperatorFrameworkMetrics(null));
     }
 
     private String component(Environment environment) {
@@ -133,7 +132,9 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
         publish("Warning", involvedObject, reason, message);
     }
 
-    /** Clears the aggregation cache; already persisted Kubernetes Events are left untouched. */
+    /**
+     * Clears the aggregation cache; already persisted Kubernetes Events are left untouched.
+     */
     @Override
     public synchronized void close() {
         cache.clear();
@@ -263,6 +264,7 @@ public final class AggregatingKubernetesEventPublisher implements KubernetesEven
             var digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException exception) {
+            log.warn("SHA-256 unavailable for Kubernetes Event name digest", exception);
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }

@@ -10,10 +10,18 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import com.huawei.dcs.modelengine.operator.framework.autoconfigure.OperatorFrameworkProperties;
 
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+import io.fabric8.kubernetes.api.model.Event;
+import io.fabric8.kubernetes.api.model.EventList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.dsl.Resource;
+import io.fabric8.kubernetes.client.dsl.V1APIGroupDSL;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.mock.env.MockEnvironment;
 
 import java.time.Clock;
@@ -265,29 +273,26 @@ class AggregatingKubernetesEventPublisherTest {
 
     @SuppressWarnings("unchecked")
     private static final class EventClientMocks {
-        private final KubernetesClient client = org.mockito.Mockito.mock(KubernetesClient.class);
+        private final KubernetesClient client = Mockito.mock(KubernetesClient.class);
 
-        private final io.fabric8.kubernetes.client.dsl.V1APIGroupDSL v1 =
-            org.mockito.Mockito.mock(io.fabric8.kubernetes.client.dsl.V1APIGroupDSL.class);
+        private final V1APIGroupDSL v1 = Mockito.mock(V1APIGroupDSL.class);
 
-        private final io.fabric8.kubernetes.client.dsl.MixedOperation<io.fabric8.kubernetes.api.model.Event, io.fabric8.kubernetes.api.model.EventList, io.fabric8.kubernetes.client.dsl.Resource<io.fabric8.kubernetes.api.model.Event>>
-            events = org.mockito.Mockito.mock(io.fabric8.kubernetes.client.dsl.MixedOperation.class);
+        private final MixedOperation<Event, EventList, Resource<Event>> events =
+            Mockito.mock(MixedOperation.class);
 
-        private final io.fabric8.kubernetes.client.dsl.NonNamespaceOperation<io.fabric8.kubernetes.api.model.Event, io.fabric8.kubernetes.api.model.EventList, io.fabric8.kubernetes.client.dsl.Resource<io.fabric8.kubernetes.api.model.Event>>
-            inNamespace = org.mockito.Mockito.mock(io.fabric8.kubernetes.client.dsl.NonNamespaceOperation.class);
+        private final NonNamespaceOperation<Event, EventList, Resource<Event>> inNamespace =
+            Mockito.mock(NonNamespaceOperation.class);
 
-        private final io.fabric8.kubernetes.client.dsl.Resource<io.fabric8.kubernetes.api.model.Event> resource =
-            org.mockito.Mockito.mock(io.fabric8.kubernetes.client.dsl.Resource.class);
+        private final Resource<Event> resource = Mockito.mock(Resource.class);
 
         EventClientMocks() {
-            org.mockito.Mockito.when(client.v1()).thenReturn(v1);
-            org.mockito.Mockito.when(v1.events()).thenReturn(events);
-            org.mockito.Mockito.when(events.inNamespace(org.mockito.ArgumentMatchers.anyString()))
+            Mockito.when(client.v1()).thenReturn(v1);
+            Mockito.when(v1.events()).thenReturn(events);
+            Mockito.when(events.inNamespace(ArgumentMatchers.anyString()))
                 .thenReturn(inNamespace);
-            org.mockito.Mockito.when(inNamespace.withName(org.mockito.ArgumentMatchers.anyString()))
+            Mockito.when(inNamespace.withName(ArgumentMatchers.anyString()))
                 .thenReturn(resource);
-            org.mockito.Mockito.when(
-                    inNamespace.resource(org.mockito.ArgumentMatchers.any(io.fabric8.kubernetes.api.model.Event.class)))
+            Mockito.when(inNamespace.resource(ArgumentMatchers.any(Event.class)))
                 .thenReturn(resource);
         }
     }
