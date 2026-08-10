@@ -676,7 +676,8 @@ public class OperatorFrameworkProperties {
         }
 
         /**
-         * Gets the maximum number of entries in the event aggregation cache.
+         * Gets the maximum number of entries kept in the event aggregation cache. Once the cache
+         * exceeds this size, the least recently accessed entry is evicted.
          *
          * @return the maximum number of event cache entries
          */
