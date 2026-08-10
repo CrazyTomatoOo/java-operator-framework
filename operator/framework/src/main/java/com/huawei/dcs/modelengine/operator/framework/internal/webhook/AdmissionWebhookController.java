@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponse;
 import io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview;
 import io.fabric8.zjsonpatch.JsonDiff;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,7 @@ import java.util.Objects;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public final class AdmissionWebhookController {
@@ -111,6 +113,7 @@ public final class AdmissionWebhookController {
             outcome = "denied";
             return response(invocation.request().getUid(), false, "resource type does not match callback", null);
         } catch (Exception exception) {
+            log.warn("validator callback '{}' failed", callback.name(), exception);
             callbacks.recordFailure("validator", callback.name());
             return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
         } finally {
@@ -216,6 +219,7 @@ public final class AdmissionWebhookController {
             outcome = "denied";
             return response(invocation.request().getUid(), false, "resource type does not match callback", null);
         } catch (Exception exception) {
+            log.warn("mutator callback '{}' failed", callback.name(), exception);
             callbacks.recordFailure("mutator", callback.name());
             return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
         } finally {

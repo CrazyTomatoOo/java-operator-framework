@@ -18,6 +18,7 @@ import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionRequest;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionResponse;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.ConversionReview;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,7 @@ import java.util.Objects;
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public final class ConversionWebhookController {
@@ -95,6 +97,7 @@ public final class ConversionWebhookController {
             outcome = "converted";
             return response(request.getUid(), converted, null);
         } catch (Exception exception) {
+            log.warn("converter callback '{}' failed", callback.name(), exception);
             callbacks.recordFailure("converter", callback.name());
             return response(request.getUid(), List.of(), CALLBACK_FAILED);
         } finally {
