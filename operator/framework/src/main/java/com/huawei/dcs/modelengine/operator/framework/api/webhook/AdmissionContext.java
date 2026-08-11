@@ -23,7 +23,7 @@ import java.util.Objects;
  * @since 2026-07-30
  */
 public record AdmissionContext(String uid, String operation, ResourceReference resource, boolean dryRun,
-                               Map<String, Object> options, UserIdentity user) {
+    Map<String, Object> options, UserIdentity user) {
     /**
      * Creates a context without operation-specific AdmissionReview options.
      *

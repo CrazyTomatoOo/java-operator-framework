@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Kubernetes apiextensions/v1 conversion transport for typed Spring callback beans.
@@ -136,7 +137,7 @@ public final class ConversionWebhookController {
         throws ConversionFailedException {
         var expectedKind = HasMetadata.getKind(resourceType);
         var expectedGroup = group(HasMetadata.getApiVersion(resourceType));
-        if (!Objects.equals(text(resource, "/kind"), expectedKind) || !Objects.equals(group(apiVersion),
+        if (!text(resource, "/kind").map(expectedKind::equals).orElse(false) || !Objects.equals(group(apiVersion),
             expectedGroup)) {
             throw new ConversionFailedException("conversion source type does not match callback");
         }
@@ -147,9 +148,9 @@ public final class ConversionWebhookController {
         return separator < 0 ? "" : apiVersion.substring(0, separator);
     }
 
-    private String text(JsonNode resource, String path) {
+    private Optional<String> text(JsonNode resource, String path) {
         var value = resource.at(path);
-        return value.isTextual() ? value.asText() : null;
+        return value.isTextual() ? Optional.of(value.asText()) : Optional.empty();
     }
 
     private void requireIdentity(JsonNode source, JsonNode converted) throws ConversionFailedException {

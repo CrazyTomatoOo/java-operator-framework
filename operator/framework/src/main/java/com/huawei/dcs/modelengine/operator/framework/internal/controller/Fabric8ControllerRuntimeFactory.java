@@ -30,11 +30,6 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
 
     private final OperatorFrameworkMetrics metrics;
 
-    Fabric8ControllerRuntimeFactory(KubernetesClient client, List<ControllerRegistration<?>> registrations,
-        OperatorFrameworkProperties properties, Duration shutdownTimeout) {
-        this(client, registrations, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
-    }
-
     /**
      * Creates a factory that builds a Fabric8 runtime per registration.
      *
@@ -51,6 +46,11 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
         this.properties = properties;
         this.shutdownTimeout = shutdownTimeout;
         this.metrics = metrics;
+    }
+
+    Fabric8ControllerRuntimeFactory(KubernetesClient client, List<ControllerRegistration<?>> registrations,
+        OperatorFrameworkProperties properties, Duration shutdownTimeout) {
+        this(client, registrations, properties, shutdownTimeout, new OperatorFrameworkMetrics(null));
     }
 
     /**

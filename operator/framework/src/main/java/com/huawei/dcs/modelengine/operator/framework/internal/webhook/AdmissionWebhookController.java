@@ -35,6 +35,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Kubernetes v1 admission transport for typed Spring callback beans.
@@ -107,15 +108,16 @@ public final class AdmissionWebhookController {
             var decision = invokeValidator(callback, invocation);
             outcome = decision.isAllowed() ? "allowed" : "denied";
             return decision.isAllowed()
-                ? response(invocation.request().getUid(), true, null, null)
-                : response(invocation.request().getUid(), false, decision.message().orElse("denied"), null);
+                ? response(invocation.request().getUid(), true, null, Optional.empty())
+                : response(invocation.request().getUid(), false, decision.message().orElse("denied"), Optional.empty());
         } catch (ResourceTypeMismatchException exception) {
             outcome = "denied";
-            return response(invocation.request().getUid(), false, "resource type does not match callback", null);
+            return response(invocation.request().getUid(), false, "resource type does not match callback",
+                Optional.empty());
         } catch (Exception exception) {
             log.warn("validator callback '{}' failed", callback.name(), exception);
             callbacks.recordFailure("validator", callback.name());
-            return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
+            return response(invocation.request().getUid(), false, CALLBACK_FAILED, Optional.empty());
         } finally {
             metrics.callback("validator", callback.name(), outcome, System.nanoTime() - started);
         }
@@ -179,17 +181,17 @@ public final class AdmissionWebhookController {
         }
     }
 
-    private AdmissionReview response(String uid, boolean allowed, String message, String patch) {
+    private AdmissionReview response(String uid, boolean allowed, String message, Optional<String> patch) {
         var admissionResponse = new AdmissionResponse();
         admissionResponse.setUid(uid);
         admissionResponse.setAllowed(allowed);
         if (message != null) {
             admissionResponse.setStatus(new StatusBuilder().withStatus("Failure").withMessage(message).build());
         }
-        if (patch != null) {
+        patch.ifPresent(value -> {
             admissionResponse.setPatchType("JSONPatch");
-            admissionResponse.setPatch(patch);
-        }
+            admissionResponse.setPatch(value);
+        });
         var review = new AdmissionReview();
         review.setApiVersion("admission.k8s.io/v1");
         review.setKind("AdmissionReview");
@@ -217,11 +219,12 @@ public final class AdmissionWebhookController {
             return mutationResponse(invocation, result, callback);
         } catch (ResourceTypeMismatchException exception) {
             outcome = "denied";
-            return response(invocation.request().getUid(), false, "resource type does not match callback", null);
+            return response(invocation.request().getUid(), false, "resource type does not match callback",
+                Optional.empty());
         } catch (Exception exception) {
             log.warn("mutator callback '{}' failed", callback.name(), exception);
             callbacks.recordFailure("mutator", callback.name());
-            return response(invocation.request().getUid(), false, CALLBACK_FAILED, null);
+            return response(invocation.request().getUid(), false, CALLBACK_FAILED, Optional.empty());
         } finally {
             metrics.callback("mutator", callback.name(), outcome, System.nanoTime() - started);
         }
@@ -231,8 +234,9 @@ public final class AdmissionWebhookController {
         WebhookCallbackRegistry.Callback callback) throws Exception {
         Objects.requireNonNull(result, "mutator result must not be null");
         return switch (result.status()) {
-            case UNCHANGED -> response(invocation.request().getUid(), true, null, null);
-            case DENIED -> response(invocation.request().getUid(), false, result.message().orElse("denied"), null);
+            case UNCHANGED -> response(invocation.request().getUid(), true, null, Optional.empty());
+            case DENIED -> response(invocation.request().getUid(), false, result.message().orElse("denied"),
+                Optional.empty());
             case MUTATED -> mutatedResponse(invocation, result.resource().orElseThrow(), callback);
         };
     }
@@ -256,12 +260,12 @@ public final class AdmissionWebhookController {
         }
     }
 
-    private String patch(JsonNode original, Object mutated) throws Exception {
+    private Optional<String> patch(JsonNode original, Object mutated) throws Exception {
         var diff = JsonDiff.asJson(original, objectMapper.valueToTree(mutated));
         if (diff.isEmpty()) {
-            return null;
+            return Optional.empty();
         }
-        return Base64.getEncoder().encodeToString(objectMapper.writeValueAsBytes(diff));
+        return Optional.of(Base64.getEncoder().encodeToString(objectMapper.writeValueAsBytes(diff)));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -272,7 +276,7 @@ public final class AdmissionWebhookController {
     }
 
     private record Invocation(AdmissionRequest request, HasMetadata current, JsonNode original,
-                              AdmissionContext context) {}
+        AdmissionContext context) {}
 
     private static final class ResourceTypeMismatchException extends RuntimeException {}
 
