@@ -32,8 +32,8 @@ import java.util.Objects;
  * @since 2026-07-30
  */
 public record ReconciliationContext<T extends HasMetadata>(ResourceKey resourceKey,
-                                                           List<ReconciliationTrigger> triggers, Indexer<T> cache,
-                                                           Map<Class<? extends HasMetadata>, Indexer<?>> caches) {
+    List<ReconciliationTrigger> triggers, Indexer<T> cache,
+    Map<Class<? extends HasMetadata>, Indexer<?>> caches) {
     /**
      * Backward-compatible factory: no secondary caches.
      *
