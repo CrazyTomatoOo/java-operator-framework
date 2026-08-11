@@ -74,6 +74,7 @@ public final class AdmissionWebhookController {
         try {
             return ResponseEntity.ok(validate(review, callback.orElseThrow()));
         } catch (MalformedReviewException exception) {
+            log.warn("malformed admission review for validator '{}'", name, exception);
             return ResponseEntity.badRequest().build();
         }
     }

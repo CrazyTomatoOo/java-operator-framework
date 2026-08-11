@@ -85,8 +85,14 @@ public final class Fabric8ControllerRuntimeFactory implements ControllerRuntimeF
             try {
                 runtimes.forEach(ControllerRuntime::start);
             } catch (RuntimeException exception) {
-                runtimes.forEach(ControllerRuntime::stop);
-                throw exception;
+            runtimes.forEach(runtime -> {
+                try {
+                    runtime.stop();
+                } catch (RuntimeException stopException) {
+                    exception.addSuppressed(stopException);
+                }
+            });
+            throw exception;
             }
         }
 
