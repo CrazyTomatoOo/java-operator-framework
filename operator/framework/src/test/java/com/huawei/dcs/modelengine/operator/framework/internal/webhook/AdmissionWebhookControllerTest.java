@@ -82,6 +82,10 @@ class AdmissionWebhookControllerTest {
         assertThat(callback.context.get().uid()).isEqualTo("request-1");
         assertThat(callback.context.get().user().username()).isEqualTo("alice");
         assertThat(callback.context.get().options()).containsEntry("propagationPolicy", "Foreground");
+        assertThat(callback.context.get().dryRun()).isTrue();
+        assertThat(callback.context.get().resource().namespace()).isEqualTo("default");
+        assertThat(callback.context.get().resource().name()).isEqualTo("sample");
+        assertThat(callback.context.get().resource().uid()).isEqualTo("resource-1");
         assertThat(result.getResponse().getContentAsString()).doesNotContain("sensitive callback detail");
     }
 
@@ -188,7 +192,8 @@ class AdmissionWebhookControllerTest {
     void rejectsUnknownAndMalformedAndContainsNullResult() throws Exception {
         mvc.perform(admission("/operator-framework/webhooks/validate/missing")).andExpect(status().isBadRequest());
         mvc.perform(
-                post("/operator-framework/webhooks/validate/allow").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                post("/operator-framework/webhooks/validate/allow").contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
             .andExpect(status().isBadRequest());
         mvc.perform(admission("/operator-framework/webhooks/mutate/nullmutator"))
             .andExpect(status().isOk())
