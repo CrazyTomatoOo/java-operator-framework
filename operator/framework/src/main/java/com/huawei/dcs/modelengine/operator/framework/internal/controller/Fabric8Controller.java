@@ -38,7 +38,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -99,7 +101,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         this.shutdownTimeout = shutdownTimeout;
         this.metrics = metrics;
         var prefix = "operator-" + registration.resourceType().getSimpleName().toLowerCase() + "-";
-        workers = Executors.newFixedThreadPool(properties.getWorkerThreads(),
+        workers = new ThreadPoolExecutor(properties.getWorkerThreads(), properties.getWorkerThreads(), 0L,
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
             Thread.ofPlatform().daemon(true).name(prefix + "worker-", 0).factory());
         scheduler =
             Executors.newSingleThreadScheduledExecutor(Thread.ofPlatform().name(prefix + "scheduler").factory());
@@ -287,7 +290,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
                 queue.poll(POLL_TIMEOUT).ifPresent(this::reconcile);
             }
         } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
+            // stop() sets the stopping flag before shutting the workers down, so exit cooperatively
+            log.debug("Worker thread interrupted, exiting the worker loop", exception);
         }
     }
 
@@ -350,7 +354,8 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
                 // Spring's lifecycle timeout invokes the scheduled interrupt; this only observes completion.
             }
         } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
+            // the lifecycle timeout interrupts this wait; force shutdown and exit cooperatively
+            log.debug("Interrupted while awaiting worker termination", exception);
             workers.shutdownNow();
         }
     }
