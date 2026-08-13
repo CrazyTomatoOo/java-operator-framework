@@ -167,7 +167,7 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
      * @return a stage that completes when the worker threads have terminated
      */
     @Override
-    public synchronized CompletionStage<Void> stop() {
+    public CompletionStage<Void> stop() {
         if (!started.get()) {
             return CompletableFuture.completedFuture(null);
         }
@@ -183,7 +183,11 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
         informerGauge.close();
         workers.shutdownNow();
         CompletableFuture.delayedExecutor(shutdownTimeout.toMillis(), TimeUnit.MILLISECONDS)
-            .execute(workers::shutdownNow);
+            .execute(() -> {
+                if (!workers.isTerminated()) {
+                    workers.shutdownNow();
+                }
+            });
         stopFuture = CompletableFuture.runAsync(this::awaitWorkers);
         return stopFuture;
     }
@@ -285,13 +289,17 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
     }
 
     private void workerLoop() {
-        try {
-            while (!stopping || !queue.isDrained()) {
+        while (!stopping || !queue.isDrained()) {
+            try {
                 queue.poll(POLL_TIMEOUT).ifPresent(this::reconcile);
+            } catch (InterruptedException exception) {
+                // interruptions originate from stop()'s shutdownNow(); ignore spurious interrupts
+                if (!stopping) {
+                    continue;
+                }
+                log.debug("Worker thread interrupted, exiting the worker loop", exception);
+                return;
             }
-        } catch (InterruptedException exception) {
-            // stop() sets the stopping flag before shutting the workers down, so exit cooperatively
-            log.debug("Worker thread interrupted, exiting the worker loop", exception);
         }
     }
 
@@ -396,6 +404,10 @@ final class Fabric8Controller<T extends HasMetadata> implements ControllerRuntim
          */
         @Override
         public void onDelete(T resource, boolean deletedFinalStateUnknown) {
+            if (deletedFinalStateUnknown) {
+                log.warn("Final state of {} is unknown (deletedFinalStateUnknown); reconciling from stale state",
+                    ResourceReference.from(resource).key());
+            }
             deletedResources.put(ResourceReference.from(resource).key(), resource);
             enqueue(ResourceEventType.DELETED, TriggerRole.PRIMARY, resource);
         }

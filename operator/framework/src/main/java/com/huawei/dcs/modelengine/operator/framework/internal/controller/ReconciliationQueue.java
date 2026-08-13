@@ -21,6 +21,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Coalescing work queue with one in-flight callback per resource key.
  *
+ * <p>All state (the {@code keys} queue and the {@code pending}, {@code queued}, {@code inFlight},
+ * and {@code accepting} maps/sets) is guarded by the intrinsic lock of this instance; keep new
+ * accesses to that state inside {@code synchronized} methods or blocks.
+ *
  * @author z00919064 zhangshijie
  * @since 2026-07-30
  */
