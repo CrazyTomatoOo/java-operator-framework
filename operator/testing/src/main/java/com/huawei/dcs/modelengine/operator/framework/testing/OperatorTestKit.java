@@ -30,7 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 /**
  * Test kit for operator integration tests: an in-memory CRUD API server, a fake client, and
  * helpers to drive a real controller runtime or to build cache-backed reconciliation contexts.
@@ -101,10 +103,14 @@ public final class OperatorTestKit implements AutoCloseable {
      * @param properties the framework properties to apply
      * @param registrations the controller registrations to run
      * @return the started controller runtime
+     * @throws IllegalArgumentException when no registrations are given
      */
     public ControllerRuntime controller(
             OperatorFrameworkProperties properties,
             ControllerRegistration<?>... registrations) {
+        if (registrations.length == 0) {
+            throw new IllegalArgumentException("at least one controller registration is required");
+        }
         var runtime = new Fabric8ControllerRuntimeFactory(client, List.of(registrations), properties,
                 SHUTDOWN_TIMEOUT, new OperatorFrameworkMetrics(null)).create();
         runtimes.add(runtime);
@@ -136,8 +142,35 @@ public final class OperatorTestKit implements AutoCloseable {
      */
     @Override
     public void close() {
-        runtimes.forEach(runtime -> runtime.stop().toCompletableFuture().join());
-        client.close();
-        server.destroy();
+        RuntimeException failure = null;
+        for (var runtime : runtimes) {
+            try {
+                runtime.stop().toCompletableFuture().get(SHUTDOWN_TIMEOUT.multipliedBy(2).toMillis(),
+                    TimeUnit.MILLISECONDS);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                failure = record(failure, exception);
+            } catch (ExecutionException exception) {
+                failure = record(failure, exception.getCause());
+            } catch (TimeoutException exception) {
+                failure = record(failure, exception);
+            }
+        }
+        try {
+            client.close();
+        } finally {
+            server.destroy();
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private static RuntimeException record(RuntimeException failure, Throwable cause) {
+        if (failure == null) {
+            return new IllegalStateException("failed to stop one or more test runtimes", cause);
+        }
+        failure.addSuppressed(cause);
+        return failure;
     }
 }
