@@ -145,7 +145,7 @@ public final class ControllerRegistration<T extends HasMetadata> {
      * @param mapper maps secondary events to primary resource keys
      */
     public record SecondaryWatch<S extends HasMetadata, T extends HasMetadata>(String name, Class<S> resourceType,
-                                                                               ResourceMapper<S, T> mapper) {
+        ResourceMapper<S, T> mapper) {
         /**
          * Validates the watch descriptor.
          *

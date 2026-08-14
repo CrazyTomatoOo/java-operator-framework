@@ -31,16 +31,7 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
 
     private final AtomicReference<LivenessState> liveness = new AtomicReference<>(LivenessState.CORRECT);
 
-    RuntimeReadiness() {
-        this(event -> {});
-    }
-
-    RuntimeReadiness(ApplicationEventPublisher publisher) {
-        this(publisher, false);
-        applicationReady.set(true);
-    }
-
-    /**
+/**
      * Creates the tracker, publishing availability changes through the given publisher.
      *
      * @param publisher the Spring event publisher used for availability change events
@@ -49,6 +40,15 @@ public final class RuntimeReadiness implements ApplicationListener<ApplicationRe
     public RuntimeReadiness(ApplicationEventPublisher publisher, boolean initiallyReady) {
         this.publisher = publisher;
         frameworkReady.set(initiallyReady);
+    }
+
+    RuntimeReadiness(ApplicationEventPublisher publisher) {
+        this(publisher, false);
+        applicationReady.set(true);
+    }
+
+    RuntimeReadiness() {
+        this(event -> {});
     }
 
     /**

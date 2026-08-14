@@ -45,11 +45,7 @@ public final class ReconcileRateLimitAspect {
 
     private volatile Instant lastSweep;
 
-    ReconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock) {
-        this(properties, clock, new DefaultListableBeanFactory());
-    }
-
-    /**
+/**
      * Creates the aspect with the configured minimum interval per resource.
      *
      * @param properties the framework properties carrying the rate-limit configuration
@@ -61,6 +57,10 @@ public final class ReconcileRateLimitAspect {
         minimum = properties.getRateLimit().getMinimumInterval();
         this.clock = clock;
         identifiers = new SpringCallbackIdentifier(beanFactory);
+    }
+
+    ReconcileRateLimitAspect(OperatorFrameworkProperties properties, Clock clock) {
+        this(properties, clock, new DefaultListableBeanFactory());
     }
 
     static boolean consumeDeferred() {
