@@ -141,11 +141,12 @@ public final class OperatorTestKit implements AutoCloseable {
     /**
      * Stops all started runtimes and tears down the in-memory server.
      *
-     * @throws Exception when a runtime fails to stop, after the client and server are torn down
+     * @throws InterruptedException when interrupted while waiting for a runtime to stop
+     * @throws TimeoutException when a runtime does not stop within the shutdown timeout
      */
     @Override
-    public void close() throws Exception {
-        Exception failure = null;
+    public void close() throws InterruptedException, TimeoutException {
+        Throwable failure = null;
         for (var runtime : runtimes) {
             try {
                 runtime.stop().toCompletableFuture().get(SHUTDOWN_TIMEOUT.multipliedBy(2).toMillis(),
@@ -153,7 +154,7 @@ public final class OperatorTestKit implements AutoCloseable {
             } catch (InterruptedException exception) {
                 failure = record(failure, exception);
             } catch (ExecutionException exception) {
-                failure = record(failure, unwrap(exception.getCause()));
+                failure = record(failure, exception.getCause());
             } catch (TimeoutException exception) {
                 failure = record(failure, exception);
             }
@@ -163,12 +164,10 @@ public final class OperatorTestKit implements AutoCloseable {
         } finally {
             server.destroy();
         }
-        if (failure != null) {
-            throw failure;
-        }
+        rethrow(failure);
     }
 
-    private static Exception record(Exception failure, Exception cause) {
+    private static Throwable record(Throwable failure, Throwable cause) {
         if (failure == null) {
             return cause;
         }
@@ -176,7 +175,22 @@ public final class OperatorTestKit implements AutoCloseable {
         return failure;
     }
 
-    private static Exception unwrap(Throwable cause) {
-        return cause instanceof Exception exception ? exception : new RuntimeException(cause);
+    private static void rethrow(Throwable failure) throws InterruptedException, TimeoutException {
+        if (failure == null) {
+            return;
+        }
+        if (failure instanceof InterruptedException exception) {
+            throw exception;
+        }
+        if (failure instanceof TimeoutException exception) {
+            throw exception;
+        }
+        if (failure instanceof RuntimeException exception) {
+            throw exception;
+        }
+        if (failure instanceof Error error) {
+            throw error;
+        }
+        throw new RuntimeException(failure);
     }
 }
