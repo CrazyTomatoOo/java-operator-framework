@@ -149,7 +149,6 @@ public final class OperatorTestKit implements AutoCloseable {
                 runtime.stop().toCompletableFuture().get(SHUTDOWN_TIMEOUT.multipliedBy(2).toMillis(),
                     TimeUnit.MILLISECONDS);
             } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
                 failure = record(failure, exception);
             } catch (ExecutionException exception) {
                 failure = record(failure, exception.getCause());
