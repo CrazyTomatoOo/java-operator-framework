@@ -191,6 +191,6 @@ public final class OperatorTestKit implements AutoCloseable {
         if (failure instanceof Error error) {
             throw error;
         }
-        throw new RuntimeException(failure);
+        throw new AssertionError("unexpected checked stop failure", failure);
     }
 }
