@@ -4,6 +4,10 @@
 
 package com.huawei.dcs.modelengine.operator.framework.testing;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
+
 import com.huawei.dcs.modelengine.operator.framework.api.controller.ControllerBuilder;
 import com.huawei.dcs.modelengine.operator.framework.api.controller.Mappers;
 import com.huawei.dcs.modelengine.operator.framework.api.reconcile.ReconcileResult;
@@ -14,9 +18,6 @@ import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
