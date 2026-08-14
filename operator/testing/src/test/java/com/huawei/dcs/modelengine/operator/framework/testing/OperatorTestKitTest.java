@@ -64,7 +64,7 @@ class OperatorTestKitTest {
     }
 
     @Test
-    void closeStopsRuntimesAndServer() {
+    void closeStopsRuntimesAndServer() throws Exception {
         var kit = OperatorTestKit.create();
         var registration = ControllerBuilder.forResource(ConfigMap.class,
                 (resource, context) -> ReconcileResult.done()).build();
@@ -78,7 +78,7 @@ class OperatorTestKitTest {
     }
 
     @Test
-    void controllerRequiresAtLeastOneRegistration() {
+    void controllerRequiresAtLeastOneRegistration() throws Exception {
         try (var kit = OperatorTestKit.create()) {
             assertThatThrownBy(kit::controller).isInstanceOf(IllegalArgumentException.class);
         }
@@ -87,6 +87,7 @@ class OperatorTestKitTest {
     @Test
     void closePropagatesRuntimeStopFailureAfterTearingDownServer() throws Exception {
         var kit = OperatorTestKit.create();
+        var boom = new IllegalStateException("boom");
         var failing = new ControllerRuntime() {
             @Override
             public void start() {
@@ -100,16 +101,13 @@ class OperatorTestKitTest {
             @Override
             public CompletionStage<Void> stop() {
                 var future = new CompletableFuture<Void>();
-                future.completeExceptionally(new IllegalStateException("boom"));
+                future.completeExceptionally(boom);
                 return future;
             }
         };
         addRuntime(kit, failing);
 
-        assertThatThrownBy(kit::close)
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("failed to stop one or more test runtimes")
-            .hasRootCauseMessage("boom");
+        assertThatThrownBy(kit::close).isSameAs(boom);
     }
 
     private static void addRuntime(OperatorTestKit kit, ControllerRuntime runtime) throws Exception {

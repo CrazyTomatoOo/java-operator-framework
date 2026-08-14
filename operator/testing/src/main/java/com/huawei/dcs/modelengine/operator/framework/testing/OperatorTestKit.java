@@ -140,10 +140,12 @@ public final class OperatorTestKit implements AutoCloseable {
 
     /**
      * Stops all started runtimes and tears down the in-memory server.
+     *
+     * @throws Exception when a runtime fails to stop, after the client and server are torn down
      */
     @Override
-    public void close() {
-        RuntimeException failure = null;
+    public void close() throws Exception {
+        Exception failure = null;
         for (var runtime : runtimes) {
             try {
                 runtime.stop().toCompletableFuture().get(SHUTDOWN_TIMEOUT.multipliedBy(2).toMillis(),
@@ -151,7 +153,7 @@ public final class OperatorTestKit implements AutoCloseable {
             } catch (InterruptedException exception) {
                 failure = record(failure, exception);
             } catch (ExecutionException exception) {
-                failure = record(failure, exception.getCause());
+                failure = record(failure, unwrap(exception.getCause()));
             } catch (TimeoutException exception) {
                 failure = record(failure, exception);
             }
@@ -166,11 +168,15 @@ public final class OperatorTestKit implements AutoCloseable {
         }
     }
 
-    private static RuntimeException record(RuntimeException failure, Throwable cause) {
+    private static Exception record(Exception failure, Exception cause) {
         if (failure == null) {
-            return new IllegalStateException("failed to stop one or more test runtimes", cause);
+            return cause;
         }
         failure.addSuppressed(cause);
         return failure;
+    }
+
+    private static Exception unwrap(Throwable cause) {
+        return cause instanceof Exception exception ? exception : new RuntimeException(cause);
     }
 }
