@@ -45,7 +45,7 @@ public final class ReconcileRateLimitAspect {
 
     private volatile Instant lastSweep;
 
-/**
+    /**
      * Creates the aspect with the configured minimum interval per resource.
      *
      * @param properties the framework properties carrying the rate-limit configuration
