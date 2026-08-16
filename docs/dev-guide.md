@@ -22,7 +22,7 @@ Add the starter to a Spring Boot 3.5.16 application:
 </dependency>
 ```
 
-Use Java 21. The starter already supplies Spring Web, Actuator, Micrometer Prometheus support, and Fabric8 Kubernetes Client 7.8.0. Add Fabric8 generator dependencies/plugins only if your application actually generates CRDs or Java models; they are not required by the runtime.
+Use Java 21. The starter already supplies Spring Web, Actuator, Micrometer Prometheus support, and Fabric8 Kubernetes Client 7.3.0. Add Fabric8 generator dependencies/plugins only if your application actually generates CRDs or Java models; they are not required by the runtime.
 
 The starter uses Spring Boot auto-configuration. There is no enable annotation and no application-owned framework lifecycle object.
 
@@ -492,13 +492,17 @@ For a faster test-only cycle:
 mvn -f operator/framework/pom.xml test
 ```
 
-The legacy `example/` and `stress-test/` modules were deleted deliberately; `stress-test/` stays absent. The current sample is `example/echo-operator`, a Spring Boot application built on the starter with unit tests, MockMvc admission endpoint tests, and a real-cluster end-to-end script:
+The legacy `example/` and `stress-test/` modules were deleted deliberately; `stress-test/` stays absent. Two samples live under `example/`:
+
+- `echo-operator` — the minimal Spring Boot operator: unit tests, MockMvc admission endpoint tests, and a real-cluster end-to-end script:
 
 ```bash
 example/echo-operator/scripts/e2e-test.sh
 ```
 
 It deploys to a throwaway namespace with RBAC/TLS, registers real admission webhook configurations, and verifies mutation, validation, reconcile, event publication, garbage collection, health, and metrics against a live API server.
+
+- `greeting-operator` — the advanced custom-resource operator: a two-version `Greeting` CRD with status subresource, finalizer cleanup, server-side-apply managed dependents, a secondary ConfigMap watch, generation filtering, and a conversion callback. It is covered by unit, wire-format, and Spring-context tests; note the fabric8 7.x custom-kind binding limitation documented in its README (`example/greeting-operator/README.md`), which currently blocks an automated cluster e2e for custom-kind flows.
 
 ## Appendix A. Key interfaces at a glance
 

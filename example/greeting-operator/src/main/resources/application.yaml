@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: greeting-operator
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+operator:
+  framework:
+    mode: combined
+    controller:
+      namespace: default
+    retry:
+      # reconciler exceptions: 3 exponential attempts before terminal failure
+      initial-delay: 1s
+      max-delay: 10s
+      max-attempts: 3
+    events:
+      component: greeting-operator

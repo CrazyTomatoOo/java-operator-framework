@@ -250,6 +250,29 @@ The fixed HTTP routes are:
 
 Validation returns `AdmissionDecision.allow()` or `AdmissionDecision.deny(message)`. Mutation returns `MutationResult.unchanged()`, `MutationResult.mutated(resource)`, or `MutationResult.denied(message)`; the transport computes and Base64-encodes the JSON Patch. Conversion returns `ConversionResult.converted(resource)` or `ConversionResult.failed(message)`. Context objects expose stable request identity/version data rather than transport objects; admission callbacks also receive operation-specific `AdmissionReview` options as an immutable JSON-compatible map.
 
+## Known limitation: fabric8 7.3.0 custom-kind binding
+
+Admission and conversion callbacks receive their objects bound from the review payload to the
+callback's generic type (Jackson `convertValue`). Built-in kinds (ConfigMap, Pod, Deployment, ...)
+bind cleanly — the framework's `WebhookApiTest`/`ConversionWebhookControllerTest` cover
+them — but
+**custom resources cannot be bound with the pinned fabric8 7.3.0**: `KubernetesResource` carries
+`@JsonDeserialize(using = KubernetesDeserializer.class)`, and once the custom kind resolves
+(e.g. via the `META-INF/services/io.fabric8.kubernetes.api.model.KubernetesResource`
+registration fabric8 requires), the dispatcher re-enters itself and overflows the stack; without
+registration it
+falls back to `GenericKubernetesResource`, which cannot be passed to the callback. Consequences:
+
+- custom-kind webhook callbacks (admission and conversion) are currently unusable;
+- the polymorphic `client.resource(...).patch` responses used by `Finalizers` and `StatusUpdates`
+  break the same way, so those helpers are verified against built-in kinds;
+- typed `client.resources(Class)` CRUD/informer flows are unaffected (class-hint binding), so
+  custom-kind reconcile/status/watch logic itself works and is covered in
+  `example/greeting-operator` at the unit and wire-format level.
+
+The example registers the custom kind and documents a small repro; a fabric8 upgrade or a
+non-dispatch binding in the webhook transport would lift this limitation without example changes.
+
 ## External TLS and Kubernetes registration
 
 Webhook HTTPS uses Spring Boot's server and standard SSL properties. Mount a certificate and private key supplied by your platform, for example from a Kubernetes Secret:
@@ -348,4 +371,4 @@ mvn -f operator/framework/pom.xml clean install
 
 `verify` runs unit/integration tests, packaging checks, attached source JAR creation, and Checkstyle. Production-source limits are 120 columns, at most 5 parameters, at most 50 non-empty lines per method, and cyclomatic complexity at most 5.
 
-The legacy `example/` and `stress-test/` modules were intentionally removed; `stress-test/` stays absent. The current sample lives in `example/echo-operator`, including a real-cluster end-to-end script (`scripts/e2e-test.sh`).
+The legacy `example/` and `stress-test/` modules were intentionally removed; `stress-test/` stays absent. Two samples live under `example/`: `echo-operator`, the minimal Spring Boot operator (unit tests, MockMvc admission endpoint tests, and a real-cluster end-to-end script `scripts/e2e-test.sh`), and `greeting-operator`, an advanced custom-resource operator exercising status subresources, finalizers, server-side-apply dependents, secondary watches, and a conversion callback (see its README for the fabric8 7.3.0 custom-kind binding limitation).

@@ -22,7 +22,7 @@ mvn -f operator/framework/pom.xml clean install
 </dependency>
 ```
 
-使用 Java 21。Starter 已提供 Spring Web、Actuator、Micrometer Prometheus 支持和 Fabric8 Kubernetes Client 7.8.0。只有应用确实需要生成 CRD 或 Java 模型时，才添加 Fabric8 生成器依赖/插件；运行时并不需要它们。
+使用 Java 21。Starter 已提供 Spring Web、Actuator、Micrometer Prometheus 支持和 Fabric8 Kubernetes Client 7.3.0。只有应用确实需要生成 CRD 或 Java 模型时，才添加 Fabric8 生成器依赖/插件；运行时并不需要它们。
 
 Starter 使用 Spring Boot 自动配置，不存在启用注解，也不存在由应用持有的框架生命周期对象。
 
